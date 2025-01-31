@@ -1,2 +1,2 @@
 all:
-	gcc -o hsh *
+	gcc * -o hsh
