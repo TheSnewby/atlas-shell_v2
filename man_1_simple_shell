@@ -1,0 +1,52 @@
+./" simple_shell
+.TH simple_shell (1) USER MANUAL
+
+.SH NAME
+simple_shell - provides a simplified command line interpreter
+
+.SH SYNOPSIS
+.B ./simple_shell
+[\fR%command\fR] [\fR%options\fR]...
+
+.SH DESCRIPTION
+.B simple_shell
+is a command line interpreter that provides a prompt to enter commands and uses
+Linux to attempt to execute them. It also has built-in funcitonality to perform
+a few basic extra commands. Functions in both interactive and noninteractive
+modes. Use ./simple_shell to launch it in interactive, or use ./simple_shell as
+the first argument in a commandline entry and follow up with commands to use in
+non interactive.
+
+.SS Built-In Commands
+.TP
+env - prints the local environment
+.TP
+exit - exits the program
+.TP
+self-destruct - exits the program stylistically
+.TP
+selfdestr - same as self-destruct
+.TP
+setenv - sets a variable in the environment to a value, or adds it
+.TP
+unsetenv - removes a variable in the environment if found
+.TP
+quit - same as exit
+
+.SH EXAMPLES
+.TP
+"./simple_shell ls -l -a"
+.TP
+"./simple_shell cat main.h"
+.TP
+"./simple_shell exit"
+.TP
+"./simple_shell setenv [name] [new value]"
+.TP
+"./simple_shell selfdestr"
+
+.SH FUTURE IMPROVEMENTS
+Increased functionality to handle complex handlers such as: ';', '&&', '||' and '|'. Also increase stability of _setenv and _unsetenv.
+
+.SH AUTHORS
+Daniel Stelljes & Stephen Newby
