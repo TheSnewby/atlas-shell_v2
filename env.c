@@ -11,19 +11,26 @@ char *_getenv(const char *name) /* gets an environmental variable */
 	char **current;
 	char *token;
 	char *temp_line;
-	char *temp = NULL;
+	char *value = NULL;
 
-	if (environ == NULL)
+	if (!environ|| !name)
 		return (NULL);
+
 	for (current = environ; *current; current++)
 	{
 		temp_line = strdup(*current);
+		if (!temp_line)
+			return (NULL);
+
 		token = strtok(temp_line, "=");
 		if (strcmp(token, name) == 0)
 		{
-			temp = strdup(strtok(NULL, "="));
+			value = strtok(NULL, "=");
+			if (value)
+				value = strdup(value);
+
 			free(temp_line);
-			return (temp);
+			return (value);
 		}
 		free(temp_line);
 	}

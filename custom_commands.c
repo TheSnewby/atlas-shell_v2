@@ -34,6 +34,10 @@ int customCmd(char **tokens, int interactive, char *f1, char *f2, char *f3)
 	if (ifCmdSelfDestruct(tokens, f1, f2, f3) == -1)
 		return (-1);
 
+	/* ----------------- custom command "cd" ----------------- */
+	if (ifCmdCd(tokens))
+		return (-1);
+
 	return (0); /* indicate that the input is not a custom command */
 }
 /*
@@ -141,4 +145,79 @@ int ifCmdSetEnv(char **tokens)
 			return (1);
 	}
 	return (0); /* not setenv */
+}
+
+/**
+ * ifCmdCd - changes directory
+ * @tokens: tokenized array of user-input
+ *
+ * Return: 1 if successful, 0 if error
+ */
+int ifCmdCd(char **tokens)
+{
+	char cwd_buf[PATH_MAX], abs_path[PATH_MAX + 2];
+	char *previous_cwd = _getenv("OLDPWD"); /* track previous cwd for '-' handling */
+	int chdir_rtn = 0;
+	char *home = _getenv("HOME");
+
+	if(getcwd(cwd_buf, PATH_MAX) == NULL)
+	{
+		perror("getcwd");
+		return(0);
+	}
+	if (!_getenv("PWD"))
+		_setenv("PWD", cwd_buf, 1);  /* might need to add \0 to cwd_buf */
+
+	if((tokens[0] != NULL) && (strcmp(tokens[0], "cd") == 0))  /* cd command found */
+	{
+		printf("cd\n");
+		if(tokens[2] != NULL)  /* too many arguments */
+		{
+			perror("cd: ");
+			return(0);
+		}
+		else if(tokens[1] != NULL)
+		{
+			if (strcmp(tokens[1], "-") == 0)  /* previous path */
+				if (previous_cwd)
+					chdir_rtn = chdir(previous_cwd);
+				else
+					fprintf(stderr, "cd: OLDPWD not set\n");
+			else if (tokens[1][0] == '/')  /* absolute path */
+				chdir_rtn = chdir(tokens[1]);
+			else if (strcmp(tokens[1], "~") == 0)
+				if (home)
+					chdir_rtn = chdir(home);
+				else
+					fprintf(stderr, "HOME is not set\n");
+			else  /* relative path */
+			{
+				snprintf(abs_path, sizeof(abs_path) - 1, "%s/%s", cwd_buf, tokens[1]);
+				chdir_rtn = chdir(abs_path);
+			}
+		}
+		else
+			if (home)
+				chdir_rtn = chdir(home);
+			else
+				fprintf(stderr, "HOME is not set\n");
+
+		if (chdir_rtn == -1)  /* chdir failed */
+		{
+			perror("chdir: ");
+			return (0);
+		}
+		else  /* on success set OLD PWD and PWD */
+		{
+			_setenv("OLDPWD", cwd_buf, 1);  /* might need to add \0 to buf */
+
+			if(getcwd(cwd_buf, PATH_MAX) == NULL)
+			{
+				perror("getcwd");
+				return(0);
+			}
+			_setenv("PWD", cwd_buf, 1);  /* might need to add \0 to buf */
+		}
+	}
+	return (1);
 }

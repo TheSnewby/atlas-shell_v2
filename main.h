@@ -88,6 +88,8 @@ int ifCmdEnv(char **tokens);
 int ifCmdSetEnv(char **tokens);
 
 int ifCmdUnsetEnv(char **tokens);
+
+int ifCmdCd(char **tokens);
 /* ------------------- */
 
 #endif /* MAIN_H */
