@@ -30,6 +30,8 @@ typedef struct path_s
 	struct path_s *next;
 } path_t;
 extern char **environ;
+// char **allocated_vars = NULL;
+// int allocated_count = 0;
 /* ------------------- */
 
 /* ↓ FUNCTIONS ↓ */
@@ -90,6 +92,8 @@ int ifCmdSetEnv(char **tokens);
 int ifCmdUnsetEnv(char **tokens);
 
 int ifCmdCd(char **tokens);
+
+void initialize_environ();
 /* ------------------- */
 
 #endif /* MAIN_H */

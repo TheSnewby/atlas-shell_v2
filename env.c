@@ -1,12 +1,12 @@
 #include "main.h"
 
 /**
- * _getenv - gets an environmental value from a name-value pair in environ
+ * _getenv - gets malloc'd environmental value from a name-value pair in environ
  * @name: name in name-value pair
  *
- * Return: value if found, NULL if not
+ * Return: dynamically allocated value if found, NULL if not
  */
-char *_getenv(const char *name) /* gets an environmental variable */
+char *_getenv(const char *name)
 {
 	char **current;
 	char *token;
@@ -27,8 +27,8 @@ char *_getenv(const char *name) /* gets an environmental variable */
 		{
 			value = strtok(NULL, "=");
 			if (value)
-				value = strdup(value);
-
+				value = strdup(value);  /* ensures value isn't dependent on 
+										temp_line ptr */
 			free(temp_line);
 			return (value);
 		}
@@ -78,61 +78,66 @@ path_t *buildListPath(void)
  * or appends a new value if not found
  * @name: name of environmental variable to be set
  * @value: value to set the environmental variable to
- * @overwrite: nonzero to actually change the value, zero to not change
+ * @overwrite: nonzero to change the value, zero to not change
  *
  * Return: 0 on success, -1 on failure
  */
 int _setenv(const char *name, const char *value, int overwrite)
 {
-	int i;
-	char *temp;
-	char *new_line;
-	char *temp_line;
-	char found = -1; /* flag for finding name, 0 if found */
-	int size_environ = 0;
+	int i, size_environ = 0;
+	char *temp, *new_line, *temp_line;
 	char **new_environ;
 
-	if (name == NULL)
-		return (-1);
-	else if (strlen(name) == 0) /* || strchr(name, '=') == NULL) */
+	if (!name || !value || (strlen(name) == 0) || strchr(name, '='))
 		return (-1);
 
 	new_line = malloc(strlen(name) + strlen(value) + 2); /* line replacement */
 	if (new_line == NULL)
 		return (-1);
-	strcpy(new_line, name);
-	strcat(new_line, "=");
-	strcat(new_line, value);
+	sprintf(new_line, "%s=%s", name, value);
 
 	for (i = 0; environ[i] != NULL && overwrite != 0; i++) /* looks for name */
 	{
 		temp_line = strdup(environ[i]);
+		if (!temp_line)
+		{
+			free(new_line);
+			new_line = NULL;
+			return (-1);
+		}
+
 		temp = strtok(temp_line, "=");
-		size_environ++;
 
 		if (strcmp(temp, name) == 0) /* name found in environ */
 		{
+			free(environ[i]);
 			environ[i] = strdup(new_line);
-			found = 0;
-			break;
+			free(temp_line);
+			free(new_line);
+			new_line = NULL;
+			temp_line = NULL;
+			return (0);
 		}
+		free(temp_line);
+		temp_line = NULL;
 	}
-	if (found != 0 && overwrite != 0 && environ[i] == NULL) /* if adding at end */
+
+	size_environ = i;
+	if (overwrite != 0 && environ[i] == NULL) /* if adding at end */
 	{
-		new_environ = malloc(sizeof(char *) * size_environ + 2);
+		new_environ = realloc(environ, sizeof(char *) * (size_environ + 1));
 		if (new_environ == NULL)
 		{
 			free(new_line);
+			new_line = NULL;
 			return (-1);
 		}
-		for (i = 0; i < size_environ; i++)
-		{
-			new_environ[i] = strdup(environ[i]);
-		}
-		new_environ[i] = new_line;
-		new_environ[i + 1] = NULL;
+
+		new_environ[size_environ] = new_line;  /* sets new env variable */
+		new_environ[size_environ + 1] = NULL;  /* makes final as NULL */
+		environ = new_environ;
 	}
-	environ = new_environ;
+
 	return (0);
 }
 
@@ -231,4 +236,41 @@ int runCommand(char *commandPath, char **args, char **envPaths)
 		}
 	}
 	return (0); /* success */
+}
+
+
+/**
+ * initialize_environ - makes environ a dynamically allocated variable
+ */
+void initialize_environ()
+{
+	int i = 0, size_environ = 0;
+	char **new_environ;
+
+	while (environ[i] != NULL)
+		i++;
+	size_environ = i;
+
+	new_environ = malloc(sizeof(char *) * (size_environ + 1));
+	if (new_environ == NULL)
+	{
+		perror("malloc failed");
+		return;
+	}
+
+	for (i = 0; i < size_environ; i++)  /* populate new_environ */
+	{
+		new_environ[i] = strdup(environ[i]);
+		if (new_environ[i] == NULL)  /* if malloc in strdup fails, undo all */
+		{
+			for (i = i - 1; i >= 0; i--)
+				free(new_environ[i]);
+			free(new_environ);
+			return;
+		}
+	}
+	printf("size_environ: %d\n", size_environ);  /* DEBUG */
+	new_environ[size_environ] = NULL;
+
+	environ = new_environ;
 }

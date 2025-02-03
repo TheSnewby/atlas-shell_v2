@@ -17,6 +17,7 @@ int main(int argc, char *argv[])
 		printf("%sWelcome to the %sGates Of Shell%s. Type 'exit' to quit.\n\n",
 			   CLR_YELLOW_BOLD, CLR_RED_BOLD, CLR_YELLOW_BOLD);
 	/* --------------------------------------------------------------------- */
+	initialize_environ(); /* makes environ dynamically allocated */
 
 	shellLoop(isInteractive, argv); /* main shell loop */
 
@@ -93,7 +94,8 @@ void freeAll(char **tokens, ...)
 	if (tokens != NULL)
 	{
 		for (i = 0; tokens[i] != NULL; i++)
-			free(tokens[i]);
+			if (tokens[i])
+				free(tokens[i]);
 		free(tokens);
 	}
 	va_start(vars, tokens);
@@ -104,6 +106,14 @@ void freeAll(char **tokens, ...)
 		free_me = va_arg(vars, char *);
 	}
 	va_end(vars);
+
+	if (environ)
+	{
+		for (i = 0; environ[i] != NULL; i++)
+			free(environ[i]);
+		free(environ);
+		environ = NULL;
+	}
 }
 
 /**

@@ -159,18 +159,20 @@ int ifCmdCd(char **tokens)
 	char *previous_cwd = _getenv("OLDPWD"); /* track previous cwd for '-' handling */
 	int chdir_rtn = 0;
 	char *home = _getenv("HOME");
+	char *pwd = _getenv("PWD");
 
 	if(getcwd(cwd_buf, PATH_MAX) == NULL)
 	{
 		perror("getcwd");
 		return(0);
 	}
-	if (!_getenv("PWD"))
+	if (!pwd)
 		_setenv("PWD", cwd_buf, 1);  /* might need to add \0 to cwd_buf */
+	else
+		free(pwd);
 
 	if((tokens[0] != NULL) && (strcmp(tokens[0], "cd") == 0))  /* cd command found */
 	{
-		printf("cd\n");
 		if(tokens[2] != NULL)  /* too many arguments */
 		{
 			perror("cd: ");
@@ -180,14 +182,20 @@ int ifCmdCd(char **tokens)
 		{
 			if (strcmp(tokens[1], "-") == 0)  /* previous path */
 				if (previous_cwd)
+				{
 					chdir_rtn = chdir(previous_cwd);
+					free(previous_cwd);
+				}
 				else
 					fprintf(stderr, "cd: OLDPWD not set\n");
 			else if (tokens[1][0] == '/')  /* absolute path */
 				chdir_rtn = chdir(tokens[1]);
 			else if (strcmp(tokens[1], "~") == 0)
 				if (home)
+				{
 					chdir_rtn = chdir(home);
+					free(home);
+				}
 				else
 					fprintf(stderr, "HOME is not set\n");
 			else  /* relative path */
@@ -198,7 +206,10 @@ int ifCmdCd(char **tokens)
 		}
 		else
 			if (home)
+			{
 				chdir_rtn = chdir(home);
+				free(home);
+			}
 			else
 				fprintf(stderr, "HOME is not set\n");
 
@@ -209,14 +220,14 @@ int ifCmdCd(char **tokens)
 		}
 		else  /* on success set OLD PWD and PWD */
 		{
-			_setenv("OLDPWD", cwd_buf, 1);  /* might need to add \0 to buf */
+			_setenv("OLDPWD", cwd_buf, 1);
 
 			if(getcwd(cwd_buf, PATH_MAX) == NULL)
 			{
 				perror("getcwd");
 				return(0);
 			}
-			_setenv("PWD", cwd_buf, 1);  /* might need to add \0 to buf */
+			_setenv("PWD", cwd_buf, 1);
 		}
 	}
 	return (1);
