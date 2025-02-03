@@ -18,16 +18,16 @@ char *_getenv(const char *name)
 
 	for (current = environ; *current; current++)
 	{
-		temp_line = strdup(*current);
+		temp_line = _strdup(*current);
 		if (!temp_line)
 			return (NULL);
 
 		token = strtok(temp_line, "=");
-		if (strcmp(token, name) == 0)
+		if (_strcmp(token, name) == 0)
 		{
 			value = strtok(NULL, "=");
 			if (value)
-				value = strdup(value);  /* ensures value isn't dependent on 
+				value = _strdup(value);  /* ensures value isn't dependent on 
 										temp_line ptr */
 			free(temp_line);
 			return (value);
@@ -52,7 +52,7 @@ path_t *buildListPath(void)
 
 	if (path == NULL)
 		return (NULL);
-	temp_path = strdup(path);
+	temp_path = _strdup(path);
 	token = strtok(temp_path, ":");
 
 	free(path);
@@ -64,7 +64,7 @@ path_t *buildListPath(void)
 			free(temp_path);
 			return (NULL);
 		}
-		new_node->directory = strdup(token);
+		new_node->directory = _strdup(token);
 		new_node->next = head;
 		head = new_node;
 		token = strtok(NULL, ":");
@@ -88,17 +88,17 @@ int _setenv(const char *name, const char *value, int overwrite)
 	char *temp, *new_line, *temp_line;
 	char **new_environ;
 
-	if (!name || !value || (strlen(name) == 0) || strchr(name, '='))
+	if (!name || !value || (_strlen(name) == 0) || _strchr(name, '='))
 		return (-1);
 
-	new_line = malloc(strlen(name) + strlen(value) + 2); /* line replacement */
+	new_line = malloc(_strlen(name) + _strlen(value) + 2); /* line replacement */
 	if (new_line == NULL)
 		return (-1);
 	sprintf(new_line, "%s=%s", name, value);
 
 	for (i = 0; environ[i] != NULL && overwrite != 0; i++) /* looks for name */
 	{
-		temp_line = strdup(environ[i]);
+		temp_line = _strdup(environ[i]);
 		if (!temp_line)
 		{
 			free(new_line);
@@ -108,10 +108,10 @@ int _setenv(const char *name, const char *value, int overwrite)
 
 		temp = strtok(temp_line, "=");
 
-		if (strcmp(temp, name) == 0) /* name found in environ */
+		if (_strcmp(temp, name) == 0) /* name found in environ */
 		{
 			free(environ[i]);
-			environ[i] = strdup(new_line);
+			environ[i] = _strdup(new_line);
 			free(temp_line);
 			free(new_line);
 			new_line = NULL;
@@ -125,7 +125,7 @@ int _setenv(const char *name, const char *value, int overwrite)
 	size_environ = i;
 	if (overwrite != 0 && environ[i] == NULL) /* if adding at end */
 	{
-		new_environ = realloc(environ, sizeof(char *) * (size_environ + 2));
+		new_environ = _realloc_array(environ, sizeof(char *) * (size_environ + 2));
 		if (new_environ == NULL)
 		{
 			free(new_line);
@@ -156,13 +156,13 @@ int _unsetenv(const char *name)
 
 	if (name == NULL)
 		return (-1);
-	else if (strlen(name) == 0)
+	else if (_strlen(name) == 0)
 		return (-1);
 	/* find size of array and location of possible match */
 	for (i = 0; environ[i] != NULL; i++)
 	{
 		size_environ++;
-		if (strncmp(environ[i], name, strlen(name)) == 0)
+		if (strncmp(environ[i], name, _strlen(name)) == 0)
 			location = i;
 	}
 	/* if match found rebuild environ without the found element */
@@ -173,7 +173,7 @@ int _unsetenv(const char *name)
 		{
 			if (i != location)
 			{
-				new_environ[new_environ_index] = strdup(environ[i]);
+				new_environ[new_environ_index] = _strdup(environ[i]);
 				new_environ_index++;
 			}
 		}
@@ -260,8 +260,8 @@ void initialize_environ()
 
 	for (i = 0; i < size_environ; i++)  /* populates new_environ */
 	{
-		new_environ[i] = strdup(environ[i]);
-		if (new_environ[i] == NULL)  /* if malloc in strdup fails, undo all */
+		new_environ[i] = _strdup(environ[i]);
+		if (new_environ[i] == NULL)  /* if malloc in _strdup fails, undo all */
 		{
 			for (i = i - 1; i >= 0; i--)
 				free(new_environ[i]);

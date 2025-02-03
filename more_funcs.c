@@ -64,7 +64,7 @@ void initCmd(char **cmd, char *const *tokens)
 	if (tokens[0][0] != '/' && tokens[0][0] != '.') /* if input isn't a path */
 		*cmd = findPath(tokens[0]);
 	else /* if user's input is a path */
-		*cmd = strdup(tokens[0]); /* initialize cmd to the input path */
+		*cmd = _strdup(tokens[0]); /* initialize cmd to the input path */
 }
 
 /**
@@ -80,7 +80,7 @@ int isNumber(char *number)
 {
 	unsigned int i;
 
-	for (i = 0; i < strlen(number); i++)
+	for (i = 0; i < _strlen(number); i++)
 	{
 		if (number[i] > '9' || number[i] < '0')
 			return (0);

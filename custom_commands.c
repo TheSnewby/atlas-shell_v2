@@ -56,8 +56,8 @@ int customCmd(char **tokens, int interactive, char *f1, char *f2, char *f3)
 int ifCmdSelfDestruct(char **tokens, const char *f1, const char *f2,
 					   const char *f3)
 {
-	if (tokens[0] != NULL && (strcmp(tokens[0], "self-destruct") == 0 ||
-							   strcmp(tokens[0], "selfdestr") == 0))
+	if (tokens[0] != NULL && (_strcmp(tokens[0], "self-destruct") == 0 ||
+							   _strcmp(tokens[0], "selfdestr") == 0))
 	{
 		int countdown = 5; /* number of seconds to countdown from */
 		/* initialized to 5 in case user doesn't give a number */
@@ -90,7 +90,7 @@ void ifCmdExit(char **tokens, int interactive, const char *f1, const char *f2,
 	int status = EXIT_SUCCESS; /* status to exit with */
 
 	if (tokens[0] != NULL &&
-		(strcmp(tokens[0], "exit") == 0 || strcmp(tokens[0], "quit") == 0))
+		(_strcmp(tokens[0], "exit") == 0 || _strcmp(tokens[0], "quit") == 0))
 	{
 		/* check if user gave any args and if it's a valid number */
 		if (tokens[1] != NULL && isNumber(tokens[1]))
@@ -116,11 +116,10 @@ int ifCmdEnv(char **tokens)
 {
 	int i;
 
-	if (tokens[0] != NULL && (strcmp(tokens[0], "env") == 0))
+	if (tokens[0] != NULL && (_strcmp(tokens[0], "env") == 0))
 	{
 		for (i = 0; environ[i] != NULL; i++)
 			printf("%s\n", environ[i]);
-
 		return (1); /* indicate success */
 	}
 	return (0); /* indicate that input is not "env" */
@@ -136,7 +135,7 @@ int ifCmdSetEnv(char **tokens)
 {
 	int rtn;
 
-	if (tokens[0] != NULL && (strcmp(tokens[0], "setenv") == 0))
+	if (tokens[0] != NULL && (_strcmp(tokens[0], "setenv") == 0))
 	{
 		rtn = _setenv(tokens[1], tokens[2], 1);
 		if (rtn == -1) /* malloc error */
@@ -177,7 +176,7 @@ int ifCmdCd(char **tokens)
 		pwd = NULL;
 	}
 
-	if((tokens[0] != NULL) && (strcmp(tokens[0], "cd") == 0))  /* cd command found */
+	if((tokens[0] != NULL) && (_strcmp(tokens[0], "cd") == 0))  /* cd command found */
 	{
 		if(tokens[2] != NULL)  /* too many arguments */
 		{
@@ -188,7 +187,7 @@ int ifCmdCd(char **tokens)
 		}
 		else if(tokens[1] != NULL)
 		{
-			if (strcmp(tokens[1], "-") == 0)  /* previous path */
+			if (_strcmp(tokens[1], "-") == 0)  /* previous path */
 				if (previous_cwd)
 				{
 					chdir_rtn = chdir(previous_cwd);
@@ -198,8 +197,10 @@ int ifCmdCd(char **tokens)
 				else
 					fprintf(stderr, "cd: OLDPWD not set\n");
 			else if (tokens[1][0] == '/')  /* absolute path */
-				chdir_rtn = chdir(tokens[1]);
-			else if (strcmp(tokens[1], "~") == 0)
+				{
+					chdir_rtn = chdir(tokens[1]);
+				}
+			else if (_strcmp(tokens[1], "~") == 0)
 				if (home)
 				{
 					chdir_rtn = chdir(home);
@@ -227,6 +228,12 @@ int ifCmdCd(char **tokens)
 		if (chdir_rtn == -1)  /* chdir failed */
 		{
 			perror("chdir: ");
+			if (previous_cwd)
+				free(previous_cwd);
+			if (home)
+				free(home);
+			if (pwd)
+				free(pwd);
 			return (0);
 		}
 		else  /* on success set OLD PWD and PWD */
