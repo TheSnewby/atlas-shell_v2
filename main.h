@@ -56,7 +56,7 @@ void initCmd(char **cmd, char *const *tokens);
 int populateTokens(const char *input, char ***tokens, char **cmd_token,
 				   int *tokens_count);
 
-void freeAll(char **tokens, ...);
+void resetAll(char **tokens, ...);
 
 void ifCmdExit(char **tokens, int interactive, const char *f1, const char *f2,
 			   const char *f3);
@@ -94,6 +94,8 @@ int ifCmdUnsetEnv(char **tokens);
 int ifCmdCd(char **tokens);
 
 void initialize_environ();
+
+void safeExit(int exit_code);
 /* ------------------- */
 
 #endif /* MAIN_H */

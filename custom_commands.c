@@ -42,7 +42,7 @@ int customCmd(char **tokens, int interactive, char *f1, char *f2, char *f3)
 }
 /*
  * note: customCmd() was variadic, but we undid that because of
- * problems calling freeAll() using the args variable.
+ * problems calling resetAll() using the args variable.
  */
 
 /**
@@ -69,7 +69,7 @@ int ifCmdSelfDestruct(char **tokens, const char *f1, const char *f2,
 		 * NOTE: I'd use abs() instead of checking if its positive, but
 		 * abs() is not an allowed function and I don't want to code it.
 		 */
-		freeAll(tokens, f1, f2, f3, NULL);
+		resetAll(tokens, f1, f2, f3, NULL);
 		selfDestruct(countdown); /* runs exit() when done */
 		return (-1); /* indicate error if selfDestruct never exits */
 	}
@@ -96,13 +96,13 @@ void ifCmdExit(char **tokens, int interactive, const char *f1, const char *f2,
 		if (tokens[1] != NULL && isNumber(tokens[1]))
 			status = _atoi(tokens[1]); /* set status to given number */
 
-		freeAll(tokens, f1, f2, f3, NULL);
+		resetAll(tokens, f1, f2, f3, NULL);
 
 		if (interactive)
 			printf("%s\nThe %sGates Of Shell%s have closed. Goodbye.\n%s",
 					CLR_YELLOW_BOLD, CLR_RED_BOLD, CLR_YELLOW_BOLD, CLR_DEFAULT);
 
-		exit(status);
+		safeExit(status);
 	}
 }
 
@@ -163,18 +163,26 @@ int ifCmdCd(char **tokens)
 
 	if(getcwd(cwd_buf, PATH_MAX) == NULL)
 	{
+		free(previous_cwd);
+		free(home);
+		free(pwd);
 		perror("getcwd");
 		return(0);
 	}
-	if (!pwd)
-		_setenv("PWD", cwd_buf, 1);  /* might need to add \0 to cwd_buf */
+	if (!pwd)  /* set PWD if not already set */
+		_setenv("PWD", cwd_buf, 1);
 	else
+	{
 		free(pwd);
+		pwd = NULL;
+	}
 
 	if((tokens[0] != NULL) && (strcmp(tokens[0], "cd") == 0))  /* cd command found */
 	{
 		if(tokens[2] != NULL)  /* too many arguments */
 		{
+			free(previous_cwd);
+			free(home);
 			perror("cd: ");
 			return(0);
 		}
@@ -185,6 +193,7 @@ int ifCmdCd(char **tokens)
 				{
 					chdir_rtn = chdir(previous_cwd);
 					free(previous_cwd);
+					previous_cwd = NULL;
 				}
 				else
 					fprintf(stderr, "cd: OLDPWD not set\n");
@@ -195,6 +204,7 @@ int ifCmdCd(char **tokens)
 				{
 					chdir_rtn = chdir(home);
 					free(home);
+					home = NULL;
 				}
 				else
 					fprintf(stderr, "HOME is not set\n");
@@ -209,6 +219,7 @@ int ifCmdCd(char **tokens)
 			{
 				chdir_rtn = chdir(home);
 				free(home);
+				home = NULL;
 			}
 			else
 				fprintf(stderr, "HOME is not set\n");
@@ -224,11 +235,23 @@ int ifCmdCd(char **tokens)
 
 			if(getcwd(cwd_buf, PATH_MAX) == NULL)
 			{
+				if (previous_cwd)
+					free(previous_cwd);
+				if (home)
+					free(home);
+				if (pwd)
+					free(pwd);
 				perror("getcwd");
 				return(0);
 			}
 			_setenv("PWD", cwd_buf, 1);
 		}
 	}
+	if (previous_cwd)
+		free(previous_cwd);
+	if (home)
+		free(home);
+	if (pwd)
+		free(pwd);
 	return (1);
 }

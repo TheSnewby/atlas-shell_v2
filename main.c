@@ -71,21 +71,21 @@ void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens,
 						strerror(run_cmd_rtn));
 			if (!isAtty)
 			{
-				freeAll(tokens, input, cmd, NULL);
-				exit(run_cmd_rtn);
+				resetAll(tokens, input, cmd, NULL);
+				safeExit(run_cmd_rtn);
 			}
 		}
 	}
 
-	freeAll(tokens, cmd, input, NULL);
+	resetAll(tokens, cmd, input, NULL);  /* resets for next user-input */
 }
 
 /**
- * freeAll - frees all dynamically allotted memory
+ * resetAll - frees all dynamically allotted memory to reset for next cmd
  * @tokens: array of strings needing free()
  * ...: list of variables to free
  */
-void freeAll(char **tokens, ...)
+void resetAll(char **tokens, ...)
 {
 	va_list vars;
 	int i;
@@ -106,6 +106,17 @@ void freeAll(char **tokens, ...)
 		free_me = va_arg(vars, char *);
 	}
 	va_end(vars);
+}
+
+/**
+ * safeExit - exits after freeing environ
+ * @exit_code: exit code for exit()
+ *
+ * Return: void
+ */
+void safeExit(int exit_code)
+{
+	int i;
 
 	if (environ)
 	{
@@ -114,69 +125,6 @@ void freeAll(char **tokens, ...)
 		free(environ);
 		environ = NULL;
 	}
-}
 
-/**
- * isNumber - check for non-number characters in a string.
- * If any of the supplied numbers have non-number characters in them,
- * return 0.
- *
- * @number: string to be checked if it's all numbers
- *
- * Return: 1 if it's all numbers; 0 if not.
- */
-int isNumber(char *number)
-{
-	unsigned int i;
-
-	for (i = 0; i < strlen(number); i++)
-	{
-		if (number[i] > '9' || number[i] < '0')
-			return (0);
-	}
-
-	return (1);
-}
-
-/**
- * _atoi - returns the integer version of a string
- * @s: string
- * Return: string as an int
- */
-int _atoi(const char *s)
-{
-	int i = 0;
-	int numberStarted = 0;
-	int numberEnded = 0;
-	int neg = 1;
-	int size;
-
-	for (size = 0; s[size] != '\0'; size++)
-	{
-		if (!numberEnded)
-		{
-			if (s[size] == '-' && !numberStarted)
-				neg *= -1;
-			else if (s[size] >= 48 && s[size] <= 57 && !numberEnded)
-			{
-				if (!numberStarted)
-					numberStarted = 1;
-				i *= 10;
-				if (neg == -1)
-				{
-					i *= -1;
-					i -= s[size] - 48;
-					neg = 0;
-				}
-				else if (!neg)
-					i -= s[size] - 48;
-				else
-					i += s[size] - 48;
-			}
-			if (numberStarted && !numberEnded && (s[size] < 48 || s[size] > 57))
-				numberEnded = 1;
-		}
-	}
-
-	return (i);
+	exit(exit_code);
 }

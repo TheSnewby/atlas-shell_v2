@@ -201,7 +201,7 @@ int runCommand(char *commandPath, char **args, char **envPaths)
 	{
 		if (isatty(STDIN_FILENO))
 			return (0);
-		exit(0);
+		safeExit(0);
 	}
 
 	if (access(commandPath, F_OK) != 0) /* checks if cmd doesn't exist */
@@ -219,7 +219,7 @@ int runCommand(char *commandPath, char **args, char **envPaths)
 		exec_rtn = execve(commandPath, args, envPaths);/*executes user-command*/
 		if (exec_rtn == -1)
 		{
-			exit(errno); /* indicate error */
+			safeExit(errno); /* indicate error */
 		}
 	} else /* parent process; fork_rtn contains pid of child process */
 	{
@@ -266,10 +266,11 @@ void initialize_environ()
 			for (i = i - 1; i >= 0; i--)
 				free(new_environ[i]);
 			free(new_environ);
+			new_environ = NULL;
+			environ = NULL;
 			return;
 		}
 	}
-	printf("size_environ: %d\n", size_environ);  /* DEBUG */
 	new_environ[size_environ] = NULL;
 
 	environ = new_environ;
