@@ -123,7 +123,6 @@ void safeExit(int exit_code)
 		for (i = 0; environ[i] != NULL; i++)
 			free(environ[i]);
 		free(environ);
-		environ = NULL;
 	}
 
 	exit(exit_code);
