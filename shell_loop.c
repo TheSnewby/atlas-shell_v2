@@ -165,8 +165,8 @@ int populateTokens(const char *input, char ***tokens, char **cmd_token,
 {
 	while ((*cmd_token) != NULL)
 	{
-		if ((*tokens_count) >= 64)
-			(*tokens) = realloc((*tokens), (*tokens_count) * sizeof(char *));
+		/* if ((*tokens_count) >= 64) */
+		/*	(*tokens) = realloc((*tokens), (*tokens_count) * sizeof(char *)); */
 
 		if ((*tokens) == NULL)
 		{
@@ -174,7 +174,7 @@ int populateTokens(const char *input, char ***tokens, char **cmd_token,
 			return (-1);
 		}
 
-		(*tokens)[(*tokens_count)] = strdup((*cmd_token));
+		(*tokens)[(*tokens_count)] = _strdup((*cmd_token));
 		(*cmd_token) = strtok(NULL, " \n\t\r");
 		(*tokens_count)++;
 	}
