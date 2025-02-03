@@ -109,6 +109,12 @@ char *_strcpy(char *dest, char *src);
 void *_realloc_array(char **ptr, unsigned int new_size);
 
 char *_strdup(char *str);
+
+int split_command_line_on_pipe(char *line, char **command1, char **command2);
+
+char **parse_command(char *command);
+
+int execute_pipe_command(char **command1, char **command2);
 /* ------------------- */
 
 #endif /* MAIN_H */
