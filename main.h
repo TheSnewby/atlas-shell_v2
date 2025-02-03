@@ -30,6 +30,8 @@ typedef struct path_s
 	struct path_s *next;
 } path_t;
 extern char **environ;
+// char **allocated_vars = NULL;
+// int allocated_count = 0;
 /* ------------------- */
 
 /* ↓ FUNCTIONS ↓ */
@@ -54,7 +56,7 @@ void initCmd(char **cmd, char *const *tokens);
 int populateTokens(const char *input, char ***tokens, char **cmd_token,
 				   int *tokens_count);
 
-void freeAll(char **tokens, ...);
+void resetAll(char **tokens, ...);
 
 void ifCmdExit(char **tokens, int interactive, const char *f1, const char *f2,
 			   const char *f3);
@@ -88,6 +90,12 @@ int ifCmdEnv(char **tokens);
 int ifCmdSetEnv(char **tokens);
 
 int ifCmdUnsetEnv(char **tokens);
+
+int ifCmdCd(char **tokens);
+
+void initialize_environ();
+
+void safeExit(int exit_code);
 /* ------------------- */
 
 #endif /* MAIN_H */

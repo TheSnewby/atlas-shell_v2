@@ -45,7 +45,7 @@ void shellLoop(int isAtty, char *argv[])
 		input = NULL;
 		tokens = malloc(64 * sizeof(char *));
 		if (tokens == NULL) /* malloc fail check */
-			exit(EXIT_FAILURE);
+			safeExit(EXIT_FAILURE);
 
 		/* initialize all tokens in array to null */
 		for (i = 0; i < 64; i++)
@@ -57,7 +57,7 @@ void shellLoop(int isAtty, char *argv[])
 		{
 			if (isAtty)
 				continue;
-			exit(EXIT_SUCCESS);
+			safeExit(EXIT_SUCCESS);
 		}
 		initCmd(&cmd, tokens);
 		executeIfValid(isAtty, argv, input, tokens, cmd, cmd_token, paths);
@@ -114,8 +114,8 @@ void saveInput(int isAtty, char **tokens, size_t *size, char **input)
 			printf("Goodbye.\n%s\n", CLR_DEFAULT);
 		}
 
-		freeAll(tokens, (*input), NULL);
-		exit(EXIT_SUCCESS);
+		resetAll(tokens, (*input), NULL);
+		safeExit(EXIT_SUCCESS);
 	}
 }
 
@@ -134,7 +134,7 @@ int parseInput(char *input, char ***tokens, char **cmd_token,
 	(*cmd_token) = strtok(input, " \n\t\r"); /* first token */
 	if ((*cmd_token) == NULL) /* blank command - only spaces or newline */
 	{
-		freeAll((*tokens), input, NULL);
+		resetAll((*tokens), input, NULL);
 		return (-1); /* go back to start of the loop */
 	}
 
@@ -143,7 +143,7 @@ int parseInput(char *input, char ***tokens, char **cmd_token,
 
 	if ((*tokens) == NULL)
 	{
-		freeAll((*tokens), /*cmd, */input, NULL);
+		resetAll((*tokens), /*cmd, */input, NULL);
 		return (-1);
 	}
 	(*tokens)[(*tokens_count)] = NULL;
@@ -170,7 +170,7 @@ int populateTokens(const char *input, char ***tokens, char **cmd_token,
 
 		if ((*tokens) == NULL)
 		{
-			freeAll((*tokens), input, NULL);
+			resetAll((*tokens), input, NULL);
 			return (-1);
 		}
 
