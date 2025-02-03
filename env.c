@@ -242,7 +242,7 @@ int runCommand(char *commandPath, char **args, char **envPaths)
 /**
  * initialize_environ - makes environ a dynamically allocated variable
  */
-void initialize_environ()
+void initialize_environ(void)
 {
 	int i = 0, size_environ = 0;
 	char **new_environ;

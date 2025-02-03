@@ -72,9 +72,9 @@ void printPrompt(int isAtty, char *user, char *hostname, char *path);
 
 path_t *buildListPath(void);
 
-char *getUser();
+char *getUser(void);
 
-char *getHostname();
+char *getHostname(void);
 
 int _setenv(const char *name, const char *value, int overwrite);
 
