@@ -1,4 +1,5 @@
 #include "main.h"
+#include <stdbool.h>
 
 /**
  * split_command_line_on_pipe - Splits the command line into two commands
@@ -152,4 +153,133 @@ int execute_pipe_command(char **command1, char **command2)
 	}
 
 	return 0;
+}
+
+/**
+ * execute_command - Executes a single command.
+ * @args: The arguments of the command.
+ *
+ * Return: 0 on success, -1 on error.
+ */
+int execute_command(char **args)
+{
+	pid_t pid;
+	int status;
+
+	pid = fork();
+	if (pid == -1)
+	{
+		perror("fork");
+		return -1;
+	}
+
+	if (pid == 0)
+	{ /* Child process */
+		if (execvp(args[0], args) == -1)
+		{
+			fprintf(stderr, "hsh: %s\n", strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+	}
+	else
+	{ /* Parent process */
+		waitpid(pid, &status, 0);
+		if (WIFEXITED(status))
+		{
+			return WEXITSTATUS(status);
+		}
+		else
+		{
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
+/**
+ * execute_commands_separated_by_semicolon - Executes commands separated by semicolons.
+ * @line: The command line.
+ */
+void execute_commands_separated_by_semicolon(char *line)
+{
+	char *command;
+	char *saveptr;
+	char **args;
+
+	command = strtok_r(line, ";", &saveptr);
+	while (command != NULL)
+	{
+		args = parse_command(command);
+		if (args[0] != NULL)
+		{
+			execute_command(args);
+		}
+		free(args);
+		command = strtok_r(NULL, ";", &saveptr);
+	}
+}
+typedef enum
+{
+	SEP_SEMICOLON,
+	SEP_AND,
+	SEP_OR
+} SeparatorType;
+
+/**
+ * execute_logical_commands - Executes commands separated by logical operators (&&, ||).
+ * @line: The command line.
+ */
+void execute_logical_commands(char *line)
+{
+	char *command;
+	char *saveptr;
+	char **args;
+	int status = 0;
+	SeparatorType sep_type = SEP_SEMICOLON; /* Start with semicolon behavior */
+	bool execute_next = true;				/* Flag to determine if the next command should be executed */
+
+	command = strtok_r(line, ";|&", &saveptr);
+	while (command != NULL)
+	{
+		/* Determine the separator type */
+		if (strstr(saveptr - 2, "&&") == saveptr - 2)
+		{
+			sep_type = SEP_AND;
+		}
+		else if (strstr(saveptr - 2, "||") == saveptr - 2)
+		{
+			sep_type = SEP_OR;
+		}
+		else
+		{
+			sep_type = SEP_SEMICOLON; /* Default to semicolon if no logical operator found */
+		}
+
+		if (execute_next)
+		{
+			args = parse_command(command);
+			if (args[0] != NULL)
+			{
+				status = execute_command(args);
+			}
+			free(args);
+		}
+
+		/* Determine whether to execute the next command based on status and separator type */
+		if (sep_type == SEP_AND)
+		{
+			execute_next = (status == 0); /* Execute if previous command succeeded */
+		}
+		else if (sep_type == SEP_OR)
+		{
+			execute_next = (status != 0); /* Execute if previous command failed */
+		}
+		else
+		{
+			execute_next = true; /* Always execute for semicolon */
+		}
+
+		command = strtok_r(NULL, ";|&", &saveptr);
+	}
 }
