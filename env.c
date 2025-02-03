@@ -125,7 +125,7 @@ int _setenv(const char *name, const char *value, int overwrite)
 	size_environ = i;
 	if (overwrite != 0 && environ[i] == NULL) /* if adding at end */
 	{
-		new_environ = realloc(environ, sizeof(char *) * (size_environ + 1));
+		new_environ = realloc(environ, sizeof(char *) * (size_environ + 2));
 		if (new_environ == NULL)
 		{
 			free(new_line);
@@ -258,7 +258,7 @@ void initialize_environ()
 		return;
 	}
 
-	for (i = 0; i < size_environ; i++)  /* populate new_environ */
+	for (i = 0; i < size_environ; i++)  /* populates new_environ */
 	{
 		new_environ[i] = strdup(environ[i]);
 		if (new_environ[i] == NULL)  /* if malloc in strdup fails, undo all */
@@ -267,8 +267,8 @@ void initialize_environ()
 				free(new_environ[i]);
 			free(new_environ);
 			new_environ = NULL;
-			environ = NULL;
-			return;
+			fprintf(stderr, "malloc fail in initialize_environ\n");
+			return;  /* consider changing to safeExit(errno) */
 		}
 	}
 	new_environ[size_environ] = NULL;
