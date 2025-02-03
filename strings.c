@@ -27,7 +27,6 @@ char *_strcat(char *dest, char *src)
 
 	return (dest);
 }
-#include "main.h"
 
 /**
  * _strchr - locates a character in a string
@@ -64,7 +63,6 @@ int _strlen(const char *s)
 
 	return (count);
 }
-#include "main.h"
 
 /**
  * _strcmp - compares two strings
@@ -95,8 +93,6 @@ int _strcmp(const char *s1, const char *s2)
 
 	return (diff);
 }
-
-#include "main.h"
 
 /**
  * _strcpy - copies a string to another string
