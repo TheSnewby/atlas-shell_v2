@@ -96,6 +96,20 @@ int ifCmdCd(char **tokens);
 void initialize_environ();
 
 void safeExit(int exit_code);
+
+char *_strcat(char *dest, char *src);
+
+char *_strchr(const char *s, char c);
+
+int _strlen(const char *s);
+
+int _strcmp(const char *s1, const char *s2);
+
+char *_strcpy(char *dest, char *src);
+
+void *_realloc_array(char **ptr, unsigned int new_size);
+
+char *_strdup(char *str);
 /* ------------------- */
 
 #endif /* MAIN_H */

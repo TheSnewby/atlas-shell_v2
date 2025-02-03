@@ -18,10 +18,10 @@ char *findPath(char *name)
 		return (NULL);
 	while (temp != NULL) /* run until list is empty */
 	{	/* malloc space for path/name\0 */
-		temp_path = malloc(strlen(temp->directory) + strlen(name) + 2);
-		strcpy(temp_path, temp->directory);
-		strcat(temp_path, "/");
-		strcat(temp_path, name);
+		temp_path = malloc(_strlen(temp->directory) + _strlen(name) + 2);
+		_strcpy(temp_path, temp->directory);
+		_strcat(temp_path, "/");
+		_strcat(temp_path, name);
 		if (access(temp_path, F_OK) == 0) /* checks if command at path exists */
 		{
 			destroyListPath(head); /* frees list of paths */
@@ -31,7 +31,7 @@ char *findPath(char *name)
 		temp = temp->next; /* go to next location */
 	}
 	destroyListPath(head); /* frees list of paths */
-	temp_path = strdup(name); /* mallocs command name */
+	temp_path = _strdup(name); /* mallocs command name */
 	return (temp_path); /* returns malloced command name without a path */
 }
 /**
@@ -66,7 +66,7 @@ char *getHostname(void)
 	if (!hostname)
 	{
 		hostname = malloc(8);
-		strcpy(hostname, "unknown");
+		_strcpy(hostname, "unknown");
 	}
 
 	return (hostname);
@@ -86,7 +86,7 @@ char *getUser(void)
 	if (!user)
 	{
 		user = malloc(8);
-		strcpy(user, "unknown");
+		_strcpy(user, "unknown");
 	}
 
 	return (user);
@@ -100,7 +100,7 @@ char *getUser(void)
  */
 int ifCmdUnsetEnv(char **tokens)
 {
-	if (tokens[0] != NULL && (strcmp(tokens[0], "unsetenv") == 0))
+	if (tokens[0] != NULL && (_strcmp(tokens[0], "unsetenv") == 0))
 	{
 		if (_unsetenv(tokens[1]) == 0)
 			return (1);
