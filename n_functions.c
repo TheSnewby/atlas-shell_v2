@@ -1,4 +1,4 @@
-#include <main.h>
+#include "main.h"
 
 /**
  * split_command_line_on_pipe - Splits the command line into two commands
