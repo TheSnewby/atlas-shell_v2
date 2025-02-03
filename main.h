@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
-#include <linux/limits.h>
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -93,9 +92,15 @@ int ifCmdUnsetEnv(char **tokens);
 
 int ifCmdCd(char **tokens);
 
-void initialize_environ();
+void initialize_environ(void);
 
 void safeExit(int exit_code);
+
+int split_command_line_on_pipe(char *line, char **command1, char **command2);
+
+char **parse_command(char *command);
+
+int execute_pipe_command(char **command1, char **command2);
 /* ------------------- */
 
 #endif /* MAIN_H */
