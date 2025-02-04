@@ -154,7 +154,7 @@ int ifCmdSetEnv(char **tokens)
  * ifCmdCd - changes directory
  * @tokens: tokenized array of user-input
  *
- * Return: 1 if successful, 0 if error
+ * Return: 1 if successful, 0 if not applicable, otherwise error
  */
 int ifCmdCd(char **tokens)
 {
@@ -170,7 +170,7 @@ int ifCmdCd(char **tokens)
 		free(home);
 		free(pwd);
 		perror("getcwd");
-		return(0);
+		return(-1);
 	}
 	if (!pwd)  /* set PWD if not already set */
 		_setenv("PWD", cwd_buf, 1);
@@ -187,7 +187,7 @@ int ifCmdCd(char **tokens)
 			free(previous_cwd);
 			free(home);
 			perror("cd: ");
-			return(0);
+			return(-1);
 		}
 		else if(tokens[1] != NULL)
 		{
@@ -254,11 +254,22 @@ int ifCmdCd(char **tokens)
 				if (pwd)
 					free(pwd);
 				perror("getcwd");
-				return(0);
+				return(-1);
 			}
 			_setenv("PWD", cwd_buf, 1);
 		}
 	}
+	else
+	{
+		if (previous_cwd)
+			free(previous_cwd);
+		if (home)
+			free(home);
+		if (pwd)
+			free(pwd);
+		return (0);
+	}
+
 	if (previous_cwd)
 		free(previous_cwd);
 	if (home)
