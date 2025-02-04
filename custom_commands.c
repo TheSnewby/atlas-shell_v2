@@ -197,6 +197,7 @@ int ifCmdCd(char **tokens)
 					chdir_rtn = chdir(previous_cwd);
 					free(previous_cwd);
 					previous_cwd = NULL;
+					printf("%s\n", cwd_buf);
 				}
 				else
 					fprintf(stderr, "cd: OLDPWD not set\n");
