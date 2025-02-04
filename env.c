@@ -187,50 +187,19 @@ int _unsetenv(const char *name)
 }
 
 /**
- * runCommand - runs execve on a command. Handles forking and errors.
+ * ifCmdUnsetEnv - unsets an env variable if found
+ * @tokens: tokenized list of commands
  *
- * @commandPath: command to run, including path
- * @args: array of args for commandPath, including the command (without path)
- * @envPaths: paths for the environment
- *
- * Return: 0 on success, -1 on failure, errno on failure from child process.
+ * Return: 1 if successful, otherwise 0
  */
-int runCommand(char *commandPath, char **args, char **envPaths)
+int ifCmdUnsetEnv(char **tokens)
 {
-	int exec_rtn = 0, child_status, wexitstat;
-	pid_t fork_rtn, wait_rtn;
-
-	if (commandPath == NULL)
+	if (tokens[0] != NULL && (_strcmp(tokens[0], "unsetenv") == 0))
 	{
-		if (isatty(STDIN_FILENO))
-			return (0);
-		safeExit(0);
+		if (_unsetenv(tokens[1]) == 0)
+			return (1);
 	}
-
-	if (access(commandPath, F_OK) != 0) /* checks if cmd doesn't exist */
-		return (127);
-
-	fork_rtn = fork(); /* split process into 2 processes */
-	if (fork_rtn == -1) /* Fork! It failed */
-		return (EXIT_FAILURE); /* indicate error */
-	if (fork_rtn == 0) /* child process */
-	{
-		exec_rtn = execve(commandPath, args, envPaths);/*executes user-command*/
-		if (exec_rtn == -1)
-			safeExit(errno); /* indicate error */
-	} else /* parent process; fork_rtn contains pid of child process */
-	{
-		wait_rtn = waitpid(fork_rtn, &child_status, WUNTRACED);
-		/* waits until child process terminates */
-		if (WIFEXITED(child_status))
-		{
-			wexitstat = WEXITSTATUS(child_status);
-			return (wexitstat);
-		}
-		else if (wait_rtn == -1)
-			return (-1); /* indicate error */
-	}
-	return (0); /* success */
+	return (0);
 }
 
 
