@@ -45,7 +45,7 @@ void selfDestruct(int countdown);
 void saveInput(int isAtty, char **tokens, size_t *size, char **input);
 
 int parseInput(char *input, char ***tokens, char **cmd_token,
-					int *tokens_count);
+			   int *tokens_count);
 
 void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens,
 					char *cmd, char *cmd_token, char **paths);
@@ -112,17 +112,22 @@ void *_realloc_array(char **ptr, unsigned int new_size);
 
 char *_strdup(char *str);
 
+/* pipe functions */
 int split_command_line_on_pipe(char *line, char **command1, char **command2);
-
 char **parse_command(char *command);
-
 int execute_pipe_command(char **command1, char **command2);
 
+/* logical operators functions */
 int execute_command(char **args);
-
-void execute_commands_separated_by_semicolon(char *line);
-
 void execute_logical_commands(char *line);
+typedef enum
+{
+	SEP_NONE,
+	SEP_SEMICOLON,
+	SEP_AND,
+	SEP_OR
+} SeparatorType;
+
 /* ------------------- */
 
 #endif /* MAIN_H */

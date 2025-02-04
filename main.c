@@ -12,19 +12,19 @@ int main(int argc, char *argv[])
 	int isInteractive = isatty(STDIN_FILENO);
 
 	/* ------------------- On entry - one time execution ------------------- */
-	(void) argc;
+	(void)argc;
 	if (isInteractive)
 		printf("%sWelcome to the %sGates Of Shell%s. Type 'exit' to quit.\n\n",
 			   CLR_YELLOW_BOLD, CLR_RED_BOLD, CLR_YELLOW_BOLD);
 	/* --------------------------------------------------------------------- */
-	initialize_environ(); /* makes environ dynamically allocated */
+	/* initialize_environ();  makes environ dynamically allocated */
 
 	shellLoop(isInteractive, argv); /* main shell loop */
 
 	/* ------------------- On exit - one time execution ------------------- */
 	if (isInteractive)
 		printf("%s\nThe %sGates Of Shell%s have closed. Goodbye.\n%s",
-		   CLR_YELLOW_BOLD, CLR_RED_BOLD, CLR_YELLOW_BOLD, CLR_DEFAULT);
+			   CLR_YELLOW_BOLD, CLR_RED_BOLD, CLR_YELLOW_BOLD, CLR_DEFAULT);
 
 	return (EXIT_SUCCESS);
 	/* -------------------------------------------------------------------- */
@@ -45,38 +45,63 @@ int main(int argc, char *argv[])
  * @input: user-input
  * @tokens: array of strings of user inputs delimited by spaces
  * @cmd: first argument of user-input prefixed with found filepath
- * @cmd_token: last arguments from strtok'd input
  * @paths: array of strings of filepaths
  */
 void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens,
-					char *cmd, char *cmd_token, char **paths)
+					char *cmd, char **paths)
 {
 	int run_cmd_rtn;
-	/* run command */
-	if (customCmd(tokens, isAtty, input, cmd, cmd_token) == 0)
-	{ /* if input is not a custom command */
-		/* runs the command if it is a valid built-in */
-		run_cmd_rtn = runCommand(cmd, tokens, paths);
-		/* prints error if command is invalid or another error occurs */
+
+	/* Check for pipe */
+	char *command1, *command2;
+	if (split_command_line_on_pipe(input, &command1, &command2) == 0)
+	{
+		char **args1 = parse_command(command1);
+		char **args2 = parse_command(command2);
+
+		if (args1 && args2)
+		{
+			int pipeStatus = execute_pipe_command(args1, args2);
+			if (pipeStatus != 0)
+			{
+				fprintf(stderr, "Pipe execution failed with status %d\n", pipeStatus);
+			}
+			free(args1);
+			free(args2);
+		}
+		else
+		{
+			fprintf(stderr, "Failed to parse commands\n");
+		}
+		return;
+	}
+
+	/* Check for logical operators */
+	if (strstr(input, "&&") || strstr(input, "||") || strstr(input, ";"))
+	{
+		execute_logical_commands(input);
+		return;
+	}
+
+	/* Existing custom command handling */
+	if (strcmp(tokens[0], "exit") == 0)
+	{
+		/* Handle exit command */
+		safeExit(0);
+	}
+	else
+	{
+		/* Execute other commands */
+		run_cmd_rtn = execute_command(tokens);
 		if (run_cmd_rtn != 0)
 		{
-			if (run_cmd_rtn == 127)
-				fprintf(stderr, "%s: 1: %s: %s\n", argv[0], cmd,
-					"not found");
-			else if (run_cmd_rtn == 2)
-				;
-			else
-				fprintf(stderr, "%s: 1: %s: %s\n", argv[0], cmd,
-						strerror(run_cmd_rtn));
+			fprintf(stderr, "%s: %s\n", argv[0], strerror(errno));
 			if (!isAtty)
 			{
-				resetAll(tokens, input, cmd, NULL);
 				safeExit(run_cmd_rtn);
 			}
 		}
 	}
-
-	resetAll(tokens, cmd, input, NULL);  /* resets for next user-input */
 }
 
 /**
@@ -115,14 +140,5 @@ void resetAll(char **tokens, ...)
  */
 void safeExit(int exit_code)
 {
-	int i;
-
-	if (environ)
-	{
-		for (i = 0; environ[i] != NULL; i++)
-			free(environ[i]);
-		free(environ);
-	}
-
 	exit(exit_code);
 }
