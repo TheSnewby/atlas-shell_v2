@@ -4,7 +4,7 @@
 /* ↓ LIBRARIES ↓ */
 #include <stdio.h>
 #include <stdlib.h>
-#include <linux/limits.h>
+#include <limits.h>
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -117,6 +117,12 @@ int split_command_line_on_pipe(char *line, char **command1, char **command2);
 char **parse_command(char *command);
 
 int execute_pipe_command(char **command1, char **command2);
+
+int execute_command(char **args);
+
+void execute_commands_separated_by_semicolon(char *line);
+
+void execute_logical_commands(char *line);
 /* ------------------- */
 
 #endif /* MAIN_H */
