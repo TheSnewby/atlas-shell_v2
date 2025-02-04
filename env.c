@@ -154,30 +154,33 @@ int _unsetenv(const char *name)
 	char **new_environ;
 	int location = -1, i, new_environ_index = 0;
 
-	if (name == NULL)
+	if ((name == NULL) || (_strlen(name) == 0))
 		return (-1);
-	else if (_strlen(name) == 0)
-		return (-1);
+
 	/* find size of array and location of possible match */
 	for (i = 0; environ[i] != NULL; i++)
 	{
 		size_environ++;
-		if (strncmp(environ[i], name, _strlen(name)) == 0)
+		if ((_strncmp(environ[i], name, _strlen(name)) == 0) &&
+		(environ[i][_strlen(name)] == '='))
 			location = i;
 	}
 	/* if match found rebuild environ without the found element */
-	if (location < i && location != -1)
+	if ((location < i) && (location != -1))
 	{
 		new_environ = malloc(sizeof(char *) * size_environ);
 		for (i = 0; i < size_environ; i++)
 		{
-			if (i != location)
+			if (i != location)  /* copy all except target variable */
 			{
 				new_environ[new_environ_index] = _strdup(environ[i]);
 				new_environ_index++;
 			}
+			free(environ[i]);
 		}
 		new_environ[new_environ_index] = NULL;
+
+		free(environ);
 		environ = new_environ;
 	}
 	return (0);
@@ -205,22 +208,16 @@ int runCommand(char *commandPath, char **args, char **envPaths)
 	}
 
 	if (access(commandPath, F_OK) != 0) /* checks if cmd doesn't exist */
-	{
 		return (127);
-	}
 
 	fork_rtn = fork(); /* split process into 2 processes */
 	if (fork_rtn == -1) /* Fork! It failed */
-	{
 		return (EXIT_FAILURE); /* indicate error */
-	}
 	if (fork_rtn == 0) /* child process */
 	{
 		exec_rtn = execve(commandPath, args, envPaths);/*executes user-command*/
 		if (exec_rtn == -1)
-		{
 			safeExit(errno); /* indicate error */
-		}
 	} else /* parent process; fork_rtn contains pid of child process */
 	{
 		wait_rtn = waitpid(fork_rtn, &child_status, WUNTRACED);
@@ -231,9 +228,7 @@ int runCommand(char *commandPath, char **args, char **envPaths)
 			return (wexitstat);
 		}
 		else if (wait_rtn == -1)
-		{
 			return (-1); /* indicate error */
-		}
 	}
 	return (0); /* success */
 }

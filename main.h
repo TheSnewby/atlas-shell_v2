@@ -4,7 +4,7 @@
 /* ↓ LIBRARIES ↓ */
 #include <stdio.h>
 #include <stdlib.h>
-#include <limits.h>
+#include <linux/limits.h>
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -103,6 +103,8 @@ char *_strchr(const char *s, char c);
 int _strlen(const char *s);
 
 int _strcmp(const char *s1, const char *s2);
+
+int _strncmp(const char *s1, const char *s2, int n);
 
 char *_strcpy(char *dest, char *src);
 

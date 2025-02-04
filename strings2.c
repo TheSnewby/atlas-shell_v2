@@ -10,7 +10,6 @@ void *_realloc_array(char **ptr, unsigned int new_size)
 {
 	int i, j, realloc_size, old_size = 0;  /* starting at one for ending null element */
 	char **new_ptr;
-	char *ele_cpy = NULL;
 
 	if (ptr == NULL)
 	{
@@ -38,7 +37,7 @@ void *_realloc_array(char **ptr, unsigned int new_size)
 	if (new_ptr == NULL)
 		return (NULL);
 
-	if ((new_size / sizeof(char *)) > old_size)  /* find size to copy */
+	if ((int)(new_size / sizeof(char *)) > old_size)  /* find size to copy */
 		{
 			realloc_size = old_size - 1;
 			/* printf("OLD SIZE\n"); */
@@ -92,4 +91,35 @@ char *_strdup(char *str)
 	str_copy[i] = '\0';
 
 	return (str_copy);
+}
+
+/**
+ * _strncmp - compares two strings
+ * @s1: 1st string
+ * @s2: 2nd string
+ * @n: number of bytes compared
+ *
+ * Return: 0 if equal, < 0 if s1 < s2, > 0 otherwise
+*/
+int _strncmp(const char *s1, const char *s2, int n)
+{
+	int diff = 0;
+	int i;
+	int s1end = 1;
+	int s2end = 1;
+
+	for (i = 0; (s1end != 0) && (s2end != 0) && (i < n); i++)
+	{
+		if (s1[i] == '\0')
+			s1end = 0;
+		if (s2[i] == '\0')
+			s2end = 0;
+		if (s1[i] != s2[i])
+		{
+			diff += s1[i] - s2[i];
+			break;
+		}
+	}
+
+	return (diff);
 }

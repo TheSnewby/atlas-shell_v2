@@ -138,8 +138,12 @@ int ifCmdSetEnv(char **tokens)
 	if (tokens[0] != NULL && (_strcmp(tokens[0], "setenv") == 0))
 	{
 		rtn = _setenv(tokens[1], tokens[2], 1);
-		if (rtn == -1) /* malloc error */
-			return (-1);
+		if (rtn == -1)  /* error occurred in _setenv */
+			{
+				fprintf(stderr, "error: ");
+				perror(NULL);
+				return (-1);
+			}
 		else if (rtn == 0) /* success */
 			return (1);
 	}

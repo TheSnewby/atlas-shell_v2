@@ -78,7 +78,7 @@ void initCmd(char **cmd, char *const *tokens)
  */
 int isNumber(char *number)
 {
-	unsigned int i;
+	int i;
 
 	for (i = 0; i < _strlen(number); i++)
 	{

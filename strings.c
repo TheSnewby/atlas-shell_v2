@@ -39,7 +39,10 @@ char *_strchr(const char *s, char c)
 {
 	int i;
 
-	for (i = 0; s[i] != '\n'; i++)
+	if ((s == NULL) || (_strlen(s) == 0))
+		return (NULL);
+
+	for (i = 0; i < _strlen(s); i++)
 	{
 		if (s[i] == c)
 			return ((char *)&s[i]);
