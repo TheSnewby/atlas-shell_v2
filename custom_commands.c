@@ -264,5 +264,6 @@ int ifCmdCd(char **tokens)
 		free(home);
 	if (pwd)
 		free(pwd);
-	return (1);
+	printf("%s\n", cwd_buf);
+	return (1);  /* success */
 }
