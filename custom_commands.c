@@ -214,7 +214,7 @@ int ifCmdCd(char **tokens)
 					home = NULL;
 				}
 				else
-					error_msg = 4;
+					error_msg = 0;
 			else  /* relative path */
 			{
 				snprintf(abs_path, sizeof(abs_path) - 1, "%s/%s", cwd_buf, tokens[1]);
@@ -229,7 +229,7 @@ int ifCmdCd(char **tokens)
 				home = NULL;
 			}
 			else
-				error_msg = 4;
+				error_msg = 0;
 
 		if ((chdir_rtn == -1) || (error_msg > 0))  /* chdir failed or custom error */
 		{
