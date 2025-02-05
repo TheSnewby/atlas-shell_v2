@@ -36,7 +36,7 @@ extern char **environ;
 /* ↓ FUNCTIONS ↓ */
 int isNumber(char *number);
 
-int _atoi(const char *s);
+int _atoi_safe(const char *s);
 
 void shellLoop(int isAtty, char *argv[]);
 

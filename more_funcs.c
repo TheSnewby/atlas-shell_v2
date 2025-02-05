@@ -12,7 +12,7 @@ void selfDestruct(int countdown)
 {
 	printf("Segmentation fault\n"); /* fake seg fault */
 	sleep(1);
-	printf(CLR_RED_BOLD);			/* sets the text color to red */
+	printf(CLR_RED_BOLD); /* sets the text color to red */
 	printf("Shellf destruct mode activated.\n\n");
 
 	if (countdown > 3)
@@ -74,46 +74,41 @@ int isNumber(char *number)
 }
 
 /**
- * _atoi - returns the integer version of a string
- * @s: string
- * Return: string as an int
+ * _atoi_safe - Converts a string to an integer (safe version).
+ * @s: The string to convert.
+ *
+ * Return: The converted integer, or 0 if the string is invalid.
  */
-int _atoi(const char *s)
+int _atoi_safe(const char *s)
 {
-	int i = 0;
-	int numberStarted = 0;
-	int numberEnded = 0;
-	int neg = 1;
-	int size;
+	int result = 0;
+	int sign = 1;
 
-	for (size = 0; s[size] != '\0'; size++)
+	if (*s == '-')
 	{
-		if (!numberEnded)
-		{
-			if (s[size] == '-' && !numberStarted)
-				neg *= -1;
-			else if (s[size] >= 48 && s[size] <= 57 && !numberEnded)
-			{
-				if (!numberStarted)
-					numberStarted = 1;
-				i *= 10;
-				if (neg == -1)
-				{
-					i *= -1;
-					i -= s[size] - 48;
-					neg = 0;
-				}
-				else if (!neg)
-					i -= s[size] - 48;
-				else
-					i += s[size] - 48;
-			}
-			if (numberStarted && !numberEnded && (s[size] < 48 || s[size] > 57))
-				numberEnded = 1;
-		}
+		sign = -1;
+		s++;
 	}
 
-	return (i);
+	while (*s)
+	{
+		if (*s >= '0' && *s <= '9')
+		{
+			result = result * 10 + (*s - '0');
+			/* Basic overflow check (won't catch all cases, but it's a something) */
+			if (result < 0)
+			{
+				return 0; /* Indicate error */
+			}
+		}
+		else
+		{
+			return 0; /* Indicate error (invalid character) */
+		}
+		s++;
+	}
+
+	return result * sign;
 }
 
 /**

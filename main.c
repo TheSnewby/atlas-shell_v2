@@ -10,6 +10,7 @@
 int main(int argc, char *argv[])
 {
 	int isInteractive = isatty(STDIN_FILENO);
+	char **saved_environ = NULL;
 
 	/* ------------------- On entry - one time execution ------------------- */
 	(void)argc;
@@ -142,5 +143,14 @@ void resetAll(char **tokens, ...)
  */
 void safeExit(int exit_code)
 {
+	int i;
+
+	if (environ)
+	{
+		for (i = 0; environ[i] != NULL; i++)
+			free(environ[i]);
+		free(environ);
+		environ = NULL;
+	}
 	exit(exit_code);
 }

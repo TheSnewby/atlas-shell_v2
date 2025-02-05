@@ -178,6 +178,7 @@ void initialize_environ(void)
 {
 	int i = 0, size_environ = 0;
 	char **new_environ;
+	char **saved_environ = NULL;
 
 	while (environ[i] != NULL)
 		i++;
@@ -196,14 +197,15 @@ void initialize_environ(void)
 		if (new_environ[i] == NULL) /* if malloc in _strdup fails, undo all */
 		{
 			for (i = i - 1; i >= 0; i--)
+			{
 				free(new_environ[i]);
+			}
 			free(new_environ);
-			new_environ = NULL;
 			fprintf(stderr, "malloc fail in initialize_environ\n");
 			return; /* consider changing to safeExit(errno) */
 		}
 	}
 	new_environ[size_environ] = NULL;
-
+	saved_environ = environ; // save
 	environ = new_environ;
 }

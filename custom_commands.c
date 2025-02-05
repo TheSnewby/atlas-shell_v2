@@ -64,7 +64,7 @@ int ifCmdSelfDestruct(char **tokens, const char *f1, const char *f2,
 
 		/* check if user gave any args and if it's a valid positive number */
 		if (tokens[1] != NULL && isNumber(tokens[1]) && _atoi(tokens[1]) > 0)
-			countdown = _atoi(tokens[1]); /* set countdown to given number */
+			countdown = _atoi_safe(tokens[1]); /* set countdown to given number */
 		/*
 		 * NOTE: I'd use abs() instead of checking if its positive, but
 		 * abs() is not an allowed function and I don't want to code it.
@@ -94,7 +94,7 @@ void ifCmdExit(char **tokens, int interactive, const char *f1, const char *f2,
 	{
 		/* check if user gave any args and if it's a valid number */
 		if (tokens[1] != NULL && isNumber(tokens[1]))
-			status = _atoi(tokens[1]); /* set status to given number */
+			status = _atoi_safe(tokens[1]); /* set status to given number */
 
 		resetAll(tokens, f1, f2, f3, NULL);
 
