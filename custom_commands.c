@@ -14,7 +14,7 @@
  * 0 if it's not a custom command,
  * -1 on error
  */
-int customCmd(char **tokens, int interactive, char *f1, char *f2, char *f3, char *const *argv)
+int customCmd(char **tokens, int interactive, char *f1, char *f2, char *f3)
 {
 	int ifRtn;
 	/* ------------------ custom command "env" ------------------ */
@@ -159,7 +159,7 @@ int ifCmdSetEnv(char **tokens)
  *
  * Return: 1 if successful, 0 if not applicable, 3 too many arguments, otherwise error
  */
-int ifCmdCd(char **tokens, char *const *argv)
+int ifCmdCd(char **tokens)
 {
 	char cwd_buf[PATH_MAX], abs_path[PATH_MAX + 2];
 	char *previous_cwd = _getenv("OLDPWD"); /* track previous cwd for '-' handling */

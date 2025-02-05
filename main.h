@@ -62,7 +62,7 @@ void ifCmdExit(char **tokens, int interactive, const char *f1, const char *f2,
 
 int ifCmdSelfDestruct(char **tokens, const char *f1, const char *f2,
 					  const char *f3);
-int customCmd(char **tokens, int interactive, char *f1, char *f2, char *f3, char *const *argv);
+int customCmd(char **tokens, int interactive, char *f1, char *f2, char *f3);
 
 int runCommand(char *commandPath, char **args, char **envPaths);
 
@@ -90,7 +90,7 @@ int ifCmdSetEnv(char **tokens);
 
 int ifCmdUnsetEnv(char **tokens);
 
-int ifCmdCd(char **tokens, char *const *argv);
+int ifCmdCd(char **tokens);
 
 void initialize_environ(void);
 
