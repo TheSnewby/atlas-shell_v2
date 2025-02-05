@@ -31,16 +31,13 @@ void shellLoop(int isAtty, char *argv[])
 {
 	size_t size;
 	char *user, *hostname, path[PATH_MAX], *input, **tokens = NULL;
-	char *cmd = NULL, *paths[1] = {NULL};
-	int tokens_count, i;
 
 	while (1)
 	{
 		/* initialize vars */
 		getcwd(path, sizeof(path));
-		user = getenv("USER");
-		hostname = getenv("HOSTNAME");
-		tokens_count = 0;
+		user = getenv("USER");		   // You may use getenv
+		hostname = getenv("HOSTNAME"); // You may use getenv
 		size = 0;
 		input = NULL;
 
@@ -60,7 +57,6 @@ void shellLoop(int isAtty, char *argv[])
 		}
 
 		input[strcspn(input, "\n")] = 0; /* remove trailing newline */
-		/* No need to allocate memory for tokens here */
 
 		tokens = parse_command(input); /* tokenize input */
 		if (tokens == NULL)
@@ -69,7 +65,7 @@ void shellLoop(int isAtty, char *argv[])
 			continue; /* Go back to start of the loop */
 		}
 
-		executeIfValid(isAtty, argv, input, tokens, cmd, paths);
+		executeIfValid(isAtty, argv, input, tokens); /*No more paths*/
 		free(tokens);
 		free(input);
 	}
@@ -107,7 +103,7 @@ void printPrompt(int isAtty, char *user, char *hostname, char *path)
  * @size: size of input
  * @input: user-input
  */
-void saveInput(int isAtty, char **tokens, size_t *size, char **input)
+void saveInput(int isAtty, size_t *size, char **input)
 {
 	if (getline(input, size, stdin) == -1) /* gets input; plus EOF (^D) check */
 	{

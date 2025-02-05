@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 		printf("%sWelcome to the %sGates Of Shell%s. Type 'exit' to quit.\n\n",
 			   CLR_YELLOW_BOLD, CLR_RED_BOLD, CLR_YELLOW_BOLD);
 	/* --------------------------------------------------------------------- */
-	/* initialize_environ();  makes environ dynamically allocated */
+	initialize_environ(); /* makes environ dynamically allocated */
 
 	shellLoop(isInteractive, argv); /* main shell loop */
 
@@ -47,13 +47,13 @@ int main(int argc, char *argv[])
  * @cmd: first argument of user-input prefixed with found filepath
  * @paths: array of strings of filepaths
  */
-void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens,
-					char *cmd, char **paths)
+void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens)
 {
-	int run_cmd_rtn;
+	int custom_cmd_rtn;
 
 	/* Check for pipe */
 	char *command1, *command2;
+
 	if (split_command_line_on_pipe(input, &command1, &command2) == 0)
 	{
 		char **args1 = parse_command(command1);
@@ -61,11 +61,7 @@ void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens,
 
 		if (args1 && args2)
 		{
-			int pipeStatus = execute_pipe_command(args1, args2);
-			if (pipeStatus != 0)
-			{
-				fprintf(stderr, "Pipe execution failed with status %d\n", pipeStatus);
-			}
+			execute_pipe_command(args1, args2);
 			free(args1);
 			free(args2);
 		}
@@ -73,32 +69,38 @@ void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens,
 		{
 			fprintf(stderr, "Failed to parse commands\n");
 		}
-		return;
+		return; /* Return to the main loop after handling the pipe */
 	}
 
 	/* Check for logical operators */
 	if (strstr(input, "&&") || strstr(input, "||") || strstr(input, ";"))
 	{
 		execute_logical_commands(input);
-		return;
+		return; /* Return to the main loop after handling logical operators */
 	}
 
-	/* Existing custom command handling */
-	if (strcmp(tokens[0], "exit") == 0)
+	/* Handle built-in commands */
+	custom_cmd_rtn = customCmd(tokens, isAtty, input, NULL, NULL);
+	if (custom_cmd_rtn == 1)
 	{
-		/* Handle exit command */
-		safeExit(0);
+		return; /* Built-in command was handled, return to the main loop */
 	}
-	else
+	else if (custom_cmd_rtn == -1)
 	{
-		/* Execute other commands */
-		run_cmd_rtn = execute_command(tokens);
+		if (!isAtty) /*error occurred in non-interactive*/
+		{
+			safeExit(EXIT_FAILURE);
+		}
+	}
+	else /* Not a built-in command,try executing as an external command */
+	{
+		int run_cmd_rtn = execute_command(tokens);
 		if (run_cmd_rtn != 0)
 		{
-			fprintf(stderr, "%s: %s\n", argv[0], strerror(errno));
+			fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
 			if (!isAtty)
 			{
-				safeExit(run_cmd_rtn);
+				safeExit(127); /*standard not found error status*/
 			}
 		}
 	}

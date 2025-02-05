@@ -42,13 +42,12 @@ void shellLoop(int isAtty, char *argv[]);
 
 void selfDestruct(int countdown);
 
-void saveInput(int isAtty, char **tokens, size_t *size, char **input);
+void saveInput(int isAtty, size_t *size, char **input);
 
 int parseInput(char *input, char ***tokens, char **cmd_token,
 			   int *tokens_count);
 
-void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens,
-					char *cmd, char *cmd_token, char **paths);
+void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens);
 
 void initCmd(char **cmd, char *const *tokens);
 
@@ -64,7 +63,7 @@ int ifCmdSelfDestruct(char **tokens, const char *f1, const char *f2,
 					  const char *f3);
 int customCmd(char **tokens, int interactive, char *f1, char *f2, char *f3);
 
-int runCommand(char *commandPath, char **args, char **envPaths);
+int runCommand(char *commandPath, char **args);
 
 char *_getenv(const char *name);
 
@@ -96,7 +95,7 @@ void initialize_environ(void);
 
 void safeExit(int exit_code);
 
-char *_strcat(char *dest, char *src);
+char *_strcat(char *dest, const char *src);
 
 char *_strchr(const char *s, char c);
 
@@ -106,7 +105,7 @@ int _strcmp(const char *s1, const char *s2);
 
 int _strncmp(const char *s1, const char *s2, int n);
 
-char *_strcpy(char *dest, char *src);
+char *_strcpy(char *dest, const char *src);
 
 void *_realloc_array(char **ptr, unsigned int new_size);
 
@@ -119,6 +118,7 @@ int execute_pipe_command(char **command1, char **command2);
 
 /* logical operators functions */
 int execute_command(char **args);
+
 void execute_logical_commands(char *line);
 typedef enum
 {

@@ -10,27 +10,15 @@
  */
 void selfDestruct(int countdown)
 {
-	char *paths[1] = {NULL}; /* environment for execve */
-	char **sleep1args = malloc(sizeof(char *) * 3); /* sleep args for execve */
-	char **sleep2args = malloc(sizeof(char *) * 3); /* sleep args for execve */
-
-	/* execve sleep command arguments setup */
-	sleep1args[0] = "sleep"; /* command to pass to execve */
-	sleep2args[0] = "sleep"; /* command to pass to execve */
-	sleep1args[1] = "1"; /* specifies how many seconds to sleep (1) */
-	sleep2args[1] = "2"; /* specifies how many seconds to sleep (2) */
-	sleep1args[2] = NULL; /* Null terminate */
-	sleep2args[2] = NULL; /* Null terminate */
-
 	printf("Segmentation fault\n"); /* fake seg fault */
-	runCommand("/usr/bin/sleep", sleep1args, paths); /* 1 second delay */
-	printf(CLR_RED_BOLD); /* sets the text color to red */
+	sleep(1);
+	printf(CLR_RED_BOLD);			/* sets the text color to red */
 	printf("Shellf destruct mode activated.\n\n");
 
 	if (countdown > 3)
 		printf(CLR_DEFAULT); /* reset color so it's no still red bold */
 
-	runCommand("/usr/bin/sleep", sleep2args, paths); /* 2 second delay */
+	sleep(2); /* Use sleep() directly */
 
 	while (countdown) /* prints countdown */
 	{
@@ -39,33 +27,29 @@ void selfDestruct(int countdown)
 
 		printf("%d\n", countdown);
 		countdown--;
-		runCommand("/usr/bin/sleep", sleep1args, paths); /* 1 second delay */
+		sleep(1);
 	}
 
 	printf("%s\nThe %sGates Of Shell%s have closed. Goodbye.\n%s",
 		   CLR_YELLOW_BOLD, CLR_RED_BOLD, CLR_YELLOW_BOLD, CLR_DEFAULT);
 
-	/* free memory */
-	free(sleep1args);
-	free(sleep2args);
-
 	safeExit(EXIT_SUCCESS);
 }
 
-/**
- * initCmd - initialize cmd to the command to pass to execve
- * @cmd: variable to be initialized
- * @tokens: tokens
- *
- * Return: command
- */
-void initCmd(char **cmd, char *const *tokens)
-{
-	if (tokens[0][0] != '/' && tokens[0][0] != '.') /* if input isn't a path */
-		*cmd = findPath(tokens[0]);
-	else /* if user's input is a path */
-		*cmd = _strdup(tokens[0]); /* initialize cmd to the input path */
-}
+// /**
+//  * initCmd - initialize cmd to the command to pass to execve
+//  * @cmd: variable to be initialized
+//  * @tokens: tokens
+//  *
+//  * Return: command
+//  */
+// void initCmd(char **cmd, char *const *tokens)
+// {
+// 	if (tokens[0][0] != '/' && tokens[0][0] != '.') /* if input isn't a path */
+// 		*cmd = findPath(tokens[0]);
+// 	else						   /* if user's input is a path */
+// 		*cmd = _strdup(tokens[0]); /* initialize cmd to the input path */
+// }
 
 /**
  * isNumber - check for non-number characters in a string.
@@ -137,45 +121,43 @@ int _atoi(const char *s)
  *
  * @commandPath: command to run, including path
  * @args: array of args for commandPath, including the command (without path)
- * @envPaths: paths for the environment
+ *
  *
  * Return: 0 on success, -1 on failure, errno on failure from child process.
  */
-int runCommand(char *commandPath, char **args, char **envPaths)
+int runCommand(char *commandPath, char **args)
 {
-	int exec_rtn = 0, child_status, wexitstat;
-	pid_t fork_rtn, wait_rtn;
+	int child_status, wexitstat;
+	pid_t fork_rtn;
 
 	if (commandPath == NULL)
 	{
-		if (isatty(STDIN_FILENO))
-			return (0);
-		safeExit(0);
+		return (127);
 	}
 
 	if (access(commandPath, F_OK) != 0) /* checks if cmd doesn't exist */
 		return (127);
 
-	fork_rtn = fork(); /* split process into 2 processes */
+	fork_rtn = fork();	/* split process into 2 processes */
 	if (fork_rtn == -1) /* Fork! It failed */
-		return (EXIT_FAILURE); /* indicate error */
-	if (fork_rtn == 0) /* child process */
+		return (-1);	/* indicate error */
+	if (fork_rtn == 0)	/* child process */
 	{
-		exec_rtn = execve(commandPath, args, envPaths);/*executes user-command*/
-		if (exec_rtn == -1)
-			safeExit(errno); /* indicate error */
-	} else /* parent process; fork_rtn contains pid of child process */
+		if (execve(commandPath, args, environ) == -1) /*executes user-command*/
+			safeExit(errno);						  /* indicate error */
+	}
+	else /* parent process; fork_rtn contains pid of child process */
 	{
-		wait_rtn = waitpid(fork_rtn, &child_status, WUNTRACED);
+		if (waitpid(fork_rtn, &child_status, WUNTRACED) == -1)
+		{
+			return (-1); /* indicate error */
+		}
 		/* waits until child process terminates */
 		if (WIFEXITED(child_status))
 		{
 			wexitstat = WEXITSTATUS(child_status);
 			return (wexitstat);
 		}
-		else if (wait_rtn == -1)
-			return (-1); /* indicate error */
 	}
 	return (0); /* success */
 }
-

@@ -7,7 +7,7 @@
  *
  * Return: dest
 */
-char *_strcat(char *dest, char *src)
+char *_strcat(char *dest, const char *src)
 {
 	int i = 0;
 	int j;
@@ -104,7 +104,7 @@ int _strcmp(const char *s1, const char *s2)
  *
  * Return: pointer to dest
  */
-char *_strcpy(char *dest, char *src)
+char *_strcpy(char *dest, const char *src)
 {
 	int i;
 

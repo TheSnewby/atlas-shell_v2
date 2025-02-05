@@ -31,38 +31,46 @@ void execute_commands_separated_by_semicolon(char *line)
  */
 void execute_logical_commands(char *line)
 {
+	char *command_line_copy = _strdup(line); /* Create a copy*/
+	if (command_line_copy == NULL)
+	{
+		perror("strdup");
+		return;
+	}
+
 	char *command;
 	char *saveptr;
 	char **args;
 	int status = 0;
-	SeparatorType sep_type = SEP_SEMICOLON; /* Start with semicolon behavior */
-	bool execute_next = true;				/* Flag to determine if the next command should be executed */
+	SeparatorType sep_type = SEP_SEMICOLON;
+	bool execute_next = true;
 
-	command = strtok_r(line, ";|&", &saveptr);
+	command = strtok_r(command_line_copy, ";|&", &saveptr);
 	while (command != NULL)
 	{
 		/* Determine the separator type */
-		if (saveptr - command >= 2)
+		char *separator_start = saveptr - 2;
+		int end = _strlen(command) - 1;
+		while (end >= 0 && (command[end] == ' ' || command[end] == '\t' || command[end] == '\n' || command[end] == '\r'))
 		{
-			if (strncmp(saveptr - 2, "&&", 2) == 0)
-			{
-				sep_type = SEP_AND;
-			}
-			else if (strncmp(saveptr - 2, "||", 2) == 0)
-			{
-				sep_type = SEP_OR;
-			}
-			else if (strncmp(saveptr - 1, ";", 1) == 0)
-			{
-				sep_type = SEP_SEMICOLON;
-			}
+			command[end] = '\0';
+			end--;
 		}
-		else if (saveptr - command >= 1)
+		while (*separator_start == ' ' && separator_start < command_line_copy)
 		{
-			if (strncmp(saveptr - 1, ";", 1) == 0)
-			{
-				sep_type = SEP_SEMICOLON;
-			}
+			separator_start++;
+		}
+		if (separator_start + 1 < saveptr && _strncmp(separator_start, "&&", 2) == 0)
+		{
+			sep_type = SEP_AND;
+		}
+		else if (separator_start + 1 < saveptr && _strncmp(separator_start, "||", 2) == 0)
+		{
+			sep_type = SEP_OR;
+		}
+		else if (separator_start < saveptr && _strncmp(separator_start, ";", 1) == 0)
+		{
+			sep_type = SEP_SEMICOLON;
 		}
 		else
 		{
@@ -80,19 +88,23 @@ void execute_logical_commands(char *line)
 		}
 
 		/* Determine whether to execute the next command based on status and separator type */
-		if (sep_type == SEP_AND)
+		switch (sep_type)
 		{
-			execute_next = (status == 0); /* Execute if previous command succeeded */
-		}
-		else if (sep_type == SEP_OR)
-		{
-			execute_next = (status != 0); /* Execute if previous command failed */
-		}
-		else
-		{
-			execute_next = true; /* Always execute for semicolon */
+		case SEP_AND:
+			execute_next = (status == 0);
+			break;
+		case SEP_OR:
+			execute_next = (status != 0);
+			break;
+		case SEP_SEMICOLON:
+		case SEP_NONE:
+		default:
+			execute_next = true;
+			break;
 		}
 
 		command = strtok_r(NULL, ";|&", &saveptr);
 	}
+
+	free(command_line_copy);
 }
