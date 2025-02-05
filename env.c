@@ -1,5 +1,7 @@
 #include "main.h"
 
+char **saved_environ = NULL;
+
 /**
  * _getenv - gets malloc'd environmental value from a name-value pair in environ
  * @name: name in name-value pair
@@ -178,7 +180,6 @@ void initialize_environ(void)
 {
 	int i = 0, size_environ = 0;
 	char **new_environ;
-	char **saved_environ = NULL;
 
 	while (environ[i] != NULL)
 		i++;
@@ -206,6 +207,6 @@ void initialize_environ(void)
 		}
 	}
 	new_environ[size_environ] = NULL;
-	saved_environ = environ; // save
+saved_environ = environ;
 	environ = new_environ;
 }

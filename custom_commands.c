@@ -63,7 +63,7 @@ int ifCmdSelfDestruct(char **tokens, const char *f1, const char *f2,
 		/* initialized to 5 in case user doesn't give a number */
 
 		/* check if user gave any args and if it's a valid positive number */
-		if (tokens[1] != NULL && isNumber(tokens[1]) && _atoi(tokens[1]) > 0)
+		if (tokens[1] != NULL && isNumber(tokens[1]) && _atoi_safe(tokens[1]) > 0)
 			countdown = _atoi_safe(tokens[1]); /* set countdown to given number */
 		/*
 		 * NOTE: I'd use abs() instead of checking if its positive, but

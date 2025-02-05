@@ -10,7 +10,6 @@
 int main(int argc, char *argv[])
 {
 	int isInteractive = isatty(STDIN_FILENO);
-	char **saved_environ = NULL;
 
 	/* ------------------- On entry - one time execution ------------------- */
 	(void)argc;

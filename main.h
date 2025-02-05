@@ -128,6 +128,9 @@ typedef enum
 	SEP_OR
 } SeparatorType;
 
+extern char **environ;
+extern char **saved_environ;
+
 /* ------------------- */
 
 #endif /* MAIN_H */
