@@ -51,9 +51,19 @@ int main(int argc, char *argv[])
 void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens,
 					char *cmd, char *cmd_token, char **paths)
 {
-	int run_cmd_rtn;
+	int run_cmd_rtn, custom_cmd_rtn;
 	/* run command */
-	if (customCmd(tokens, isAtty, input, cmd, cmd_token, argv) == 0)
+	custom_cmd_rtn = customCmd(tokens, isAtty, input, cmd, cmd_token);
+	if (custom_cmd_rtn != 0)
+	{
+		if (custom_cmd_rtn == 2)  /* OLDPLD not set */
+			fprintf(stderr, "%s: cd: OLDPWD not set\n", argv[0]);
+		else if (custom_cmd_rtn == 3)  /* too many arguments */
+			fprintf(stderr, "%s: cd: too many arguments\n", argv[0]);
+		else if (custom_cmd_rtn == 4) /* HOME not set*/
+			fprintf(stderr, "%s: cd: HOME not set\n", argv[0]);
+	}
+	else
 	{ /* if input is not a custom command */
 		/* runs the command if it is a valid built-in */
 		run_cmd_rtn = runCommand(cmd, tokens, paths);
