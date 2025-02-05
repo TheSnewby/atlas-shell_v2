@@ -4,7 +4,7 @@
 /* ↓ LIBRARIES ↓ */
 #include <stdio.h>
 #include <stdlib.h>
-#include <linux/limits.h>
+#include <limits.h>
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -62,7 +62,7 @@ void ifCmdExit(char **tokens, int interactive, const char *f1, const char *f2,
 
 int ifCmdSelfDestruct(char **tokens, const char *f1, const char *f2,
 					  const char *f3);
-int customCmd(char **tokens, int interactive, char *f1, char *f2, char *f3);
+int customCmd(char **tokens, int interactive, char *f1, char *f2, char *f3, char *const *argv);
 
 int runCommand(char *commandPath, char **args, char **envPaths);
 
@@ -90,7 +90,7 @@ int ifCmdSetEnv(char **tokens);
 
 int ifCmdUnsetEnv(char **tokens);
 
-int ifCmdCd(char **tokens);
+int ifCmdCd(char **tokens, char *const *argv);
 
 void initialize_environ(void);
 
@@ -117,6 +117,12 @@ int split_command_line_on_pipe(char *line, char **command1, char **command2);
 char **parse_command(char *command);
 
 int execute_pipe_command(char **command1, char **command2);
+
+int execute_command(char **args);
+
+void execute_commands_separated_by_semicolon(char *line);
+
+void execute_logical_commands(char *line);
 /* ------------------- */
 
 #endif /* MAIN_H */

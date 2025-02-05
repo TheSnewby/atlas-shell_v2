@@ -8,12 +8,13 @@
  * @f1: variable to be freed if the command exits. (i.e. input)
  * @f2: variable to be freed if the command exits. (i.e. cmd)
  * @f3: variable to be freed if the command exits. (i.e. cmd_token)
+ * @argv: array of user inputs
  *
  * Return: 1 if it was a custom command and it was successfully executed,
  * 0 if it's not a custom command,
  * -1 on error
  */
-int customCmd(char **tokens, int interactive, char *f1, char *f2, char *f3)
+int customCmd(char **tokens, int interactive, char *f1, char *f2, char *f3, char *const *argv)
 {
 	int ifRtn;
 	/* ------------------ custom command "env" ------------------ */
@@ -158,7 +159,7 @@ int ifCmdSetEnv(char **tokens)
  *
  * Return: 1 if successful, 0 if not applicable, 3 too many arguments, otherwise error
  */
-int ifCmdCd(char **tokens)
+int ifCmdCd(char **tokens, char *const *argv)
 {
 	char cwd_buf[PATH_MAX], abs_path[PATH_MAX + 2];
 	char *previous_cwd = _getenv("OLDPWD"); /* track previous cwd for '-' handling */
@@ -192,6 +193,7 @@ int ifCmdCd(char **tokens)
 		}
 		else if(tokens[1] != NULL)
 		{
+
 			if (_strcmp(tokens[1], "-") == 0)  /* previous path */
 				if (previous_cwd)
 				{
@@ -203,9 +205,7 @@ int ifCmdCd(char **tokens)
 				else
 					error_msg = 2;
 			else if (tokens[1][0] == '/')  /* absolute path */
-				{
 					chdir_rtn = chdir(tokens[1]);
-				}
 			else if (_strcmp(tokens[1], "~") == 0)
 				if (home)
 				{
@@ -221,8 +221,8 @@ int ifCmdCd(char **tokens)
 				chdir_rtn = chdir(abs_path);
 			}
 		}
-		else  /* default behaviour for cd with no parameters */
-			if (home)
+		else
+			if (home)  /* default go $HOME */
 			{
 				chdir_rtn = chdir(home);
 				free(home);
@@ -246,7 +246,7 @@ int ifCmdCd(char **tokens)
 				return (2);
 			else if (error_msg == 4)
 				return (4);
-			return (0);
+			return (0); /* consider return errno */
 		}
 		else  /* on success set OLD PWD and PWD */
 		{
