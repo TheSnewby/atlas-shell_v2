@@ -91,19 +91,3 @@ char *getUser(void)
 
 	return (user);
 }
-
-/**
- * ifCmdUnsetEnv - unsets an env variable if found
- * @tokens: tokenized list of commands
- *
- * Return: 1 if successful, otherwise 0
- */
-int ifCmdUnsetEnv(char **tokens)
-{
-	if (tokens[0] != NULL && (_strcmp(tokens[0], "unsetenv") == 0))
-	{
-		if (_unsetenv(tokens[1]) == 0)
-			return (1);
-	}
-	return (0);
-}
