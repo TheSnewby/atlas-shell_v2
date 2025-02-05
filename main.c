@@ -53,7 +53,7 @@ void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens,
 {
 	int run_cmd_rtn;
 	/* run command */
-	if (customCmd(tokens, isAtty, input, cmd, cmd_token) == 0)
+	if (customCmd(tokens, isAtty, input, cmd, cmd_token, argv) == 0)
 	{ /* if input is not a custom command */
 		/* runs the command if it is a valid built-in */
 		run_cmd_rtn = runCommand(cmd, tokens, paths);
