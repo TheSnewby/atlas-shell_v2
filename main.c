@@ -57,9 +57,9 @@ void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens,
 	if (custom_cmd_rtn != 0)
 	{
 		if (custom_cmd_rtn == 2)  /* OLDPLD not set */
-			fprintf(stderr, "%s: cd: OLDPWD not set\n", argv[0]);
+			fprintf(stderr, "%s: 1: cd: OLDPWD not set\n", argv[0]);
 		else if (custom_cmd_rtn == 3)  /* too many arguments */
-			fprintf(stderr, "%s: cd: too many arguments\n", argv[0]);
+			fprintf(stderr, "%s: 1: cd: too many arguments\n", argv[0]);
 		else if (custom_cmd_rtn == 4) /* cd /root w/out permission */
 			fprintf(stderr, "%s: 1: cd: can't cd to /root\n", argv[0]);
 	}

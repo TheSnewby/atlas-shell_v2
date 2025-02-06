@@ -92,6 +92,8 @@ int ifCmdUnsetEnv(char **tokens);
 
 int ifCmdCd(char **tokens);
 
+void freeIfCmdCd(char *previous_cwd, char *home, char *pwd);
+
 void initialize_environ(void);
 
 void safeExit(int exit_code);
