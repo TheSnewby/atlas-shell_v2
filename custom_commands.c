@@ -204,6 +204,8 @@ int ifCmdCd(char **tokens)
 				}
 				else
 					error_msg = 2;
+			else if ((strncmp(tokens[1], "/root", 5) == 0) && (access(tokens[1], X_OK) != 0))
+				error_msg = 4;
 			else if (tokens[1][0] == '/')  /* absolute path */
 					chdir_rtn = chdir(tokens[1]);
 			else if (_strcmp(tokens[1], "~") == 0)
