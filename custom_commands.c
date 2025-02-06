@@ -169,9 +169,7 @@ int ifCmdCd(char **tokens)
 
 	if(getcwd(cwd_buf, PATH_MAX) == NULL)
 	{
-		free(previous_cwd);
-		free(home);
-		free(pwd);
+		freeIfCmdCd(previous_cwd, home, pwd);  /* frees malloc'd strings */
 		perror("getcwd");
 		return(-1);
 	}
@@ -187,8 +185,7 @@ int ifCmdCd(char **tokens)
 	{
 		if(tokens[2] != NULL)  /* too many arguments */
 		{
-			free(previous_cwd);
-			free(home);
+			freeIfCmdCd(previous_cwd, home, pwd);
 			return(3);  /* custom error */
 		}
 		else if(tokens[1] != NULL)
@@ -235,12 +232,7 @@ int ifCmdCd(char **tokens)
 
 		if ((chdir_rtn == -1) || (error_msg > 0))  /* chdir failed or custom error */
 		{
-			if (previous_cwd)
-				free(previous_cwd);
-			if (home)
-				free(home);
-			if (pwd)
-				free(pwd);
+			freeIfCmdCd(previous_cwd, home, pwd);
 
 			if (chdir_rtn == -1)
 				perror("chdir: ");
@@ -256,12 +248,7 @@ int ifCmdCd(char **tokens)
 
 			if(getcwd(cwd_buf, PATH_MAX) == NULL)
 			{
-				if (previous_cwd)
-					free(previous_cwd);
-				if (home)
-					free(home);
-				if (pwd)
-					free(pwd);
+				freeIfCmdCd(previous_cwd, home, pwd);
 				perror("getcwd");
 				return(-1);
 			}
@@ -270,21 +257,11 @@ int ifCmdCd(char **tokens)
 	}
 	else
 	{
-		if (previous_cwd)
-			free(previous_cwd);
-		if (home)
-			free(home);
-		if (pwd)
-			free(pwd);
+		freeIfCmdCd(previous_cwd, home, pwd);
 		return (0);
 	}
 
-	if (previous_cwd)
-		free(previous_cwd);
-	if (home)
-		free(home);
-	if (pwd)
-		free(pwd);
+	freeIfCmdCd(previous_cwd, home, pwd);
 	/* printf("%s\n", cwd_buf); */
 	return (1);  /* success */
 }
