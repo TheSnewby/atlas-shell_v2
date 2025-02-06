@@ -73,14 +73,13 @@ void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens)
 	}
 
 	/* Check for logical operators */
-	if (strstr(input, "&&") || strstr(input, "||") || strstr(input, ";"))
-	{
-		execute_logical_commands(input);
-		return; /* Return to the main loop after handling logical operators */
-	}
-
+	// if (strstr(input, "&&") || strstr(input, "||") || strstr(input, ";"))
+	// {
+	// 	execute_logical_commands(input);
+	// 	return; /* Return to the main loop after handling logical operators */
+	// }
 	/* Handle built-in commands */
-	custom_cmd_rtn = customCmd(tokens, isAtty, input, NULL, NULL);
+	custom_cmd_rtn = customCmd(tokens, isAtty);
 	if (custom_cmd_rtn == 1)
 	{
 		return; /* Built-in command was handled, return to the main loop */
@@ -92,7 +91,7 @@ void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens)
 			safeExit(EXIT_FAILURE);
 		}
 	}
-	else /* Not a built-in command,try executing as an external command */
+	else /* Not a built-in command, try executing as external command*/
 	{
 		int run_cmd_rtn = execute_command(tokens);
 		if (run_cmd_rtn != 0)

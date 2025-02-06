@@ -36,8 +36,8 @@ void shellLoop(int isAtty, char *argv[])
 	{
 		/* initialize vars */
 		getcwd(path, sizeof(path));
-		user = getenv("USER");		   // You may use getenv
-		hostname = getenv("HOSTNAME"); // You may use getenv
+		user = getenv("USER");
+		hostname = getenv("HOSTNAME");
 		size = 0;
 		input = NULL;
 
@@ -63,6 +63,13 @@ void shellLoop(int isAtty, char *argv[])
 		{
 			free(input);
 			continue; /* Go back to start of the loop */
+		}
+		if (strstr(input, "&&") || strstr(input, "||") || strstr(input, ";"))
+		{
+			execute_logical_commands(input);
+			free(tokens);
+			free(input);
+			continue; /* Return to the main loop after handling logical operators */
 		}
 
 		executeIfValid(isAtty, argv, input, tokens); /*No more paths*/

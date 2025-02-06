@@ -13,14 +13,14 @@
  * 0 if it's not a custom command,
  * -1 on error
  */
-int customCmd(char **tokens, int interactive, char *f1, char *f2, char *f3)
+int customCmd(char **tokens, int interactive)
 {
 	/* ------------------ custom command "env" ------------------ */
 	if (ifCmdEnv(tokens))
 		return (1);
 
 	/* ----------------- custom command "exit" ----------------- */
-	ifCmdExit(tokens, interactive, f1, f2, f3);
+	ifCmdExit(tokens, interactive);
 
 	/* ----------------- custom command "setenv" ----------------- */
 	if (ifCmdSetEnv(tokens))
@@ -31,7 +31,7 @@ int customCmd(char **tokens, int interactive, char *f1, char *f2, char *f3)
 		return (1);
 
 	/* ------------- custom command "self-destruct" ------------- */
-	if (ifCmdSelfDestruct(tokens, f1, f2, f3) == -1)
+	if (ifCmdSelfDestruct(tokens) == -1)
 		return (-1);
 
 	/* ----------------- custom command "cd" ----------------- */
@@ -53,14 +53,12 @@ int customCmd(char **tokens, int interactive, char *f1, char *f2, char *f3)
  * @f3: variable to be freed if the command exits. (i.e. cmd_token)
  * Return: 0 if successful, -1 otherwise
  */
-int ifCmdSelfDestruct(char **tokens, const char *f1, const char *f2,
-					   const char *f3)
+int ifCmdSelfDestruct(char **tokens)
 {
 	if (tokens[0] != NULL && (_strcmp(tokens[0], "self-destruct") == 0 ||
-							   _strcmp(tokens[0], "selfdestr") == 0))
+							  _strcmp(tokens[0], "selfdestr") == 0))
 	{
 		int countdown = 5; /* number of seconds to countdown from */
-		/* initialized to 5 in case user doesn't give a number */
 
 		/* check if user gave any args and if it's a valid positive number */
 		if (tokens[1] != NULL && isNumber(tokens[1]) && _atoi_safe(tokens[1]) > 0)
@@ -69,9 +67,8 @@ int ifCmdSelfDestruct(char **tokens, const char *f1, const char *f2,
 		 * NOTE: I'd use abs() instead of checking if its positive, but
 		 * abs() is not an allowed function and I don't want to code it.
 		 */
-		resetAll(tokens, f1, f2, f3, NULL);
 		selfDestruct(countdown); /* runs exit() when done */
-		return (-1); /* indicate error if selfDestruct never exits */
+		return (-1);			 /* indicate error if selfDestruct never exits */
 	}
 	return (0);
 }
@@ -80,29 +77,23 @@ int ifCmdSelfDestruct(char **tokens, const char *f1, const char *f2,
  * ifCmdExit: if user-input is "exit" or "quit"
  * @tokens: tokenized array of user-inputs
  * @interactive: isatty() return value. 1 if interactive, 0 otherwise
- * @f1: variable to be freed if the command exits. (i.e. input)
- * @f2: variable to be freed if the command exits. (i.e. cmd)
- * @f3: variable to be freed if the command exits. (i.e. cmd_token)
  */
-void ifCmdExit(char **tokens, int interactive, const char *f1, const char *f2,
-				const char *f3)
+void ifCmdExit(char **tokens, int interactive)
 {
-	int status = EXIT_SUCCESS; /* status to exit with */
+	int status = EXIT_SUCCESS;
 
 	if (tokens[0] != NULL &&
 		(_strcmp(tokens[0], "exit") == 0 || _strcmp(tokens[0], "quit") == 0))
 	{
-		/* check if user gave any args and if it's a valid number */
 		if (tokens[1] != NULL && isNumber(tokens[1]))
-			status = _atoi_safe(tokens[1]); /* set status to given number */
-
-		resetAll(tokens, f1, f2, f3, NULL);
+			status = _atoi_safe(tokens[1]);
 
 		if (interactive)
 			printf("%s\nThe %sGates Of Shell%s have closed. Goodbye.\n%s",
-					CLR_YELLOW_BOLD, CLR_RED_BOLD, CLR_YELLOW_BOLD, CLR_DEFAULT);
+				   CLR_YELLOW_BOLD, CLR_RED_BOLD, CLR_YELLOW_BOLD, CLR_DEFAULT);
 
-		safeExit(status);
+		free(tokens);	  /* Free the tokens */
+		safeExit(status); /* Call safeExit, which handles freeing environ */
 	}
 }
 
@@ -138,12 +129,12 @@ int ifCmdSetEnv(char **tokens)
 	if (tokens[0] != NULL && (_strcmp(tokens[0], "setenv") == 0))
 	{
 		rtn = _setenv(tokens[1], tokens[2], 1);
-		if (rtn == -1)  /* error occurred in _setenv */
-			{
-				fprintf(stderr, "error: ");
-				perror(NULL);
-				return (-1);
-			}
+		if (rtn == -1) /* error occurred in _setenv */
+		{
+			fprintf(stderr, "error: ");
+			perror(NULL);
+			return (-1);
+		}
 		else if (rtn == 0) /* success */
 			return (1);
 	}
@@ -164,15 +155,15 @@ int ifCmdCd(char **tokens)
 	char *home = _getenv("HOME");
 	char *pwd = _getenv("PWD");
 
-	if(getcwd(cwd_buf, PATH_MAX) == NULL)
+	if (getcwd(cwd_buf, PATH_MAX) == NULL)
 	{
 		free(previous_cwd);
 		free(home);
 		free(pwd);
 		perror("getcwd");
-		return(-1);
+		return (-1);
 	}
-	if (!pwd)  /* set PWD if not already set */
+	if (!pwd) /* set PWD if not already set */
 		_setenv("PWD", cwd_buf, 1);
 	else
 	{
@@ -180,18 +171,18 @@ int ifCmdCd(char **tokens)
 		pwd = NULL;
 	}
 
-	if((tokens[0] != NULL) && (_strcmp(tokens[0], "cd") == 0))  /* cd command found */
+	if ((tokens[0] != NULL) && (_strcmp(tokens[0], "cd") == 0)) /* cd command found */
 	{
-		if(tokens[2] != NULL)  /* too many arguments */
+		if (tokens[2] != NULL) /* too many arguments */
 		{
 			free(previous_cwd);
 			free(home);
 			perror("cd: ");
-			return(-1);
+			return (-1);
 		}
-		else if(tokens[1] != NULL)
+		else if (tokens[1] != NULL)
 		{
-			if (_strcmp(tokens[1], "-") == 0)  /* previous path */
+			if (_strcmp(tokens[1], "-") == 0) /* previous path */
 				if (previous_cwd)
 				{
 					chdir_rtn = chdir(previous_cwd);
@@ -201,10 +192,10 @@ int ifCmdCd(char **tokens)
 				}
 				else
 					fprintf(stderr, "cd: OLDPWD not set\n");
-			else if (tokens[1][0] == '/')  /* absolute path */
-				{
-					chdir_rtn = chdir(tokens[1]);
-				}
+			else if (tokens[1][0] == '/') /* absolute path */
+			{
+				chdir_rtn = chdir(tokens[1]);
+			}
 			else if (_strcmp(tokens[1], "~") == 0)
 				if (home)
 				{
@@ -214,23 +205,22 @@ int ifCmdCd(char **tokens)
 				}
 				else
 					fprintf(stderr, "HOME is not set\n");
-			else  /* relative path */
+			else /* relative path */
 			{
 				snprintf(abs_path, sizeof(abs_path) - 1, "%s/%s", cwd_buf, tokens[1]);
 				chdir_rtn = chdir(abs_path);
 			}
 		}
+		else if (home)
+		{
+			chdir_rtn = chdir(home);
+			free(home);
+			home = NULL;
+		}
 		else
-			if (home)
-			{
-				chdir_rtn = chdir(home);
-				free(home);
-				home = NULL;
-			}
-			else
-				fprintf(stderr, "HOME is not set\n");
+			fprintf(stderr, "HOME is not set\n");
 
-		if (chdir_rtn == -1)  /* chdir failed */
+		if (chdir_rtn == -1) /* chdir failed */
 		{
 			perror("chdir: ");
 			if (previous_cwd)
@@ -241,11 +231,11 @@ int ifCmdCd(char **tokens)
 				free(pwd);
 			return (0);
 		}
-		else  /* on success set OLD PWD and PWD */
+		else /* on success set OLD PWD and PWD */
 		{
 			_setenv("OLDPWD", cwd_buf, 1);
 
-			if(getcwd(cwd_buf, PATH_MAX) == NULL)
+			if (getcwd(cwd_buf, PATH_MAX) == NULL)
 			{
 				if (previous_cwd)
 					free(previous_cwd);
@@ -254,7 +244,7 @@ int ifCmdCd(char **tokens)
 				if (pwd)
 					free(pwd);
 				perror("getcwd");
-				return(-1);
+				return (-1);
 			}
 			_setenv("PWD", cwd_buf, 1);
 		}
@@ -277,5 +267,5 @@ int ifCmdCd(char **tokens)
 	if (pwd)
 		free(pwd);
 	/* printf("%s\n", cwd_buf); */
-	return (1);  /* success */
+	return (1); /* success */
 }

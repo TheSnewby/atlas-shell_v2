@@ -1,18 +1,26 @@
 #include "main.h"
 
+#include "main.h"
+
 /**
  * execute_pipe_command - Executes two commands, connecting their
  *                        standard input and output with a pipe.
- * @command1: The first command (to be connected to standard output).
- * @command2: The second command (to be connected to standard input).
+ * @command1: The first command (left side of pipe).  This is an array
+ *             of strings, where command1[0] is the command name,
+ *             and subsequent elements are the arguments.  This array
+ *             MUST be NULL-terminated.
+ * @command2: The second command (right side of pipe).  Same format as
+ *             command1.
  *
- * Return: 0 on success, -1 on error.
+ * Return: 0 on success, the exit status of the *second* command if
+ *         either command fails, or -1 on system call errors (pipe, fork).
+ *         Returns 127 if either command is not found.
  */
 int execute_pipe_command(char **command1, char **command2)
 {
 	int pipefd[2];
 	pid_t pid1, pid2;
-	int status;
+	int status1, status2; /* Store status of *both* children */
 
 	if (pipe(pipefd) == -1)
 	{
@@ -30,56 +38,60 @@ int execute_pipe_command(char **command1, char **command2)
 	}
 
 	if (pid1 == 0)
-	{									/* Child process (command1) */
-		close(pipefd[0]);				/* Close read end */
-		dup2(pipefd[1], STDOUT_FILENO); /* Redirect stdout to write end */
-		close(pipefd[1]);				/* Close write end after dup2 */
+	{ /*Child process 1 */
+		close(pipefd[0]);
+		dup2(pipefd[1], STDOUT_FILENO);
+		close(pipefd[1]);
 
-		if (execve(findPath(command1[0]), command1, environ) == -1)
+		char *full_path1 = findPath(command1[0]);
+		if (full_path1)
 		{
-			perror("hsh");
-			exit(EXIT_FAILURE); /* Exit child on execve failure */
+			execve(full_path1, command1, environ);
+			free(full_path1);
 		}
+		fprintf(stderr, "hsh: 1: %s: not found\n", command1[0]);
+		exit(127); /* Command not found */
 	}
 
-	/* Parent process */
 	pid2 = fork();
 	if (pid2 == -1)
 	{
 		perror("fork");
 		close(pipefd[0]);
 		close(pipefd[1]);
-		waitpid(pid1, NULL, 0); /* Wait for first child, best effort */
+		waitpid(pid1, NULL, 0); /* Cleanup, but don't check status here */
 		return -1;
 	}
 
 	if (pid2 == 0)
-	{								   /* Second child process (command2) */
-		close(pipefd[1]);			   /* Close write end */
-		dup2(pipefd[0], STDIN_FILENO); /* Redirect stdin to read end */
-		close(pipefd[0]);			   /* Close read end after dup2 */
+	{ /* Child process 2 */
+		close(pipefd[1]);
+		dup2(pipefd[0], STDIN_FILENO);
+		close(pipefd[0]);
 
-		if (execve(findPath(command2[0]), command2, environ) == -1)
+		char *full_path2 = findPath(command2[0]);
+		if (full_path2)
 		{
-			perror("hsh");
-			exit(EXIT_FAILURE); /* Exit child on execve failure */
+			execve(full_path2, command2, environ);
+			free(full_path2);
 		}
+		fprintf(stderr, "hsh: 1: %s: not found\n", command2[0]);
+		exit(127); /* Command not found */
 	}
 
-	/* Parent process (continued) */
-	close(pipefd[0]); /* Close read end */
-	close(pipefd[1]); /* Close write end */
+	/* Parent process */
+	close(pipefd[0]);
+	close(pipefd[1]);
+	waitpid(pid1, &status1, 0); /* Wait for *both* children, store *both* statuses */
+	waitpid(pid2, &status2, 0);
 
-	waitpid(pid1, NULL, 0);	   /* Wait for command1 */
-	waitpid(pid2, &status, 0); /* Wait for command2 */
-
-	if (WIFEXITED(status))
+	if (WIFEXITED(status2))
 	{
-		return WEXITSTATUS(status); /* Return exit status of second command */
+		return WEXITSTATUS(status2); /* Return status of *second* command */
 	}
 	else
 	{
-		return -1; /* Error if no exit status */
+		return -1; /* Error if second command didn't exit normally */
 	}
 }
 

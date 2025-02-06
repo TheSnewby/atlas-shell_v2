@@ -56,12 +56,10 @@ int populateTokens(const char *input, char ***tokens, char **cmd_token,
 
 void resetAll(char **tokens, ...);
 
-void ifCmdExit(char **tokens, int interactive, const char *f1, const char *f2,
-			   const char *f3);
+void ifCmdExit(char **tokens, int interactive);
 
-int ifCmdSelfDestruct(char **tokens, const char *f1, const char *f2,
-					  const char *f3);
-int customCmd(char **tokens, int interactive, char *f1, char *f2, char *f3);
+int ifCmdSelfDestruct(char **tokens);
+int customCmd(char **tokens, int interactive);
 
 int runCommand(char *commandPath, char **args);
 

@@ -36,21 +36,6 @@ void selfDestruct(int countdown)
 	safeExit(EXIT_SUCCESS);
 }
 
-// /**
-//  * initCmd - initialize cmd to the command to pass to execve
-//  * @cmd: variable to be initialized
-//  * @tokens: tokens
-//  *
-//  * Return: command
-//  */
-// void initCmd(char **cmd, char *const *tokens)
-// {
-// 	if (tokens[0][0] != '/' && tokens[0][0] != '.') /* if input isn't a path */
-// 		*cmd = findPath(tokens[0]);
-// 	else						   /* if user's input is a path */
-// 		*cmd = _strdup(tokens[0]); /* initialize cmd to the input path */
-// }
-
 /**
  * isNumber - check for non-number characters in a string.
  * If any of the supplied numbers have non-number characters in them,
