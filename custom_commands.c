@@ -8,6 +8,7 @@
  * @f1: variable to be freed if the command exits. (i.e. input)
  * @f2: variable to be freed if the command exits. (i.e. cmd)
  * @f3: variable to be freed if the command exits. (i.e. cmd_token)
+ * @argv: array of user inputs
  *
  * Return: 1 if it was a custom command and it was successfully executed,
  * 0 if it's not a custom command,
@@ -15,9 +16,10 @@
  */
 int customCmd(char **tokens, int interactive, char *f1, char *f2, char *f3)
 {
+	int ifRtn;
 	/* ------------------ custom command "env" ------------------ */
 	if (ifCmdEnv(tokens))
-		return (1);
+		return (1);  /* might convert all returns to function return values */
 
 	/* ----------------- custom command "exit" ----------------- */
 	ifCmdExit(tokens, interactive, f1, f2, f3);
@@ -35,8 +37,9 @@ int customCmd(char **tokens, int interactive, char *f1, char *f2, char *f3)
 		return (-1);
 
 	/* ----------------- custom command "cd" ----------------- */
-	if (ifCmdCd(tokens))
-		return (-1);
+	ifRtn = ifCmdCd(tokens);
+	if (ifRtn)
+		return (ifRtn);
 
 	return (0); /* indicate that the input is not a custom command */
 }
@@ -154,23 +157,21 @@ int ifCmdSetEnv(char **tokens)
  * ifCmdCd - changes directory
  * @tokens: tokenized array of user-input
  *
- * Return: 1 if successful, 0 if error
+ * Return: 1 if successful, 0 if not applicable, 3 too many arguments, otherwise error
  */
 int ifCmdCd(char **tokens)
 {
 	char cwd_buf[PATH_MAX], abs_path[PATH_MAX + 2];
 	char *previous_cwd = _getenv("OLDPWD"); /* track previous cwd for '-' handling */
-	int chdir_rtn = 0;
+	int chdir_rtn = 0, error_msg = 0;
 	char *home = _getenv("HOME");
 	char *pwd = _getenv("PWD");
 
 	if(getcwd(cwd_buf, PATH_MAX) == NULL)
 	{
-		free(previous_cwd);
-		free(home);
-		free(pwd);
+		freeIfCmdCd(previous_cwd, home, pwd);  /* frees malloc'd strings */
 		perror("getcwd");
-		return(0);
+		return(-1);
 	}
 	if (!pwd)  /* set PWD if not already set */
 		_setenv("PWD", cwd_buf, 1);
@@ -184,13 +185,12 @@ int ifCmdCd(char **tokens)
 	{
 		if(tokens[2] != NULL)  /* too many arguments */
 		{
-			free(previous_cwd);
-			free(home);
-			perror("cd: ");
-			return(0);
+			freeIfCmdCd(previous_cwd, home, pwd);
+			return(3);  /* custom error */
 		}
 		else if(tokens[1] != NULL)
 		{
+
 			if (_strcmp(tokens[1], "-") == 0)  /* previous path */
 				if (previous_cwd)
 				{
@@ -200,11 +200,11 @@ int ifCmdCd(char **tokens)
 					printf("%s\n", cwd_buf);
 				}
 				else
-					fprintf(stderr, "cd: OLDPWD not set\n");
+					error_msg = 2;
+			else if ((_strncmp(tokens[1], "/root", 5) == 0) && (access(tokens[1], X_OK) != 0))
+				error_msg = 4;
 			else if (tokens[1][0] == '/')  /* absolute path */
-				{
 					chdir_rtn = chdir(tokens[1]);
-				}
 			else if (_strcmp(tokens[1], "~") == 0)
 				if (home)
 				{
@@ -213,7 +213,7 @@ int ifCmdCd(char **tokens)
 					home = NULL;
 				}
 				else
-					fprintf(stderr, "HOME is not set\n");
+					error_msg = 0;
 			else  /* relative path */
 			{
 				snprintf(abs_path, sizeof(abs_path) - 1, "%s/%s", cwd_buf, tokens[1]);
@@ -221,25 +221,26 @@ int ifCmdCd(char **tokens)
 			}
 		}
 		else
-			if (home)
+			if (home)  /* default go $HOME */
 			{
 				chdir_rtn = chdir(home);
 				free(home);
 				home = NULL;
 			}
 			else
-				fprintf(stderr, "HOME is not set\n");
+				error_msg = 0;
 
-		if (chdir_rtn == -1)  /* chdir failed */
+		if ((chdir_rtn == -1) || (error_msg > 0))  /* chdir failed or custom error */
 		{
-			perror("chdir: ");
-			if (previous_cwd)
-				free(previous_cwd);
-			if (home)
-				free(home);
-			if (pwd)
-				free(pwd);
-			return (0);
+			freeIfCmdCd(previous_cwd, home, pwd);
+
+			if (chdir_rtn == -1)
+				perror("chdir: ");
+			if (error_msg == 2)
+				return (2);
+			else if (error_msg == 4)
+				return (4);
+			return (0); /* consider return errno */
 		}
 		else  /* on success set OLD PWD and PWD */
 		{
@@ -247,24 +248,20 @@ int ifCmdCd(char **tokens)
 
 			if(getcwd(cwd_buf, PATH_MAX) == NULL)
 			{
-				if (previous_cwd)
-					free(previous_cwd);
-				if (home)
-					free(home);
-				if (pwd)
-					free(pwd);
+				freeIfCmdCd(previous_cwd, home, pwd);
 				perror("getcwd");
-				return(0);
+				return(-1);
 			}
 			_setenv("PWD", cwd_buf, 1);
 		}
 	}
-	if (previous_cwd)
-		free(previous_cwd);
-	if (home)
-		free(home);
-	if (pwd)
-		free(pwd);
+	else
+	{
+		freeIfCmdCd(previous_cwd, home, pwd);
+		return (0); /* cd not applicable */
+	}
+
+	freeIfCmdCd(previous_cwd, home, pwd);
 	/* printf("%s\n", cwd_buf); */
 	return (1);  /* success */
 }

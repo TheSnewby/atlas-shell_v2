@@ -27,12 +27,16 @@ int split_command_line_on_pipe(char *line, char **command1, char **command2)
 	}
 	if (pipe_pos == NULL)
 	{
+		printf("No pipe found in the command\n"); /*debug*/
 		return -1; /* No pipe found */
 	}
 
 	*pipe_pos = '\0'; /* Split the string at the pipe symbol */
 	*command1 = line;
 	*command2 = pipe_pos + 1;
+
+	printf("Command1: %s\n", *command1); /* Debug print */
+    printf("Command2: %s\n", *command2);
 
 	return 0;
 }
@@ -102,6 +106,7 @@ int execute_pipe_command(char **command1, char **command2)
 		dup2(pipefd[1], STDOUT_FILENO); /* Redirect stdout to write end */
 		close(pipefd[1]);				/* Close write end after dup2 */
 
+		printf("Executing command1: %s\n", command1[0]); /*debug*/
 		if (execvp(command1[0], command1) == -1)
 		{
 			perror("hsh");
@@ -123,6 +128,7 @@ int execute_pipe_command(char **command1, char **command2)
 			dup2(pipefd[0], STDIN_FILENO); /* Redirect stdin to read end */
 			close(pipefd[0]);			   /* Close read end after dup2 */
 
+			printf("Executing command2: %s\n", command2[0]); /*debug*/
 			if (execvp(command2[0], command2) == -1)
 			{
 				perror("hsh");
