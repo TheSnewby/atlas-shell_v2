@@ -131,3 +131,25 @@ int _atoi(const char *s)
 
 	return (i);
 }
+
+void echor(char input, char file) 
+{
+	int fd = fopen(file, O_WRONLY | O_CREAT , 0777);
+	fprintf(fd, input);
+	fclose(fd)
+}
+
+char cat(char file)
+{
+	char buffer[1024];
+	int fd = fopen(file, O_WRONLY | 0777);
+	char filecont = read(fd, buffer, 1024);
+	return filecont;
+}
+
+void echodr(char input, char file)
+{
+	int fd = fopen(file, O_WRONLY | O_CREAT , 0777);
+	fprintf(fd, input);
+	fclose(fd);
+}
