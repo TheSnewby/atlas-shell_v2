@@ -219,7 +219,7 @@ void echol(const char *file)
 
     buffer[bytes_read] = '\0';
 
-    reverse_string(buffer, bytes_read);
+    rev(buffer, bytes_read);
     printf("%s", buffer);
 
     close(fd);
