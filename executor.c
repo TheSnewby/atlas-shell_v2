@@ -1,14 +1,9 @@
 #include "main.h"
 
-#include "main.h"
-
 /**
  * execute_pipe_command - Executes two commands, connecting their
  *                        standard input and output with a pipe.
- * @command1: The first command (left side of pipe).  This is an array
- *             of strings, where command1[0] is the command name,
- *             and subsequent elements are the arguments.  This array
- *             MUST be NULL-terminated.
+ * @command1: The first command (left side of pipe).
  * @command2: The second command (right side of pipe).  Same format as
  *             command1.
  *

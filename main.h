@@ -72,12 +72,12 @@ void execute_commands_separated_by_semicolon(char *line);
 int customCmd(char **tokens, int interactive);
 int ifCmdCd(char **tokens);
 int ifCmdEnv(char **tokens);
-int ifCmdExit(char **tokens, int interactive);
+void ifCmdExit(char **tokens, int interactive);
 int ifCmdSelfDestruct(char **tokens);
 int ifCmdSetEnv(char **tokens);
 int ifCmdUnsetEnv(char **tokens);
 void selfDestruct(int countdown);
-
+void freeIfCmdCd(char *previous_cwd, char *home, char *pwd);
 /* --- Environment Variable Handling --- */
 char *_getenv(const char *name);
 int _setenv(const char *name, const char *value, int overwrite);
