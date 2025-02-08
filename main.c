@@ -44,8 +44,6 @@ int main(int argc, char *argv[])
  * @argv: carrier of filename in [0]
  * @input: user-input
  * @tokens: array of strings of user inputs delimited by spaces
- * @cmd: first argument of user-input prefixed with found filepath
- * @paths: array of strings of filepaths
  */
 void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens)
 {
@@ -75,8 +73,8 @@ void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens)
 	/* Check for logical operators */
 	// if (strstr(input, "&&") || strstr(input, "||") || strstr(input, ";"))
 	// {
-	// 	execute_logical_commands(input);
-	// 	return; /* Return to the main loop after handling logical operators */
+	//	execute_logical_commands(input);
+	//	return; /* Return to the main loop after handling logical operators */
 	// }
 	/* Handle built-in commands */
 	custom_cmd_rtn = customCmd(tokens, isAtty);
