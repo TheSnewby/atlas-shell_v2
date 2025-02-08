@@ -141,3 +141,51 @@ int runCommand(char *commandPath, char **args)
 	}
 	return (0); /* success */
 }
+
+/**
+ * runCommand - runs execve on a command. Handles forking and errors.
+ *
+ * @commandPath: command to run, including path
+ * @args: array of args for commandPath, including the command (without path)
+ * @envPaths: paths for the environment
+ *
+ * Return: 0 on success, -1 on failure, errno on failure from child process.
+ */
+int runCommand(char *commandPath, char **args, char **envPaths)
+{
+	int exec_rtn = 0, child_status, wexitstat;
+	pid_t fork_rtn, wait_rtn;
+
+	if (commandPath == NULL)
+	{
+		if (isatty(STDIN_FILENO))
+			return (0);
+		safeExit(0);
+	}
+
+	if (access(commandPath, F_OK) != 0) /* checks if cmd doesn't exist */
+		return (127);
+
+	fork_rtn = fork(); /* split process into 2 processes */
+	if (fork_rtn == -1) /* Fork! It failed */
+		return (EXIT_FAILURE); /* indicate error */
+	if (fork_rtn == 0) /* child process */
+	{
+		exec_rtn = execve(commandPath, args, envPaths);/*executes user-command*/
+		if (exec_rtn == -1)
+			safeExit(errno); /* indicate error */
+	} else /* parent process; fork_rtn contains pid of child process */
+	{
+		wait_rtn = waitpid(fork_rtn, &child_status, WUNTRACED);
+		/* waits until child process terminates */
+		if (WIFEXITED(child_status))
+		{
+			wexitstat = WEXITSTATUS(child_status);
+			return (wexitstat);
+		}
+		else if (wait_rtn == -1)
+			return (-1); /* indicate error */
+	}
+	return (0); /* success */
+}
+
