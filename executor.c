@@ -23,6 +23,9 @@ int execute_pipe_command(char **command1, char **command2)
 		return -1;
 	}
 
+	if (access(command1[0], F_OK) != 0) /* checks if cmd doesn't exist */
+		return (127);
+
 	pid1 = fork();
 	if (pid1 == -1)
 	{
@@ -107,6 +110,10 @@ int execute_command(char **args)
 	{
 		return (1); // Return a non-zero value for empty command
 	}
+
+	if (access(args[0], F_OK) != 0) /* checks if cmd doesn't exist */
+		return (127);
+
 
 	pid = fork();
 	if (pid == -1)
