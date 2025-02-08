@@ -93,6 +93,7 @@ char *getHostname(void);
 int isNumber(char *str);
 int _atoi_safe(const char *s);
 void resetAll(char **tokens, ...);
+void freeIfCmdCd(char *previous_cwd, char *home, char *pwd);
 
 /* --- Custom String Functions (Keep these!) --- */
 char *_strcat(char *dest, const char *src);
