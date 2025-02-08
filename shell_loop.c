@@ -36,8 +36,8 @@ void shellLoop(int isAtty, char *argv[])
 	{
 		/* initialize vars */
 		getcwd(path, sizeof(path));
-		user = getenv("USER");
-		hostname = getenv("HOSTNAME");
+		user = getUser();
+		hostname = getHostname();
 		size = 0;
 		input = NULL;
 

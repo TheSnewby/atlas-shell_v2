@@ -105,42 +105,42 @@ int _atoi_safe(const char *s)
  *
  * Return: 0 on success, -1 on failure, errno on failure from child process.
  */
-int runCommand(char *commandPath, char **args)
-{
-	int child_status, wexitstat;
-	pid_t fork_rtn;
+// int runCommand(char *commandPath, char **args)
+// {
+// 	int child_status, wexitstat;
+// 	pid_t fork_rtn;
 
-	if (commandPath == NULL)
-	{
-		return (127);
-	}
+// 	if (commandPath == NULL)
+// 	{
+// 		return (127);
+// 	}
 
-	if (access(commandPath, F_OK) != 0) /* checks if cmd doesn't exist */
-		return (127);
+// 	if (access(commandPath, F_OK) != 0) /* checks if cmd doesn't exist */
+// 		return (127);
 
-	fork_rtn = fork();	/* split process into 2 processes */
-	if (fork_rtn == -1) /* Fork! It failed */
-		return (-1);	/* indicate error */
-	if (fork_rtn == 0)	/* child process */
-	{
-		if (execve(commandPath, args, environ) == -1) /*executes user-command*/
-			safeExit(errno);						  /* indicate error */
-	}
-	else /* parent process; fork_rtn contains pid of child process */
-	{
-		if (waitpid(fork_rtn, &child_status, WUNTRACED) == -1)
-		{
-			return (-1); /* indicate error */
-		}
-		/* waits until child process terminates */
-		if (WIFEXITED(child_status))
-		{
-			wexitstat = WEXITSTATUS(child_status);
-			return (wexitstat);
-		}
-	}
-	return (0); /* success */
-}
+// 	fork_rtn = fork();	/* split process into 2 processes */
+// 	if (fork_rtn == -1) /* Fork! It failed */
+// 		return (-1);	/* indicate error */
+// 	if (fork_rtn == 0)	/* child process */
+// 	{
+// 		if (execve(commandPath, args, environ) == -1) /*executes user-command*/
+// 			safeExit(errno);						  /* indicate error */
+// 	}
+// 	else /* parent process; fork_rtn contains pid of child process */
+// 	{
+// 		if (waitpid(fork_rtn, &child_status, WUNTRACED) == -1)
+// 		{
+// 			return (-1); /* indicate error */
+// 		}
+// 		/* waits until child process terminates */
+// 		if (WIFEXITED(child_status))
+// 		{
+// 			wexitstat = WEXITSTATUS(child_status);
+// 			return (wexitstat);
+// 		}
+// 	}
+// 	return (0); /* success */
+// }
 
 /**
  * runCommand - runs execve on a command. Handles forking and errors.

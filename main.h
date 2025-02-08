@@ -72,7 +72,7 @@ void execute_commands_separated_by_semicolon(char *line);
 int customCmd(char **tokens, int interactive);
 int ifCmdCd(char **tokens);
 int ifCmdEnv(char **tokens);
-int ifCmdExit(char **tokens, int interactive);
+void ifCmdExit(char **tokens, int interactive);
 int ifCmdSelfDestruct(char **tokens);
 int ifCmdSetEnv(char **tokens);
 int ifCmdUnsetEnv(char **tokens);
@@ -93,6 +93,7 @@ char *getHostname(void);
 int isNumber(char *str);
 int _atoi_safe(const char *s);
 void resetAll(char **tokens, ...);
+void freeIfCmdCd(char *previous_cwd, char *home, char *pwd);
 
 /* --- Custom String Functions (Keep these!) --- */
 char *_strcat(char *dest, const char *src);

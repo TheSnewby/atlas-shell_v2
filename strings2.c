@@ -75,7 +75,7 @@ void *_realloc_array(char **ptr, unsigned int new_size)
  * Return: pointer to memory, otherwise NULL
  */
 
-char *_strdup(char *str)
+char *_strdup(const char *str)
 {
 	int i = 0;
 	char *str_copy = NULL;
