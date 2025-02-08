@@ -1,7 +1,5 @@
 #include "main.h"
 
-char **saved_environ = NULL;
-
 /**
  * _getenv - gets malloc'd environmental value from a name-value pair in environ
  * @name: name in name-value pair
@@ -15,7 +13,7 @@ char *_getenv(const char *name)
 	char *temp_line;
 	char *value = NULL;
 
-	if (!environ || !name)
+	if (!environ|| !name)
 		return (NULL);
 
 	for (current = environ; *current; current++)
@@ -29,14 +27,50 @@ char *_getenv(const char *name)
 		{
 			value = strtok(NULL, "=");
 			if (value)
-				value = _strdup(value); /* ensures value isn't dependent on
-									   temp_line ptr */
+				value = _strdup(value);  /* ensures value isn't dependent on 
+										temp_line ptr */
 			free(temp_line);
 			return (value);
 		}
 		free(temp_line);
 	}
 	return (NULL);
+}
+
+/**
+ * buildListPath - builds a singly linked list off the environ variable PATH
+ *
+ * Return: singly linked list of PATH variables, NULL if failed
+ */
+path_t *buildListPath(void)
+{
+	path_t *new_node = NULL;
+	path_t *head = NULL;
+	char *path = _getenv("PATH");
+	char *temp_path = NULL;
+	char *token = NULL;
+
+	if (path == NULL)
+		return (NULL);
+	temp_path = _strdup(path);
+	token = strtok(temp_path, ":");
+
+	free(path);
+	while (token != NULL)
+	{
+		new_node = (path_t *)malloc(sizeof(path_t));
+		if (new_node == NULL)
+		{
+			free(temp_path);
+			return (NULL);
+		}
+		new_node->directory = _strdup(token);
+		new_node->next = head;
+		head = new_node;
+		token = strtok(NULL, ":");
+	}
+	free(temp_path);
+	return (head);
 }
 
 /**
@@ -57,16 +91,10 @@ int _setenv(const char *name, const char *value, int overwrite)
 	if (!name || !value || (_strlen(name) == 0) || _strchr(name, '='))
 		return (-1);
 
-	/* Calculate the size needed for "name=value\0" */
-	size_t new_line_len = _strlen(name) + _strlen(value) + 2;
-	new_line = malloc(new_line_len);
+	new_line = malloc(_strlen(name) + _strlen(value) + 2); /* line replacement */
 	if (new_line == NULL)
 		return (-1);
-
-	/* Build the "name=value" string using allowed functions */
-	_strcpy(new_line, name);
-	_strcat(new_line, "=");
-	_strcat(new_line, value);
+	sprintf(new_line, "%s=%s", name, value);
 
 	for (i = 0; environ[i] != NULL && overwrite != 0; i++) /* looks for name */
 	{
@@ -74,6 +102,7 @@ int _setenv(const char *name, const char *value, int overwrite)
 		if (!temp_line)
 		{
 			free(new_line);
+			new_line = NULL;
 			return (-1);
 		}
 
@@ -85,9 +114,12 @@ int _setenv(const char *name, const char *value, int overwrite)
 			environ[i] = _strdup(new_line);
 			free(temp_line);
 			free(new_line);
+			new_line = NULL;
+			temp_line = NULL;
 			return (0);
 		}
 		free(temp_line);
+		temp_line = NULL;
 	}
 
 	size_environ = i;
@@ -97,16 +129,13 @@ int _setenv(const char *name, const char *value, int overwrite)
 		if (new_environ == NULL)
 		{
 			free(new_line);
+			new_line = NULL;
 			return (-1);
 		}
 
-		new_environ[size_environ] = new_line; /* sets new env variable */
-		new_environ[size_environ + 1] = NULL; /* makes final as NULL */
+		new_environ[size_environ] = new_line;  /* sets new env variable */
+		new_environ[size_environ + 1] = NULL;  /* makes final as NULL */
 		environ = new_environ;
-	}
-	else
-	{
-		free(new_line); /* Free if not added */
 	}
 
 	return (0);
@@ -133,7 +162,7 @@ int _unsetenv(const char *name)
 	{
 		size_environ++;
 		if ((_strncmp(environ[i], name, _strlen(name)) == 0) &&
-			(environ[i][_strlen(name)] == '='))
+		(environ[i][_strlen(name)] == '='))
 			location = i;
 	}
 	/* if match found rebuild environ without the found element */
@@ -142,7 +171,7 @@ int _unsetenv(const char *name)
 		new_environ = malloc(sizeof(char *) * size_environ);
 		for (i = 0; i < size_environ; i++)
 		{
-			if (i != location) /* copy all except target variable */
+			if (i != location)  /* copy all except target variable */
 			{
 				new_environ[new_environ_index] = _strdup(environ[i]);
 				new_environ_index++;
@@ -173,6 +202,7 @@ int ifCmdUnsetEnv(char **tokens)
 	return (0);
 }
 
+
 /**
  * initialize_environ - makes environ a dynamically allocated variable
  */
@@ -192,21 +222,20 @@ void initialize_environ(void)
 		return;
 	}
 
-	for (i = 0; i < size_environ; i++) /* populates new_environ */
+	for (i = 0; i < size_environ; i++)  /* populates new_environ */
 	{
 		new_environ[i] = _strdup(environ[i]);
-		if (new_environ[i] == NULL) /* if malloc in _strdup fails, undo all */
+		if (new_environ[i] == NULL)  /* if malloc in _strdup fails, undo all */
 		{
 			for (i = i - 1; i >= 0; i--)
-			{
 				free(new_environ[i]);
-			}
 			free(new_environ);
+			new_environ = NULL;
 			fprintf(stderr, "malloc fail in initialize_environ\n");
-			return; /* consider changing to safeExit(errno) */
+			return;  /* consider changing to safeExit(errno) */
 		}
 	}
 	new_environ[size_environ] = NULL;
-saved_environ = environ;
+
 	environ = new_environ;
 }
