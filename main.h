@@ -93,9 +93,21 @@ int ifCmdUnsetEnv(char **tokens);
 
 int ifCmdCd(char **tokens);
 
+int ifCmdEcho(char **tokens);
+
 void initialize_environ();
 
 void safeExit(int exit_code);
+
+void echol(const char *file);
+
+void rev(char *str, ssize_t len);
+
+void echodr(const char *input, const char *file);
+
+void echor(const char *input, const char *file);
+
+char* cat(const char *file);
 /* ------------------- */
 
 #endif /* MAIN_H */

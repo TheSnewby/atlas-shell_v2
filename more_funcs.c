@@ -155,12 +155,32 @@ void echor(const char *input, const char *file)
 	close(fd);
 }
 
-char cat(char file)
+char* cat(const char *file)
 {
-	char buffer[1024];
-	int fd = fopen(file, O_WRONLY | 0777);
-	char filecont = read(fd, buffer, 1024);
-	return filecont;
+    int fd = open(file, O_RDONLY);
+    if (fd == -1) {
+        perror("Error opening file");
+        return NULL;
+    }
+
+    char *buffer = malloc(1024);
+    if (!buffer) {
+        perror("Memory allocation failed");
+        close(fd);
+        return NULL;
+    }
+
+    ssize_t bytesRead = read(fd, buffer, 1023);
+    if (bytesRead == -1) {
+        perror("Error reading file");
+        free(buffer);
+        close(fd);
+        return NULL;
+    }
+
+    buffer[bytesRead] = '\0';
+    close(fd);
+    return buffer;
 }
 
 void echodr(const char *input, const char *file) 
