@@ -41,6 +41,10 @@ int customCmd(char **tokens, int interactive)
 	if (ifRtn)
 		return (ifRtn);
 
+	/* ----------------- custom command "echo" ----------------- */
+	if (IfCmdEcho(tokens))
+		return (1);
+
 	return (0); /* indicate that the input is not a custom command */
 }
 /*
@@ -255,4 +259,24 @@ int ifCmdCd(char **tokens)
 	freeIfCmdCd(previous_cwd, home, pwd);
 	/* printf("%s\n", cwd_buf); */
 	return (1); /* success */
+}
+
+int IfCmdEcho(char **tokens)
+{
+	if (tokens[0] != NULL && (strcmp(tokens[0], "echo") == 0))
+	{
+		if (tokens[2] != NULL && (strcmp(tokens[2], ">") == 0))
+		{
+			echor(tokens[1], tokens[3]);
+		}
+		else if (tokens[2] != NULL && (strcmp(tokens[2], ">>") == 0))
+		{
+			echodr(tokens[1], tokens[3]);
+		}
+		else if (tokens[2] != NULL && (strcmp(tokens[2], "<") == 0))
+		{
+			echol(tokens[1], tokens[3]);
+		}
+		return (1);
+	}
 }

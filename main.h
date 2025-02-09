@@ -13,7 +13,7 @@
 #include <string.h>	   /* kinda useless */
 #include <sys/types.h> /* For pid_t, size_t */
 #include <sys/wait.h>  /* For waitpid, WIFEXITED, WEXITSTATUS */
-#include <unistd.h>	   /* For isatty, fork, execve, chdir, getcwd, dup2, close, pipe, access */
+#include <unistd.h>/* For isatty, fork, execve, chdir, getcwd, dup2, close, pipe, access */
 #include "colors.h"
 
 /* ↓ STRUCTS AND MISC ↓ */
@@ -88,6 +88,30 @@ char *findPath(char *name);
 void destroyListPath(path_t *h);
 char *getUser(void);
 char *getHostname(void);
+
+int ifCmdEnv(char **tokens);
+
+int ifCmdSetEnv(char **tokens);
+
+int ifCmdUnsetEnv(char **tokens);
+
+int ifCmdCd(char **tokens);
+
+int ifCmdEcho(char **tokens);
+
+void initialize_environ();
+
+void safeExit(int exit_code);
+
+void echol(const char *file);
+
+void rev(char *str, ssize_t len);
+
+void echodr(const char *input, const char *file);
+
+void echor(const char *input, const char *file);
+
+char* cat(const char *file);
 
 /* --- Utility Functions --- */
 int isNumber(char *str);
