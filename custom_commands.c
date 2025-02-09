@@ -261,7 +261,7 @@ int ifCmdCd(char **tokens)
 	return (1); /* success */
 }
 
-int IfCmdEcho(char **tokens)
+int ifCmdEcho(char **tokens)
 {
 	if (tokens[0] != NULL && (strcmp(tokens[0], "echo") == 0))
 	{
@@ -273,10 +273,10 @@ int IfCmdEcho(char **tokens)
 		{
 			echodr(tokens[1], tokens[3]);
 		}
-		else if (tokens[2] != NULL && (strcmp(tokens[2], "<") == 0))
+		/* else if (tokens[2] != NULL && (strcmp(tokens[2], "<") == 0))
 		{
 			echol(tokens[1], tokens[3]);
-		}
+		} */
 		return (1);
 	}
 }

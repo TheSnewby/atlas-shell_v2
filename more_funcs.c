@@ -228,7 +228,7 @@ void rev(char *str, ssize_t len)
     }
 }
 
-void echol(const char *file)
+/* void echol(const char *file)
 {
     int fd = open(file, O_RDONLY);
     if (fd == -1)
@@ -253,4 +253,8 @@ void echol(const char *file)
     printf("%s", buffer);
 
     close(fd);
+<<<<<<< HEAD
+} */
+=======
 }
+>>>>>>> 157579b278c6511f6d410d5b72dc55cbc1de2eae
