@@ -113,6 +113,8 @@ void echor(const char *input, const char *file);
 
 char* cat(const char *file);
 
+char* _strstr(char *sentence, char *word);
+
 /* --- Utility Functions --- */
 int isNumber(char *str);
 int _atoi_safe(const char *s);
