@@ -55,7 +55,6 @@ void shellLoop(int isAtty, char *argv[])
 			free(input);
 			safeExit(EXIT_SUCCESS);
 		}
-
 		input[strcspn(input, "\n")] = 0; /* remove trailing newline */
 
 		tokens = parse_command(input); /* tokenize input */
@@ -100,6 +99,9 @@ void printPrompt(int isAtty, char *user, char *hostname, char *path)
 		/* resets text color and prints '$ ' */
 		printf("%s$ ", CLR_DEFAULT);
 	}
+
+	free(user);
+	free(hostname);
 }
 
 /**
