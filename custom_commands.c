@@ -277,6 +277,6 @@ int ifCmdEcho(char **tokens)
 		{
 			echol(tokens[1], tokens[3]);
 		} */
-		return (1);
 	}
+return (1);
 }
