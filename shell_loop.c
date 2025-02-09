@@ -56,7 +56,7 @@ void shellLoop(int isAtty, char *argv[])
 			safeExit(EXIT_SUCCESS);
 		}
 
-		input[strcspn(input, "\n")] = 0; /* remove trailing newline */
+		input[_strcspn(input, "\n")] = 0; /* remove trailing newline */
 
 		tokens = parse_command(input); /* tokenize input */
 		if (tokens == NULL)
