@@ -99,7 +99,7 @@ void initialize_environ();
 
 void safeExit(int exit_code);
 
-void echol(const char *file);
+/* void echol(const char *file); */
 
 void rev(char *str, ssize_t len);
 
