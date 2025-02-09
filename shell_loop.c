@@ -55,7 +55,8 @@ void shellLoop(int isAtty, char *argv[])
 			free(input);
 			safeExit(EXIT_SUCCESS);
 		}
-		input[strcspn(input, "\n")] = 0; /* remove trailing newline */
+
+		input[_strcspn(input, "\n")] = 0; /* remove trailing newline */
 
 		tokens = parse_command(input); /* tokenize input */
 		if (tokens == NULL)
@@ -63,7 +64,7 @@ void shellLoop(int isAtty, char *argv[])
 			free(input);
 			continue; /* Go back to start of the loop */
 		}
-		if (strstr(input, "&&") || strstr(input, "||") || strstr(input, ";"))
+		if (_strstr(input, "&&") || _strstr(input, "||") || _strstr(input, ";"))
 		{
 			execute_logical_commands(input);
 			free(tokens);
