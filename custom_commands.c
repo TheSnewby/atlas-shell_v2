@@ -263,17 +263,17 @@ int ifCmdCd(char **tokens)
 
 int ifCmdEcho(char **tokens)
 {
-	if (tokens[0] != NULL && (strcmp(tokens[0], "echo") == 0))
+	if (tokens[0] != NULL && (_strcmp(tokens[0], "echo") == 0))
 	{
-		if (tokens[2] != NULL && (strcmp(tokens[2], ">") == 0))
+		if (tokens[2] != NULL && (_strcmp(tokens[2], ">") == 0))
 		{
 			echor(tokens[1], tokens[3]);
 		}
-		else if (tokens[2] != NULL && (strcmp(tokens[2], ">>") == 0))
+		else if (tokens[2] != NULL && (_strcmp(tokens[2], ">>") == 0))
 		{
 			echodr(tokens[1], tokens[3]);
 		}
-		/* else if (tokens[2] != NULL && (strcmp(tokens[2], "<") == 0))
+		/* else if (tokens[2] != NULL && (_strcmp(tokens[2], "<") == 0))
 		{
 			echol(tokens[1], tokens[3]);
 		} */
