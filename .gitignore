@@ -1,2 +1,4 @@
 hsh
 test
+*.o
+*.d
