@@ -115,6 +115,7 @@ char* cat(const char *file);
 
 char* _strstr(char *sentence, char *word);
 
+size_t _strcspn(const char *str1, const char *str2);
 /* --- Utility Functions --- */
 int isNumber(char *str);
 int _atoi_safe(const char *s);
