@@ -1,6 +1,50 @@
 #include "main.h"
 
 /**
+ * buildListPath - builds a singly linked list off the environ variable PATH
+ *
+ * Return: singly linked list of PATH variables, NULL if failed
+ */
+path_t *buildListPath(void)
+{
+	path_t *new_node = NULL;
+	path_t *head = NULL;
+	char *path = _getenv("PATH");
+	char *temp_path = NULL;
+	char *token = NULL;
+
+	if (path == NULL)
+		return (NULL);
+	temp_path = _strdup(path);
+	token = strtok(temp_path, ":");
+
+	free(path); /* Free the duplicated path from _getenv */
+	while (token != NULL)
+	{
+		new_node = (path_t *)malloc(sizeof(path_t));
+		if (new_node == NULL)
+		{
+			free(temp_path);
+			destroyListPath(head); /* Clean up on failure */
+			return (NULL);
+		}
+		new_node->directory = _strdup(token);
+		if (new_node->directory == NULL)
+		{
+			free(temp_path);
+			free(new_node);
+			destroyListPath(head);
+			return (NULL);
+		}
+		new_node->next = head;
+		head = new_node;
+		token = strtok(NULL, ":");
+	}
+	free(temp_path);
+	return (head);
+}
+
+/**
  * findPath - finds the path of a given command
  * @name: name of command
  *
@@ -10,30 +54,39 @@ char *findPath(char *name)
 {
 	path_t *temp = NULL;
 	path_t *head = NULL;
-	char *temp_path;
+	char *temp_path = NULL;
 
 	head = buildListPath(); /* populates list and points at head */
+	if (!head)
+	{
+		return (_strdup(name)); /*Return copy of name*/
+	}
 	temp = head; /* iterator initialization */
-	if (temp == NULL)
-		return (NULL);
+
 	while (temp != NULL) /* run until list is empty */
-	{	/* malloc space for path/name\0 */
-		temp_path = malloc(strlen(temp->directory) + strlen(name) + 2);
-		strcpy(temp_path, temp->directory);
-		strcat(temp_path, "/");
-		strcat(temp_path, name);
-		if (access(temp_path, F_OK) == 0) /* checks if command at path exists */
+	{					 /* malloc space for path/name\0 */
+		temp_path = malloc(_strlen(temp->directory) + _strlen(name) + 2);
+		if (temp_path == NULL)
+		{
+			destroyListPath(head);
+			return (_strdup(name));
+		}
+		_strcpy(temp_path, temp->directory);
+		_strcat(temp_path, "/");
+		_strcat(temp_path, name);
+		if (access(temp_path, F_OK) == 0) /* checks if cmd at path exists */
 		{
 			destroyListPath(head); /* frees list of paths */
-			return (temp_path); /* returns found path + name */
+			return (temp_path);	   /* returns found path + name */
 		}
-		free(temp_path); /* frees temp_path */
+		free(temp_path);   /* frees temp_path */
 		temp = temp->next; /* go to next location */
 	}
-	destroyListPath(head); /* frees list of paths */
-	temp_path = strdup(name); /* mallocs command name */
-	return (temp_path); /* returns malloced command name without a path */
+	destroyListPath(head);
+	temp_path = _strdup(name); /* mallocs command name */
+	return (temp_path);		   /* returns malloced command name without a path */
 }
+
 /**
  * destroyListPath - frees the ListPath
  * @h: head of listpath
@@ -66,7 +119,7 @@ char *getHostname(void)
 	if (!hostname)
 	{
 		hostname = malloc(8);
-		strcpy(hostname, "unknown");
+		_strcpy(hostname, "unknown");
 	}
 
 	return (hostname);
@@ -86,24 +139,8 @@ char *getUser(void)
 	if (!user)
 	{
 		user = malloc(8);
-		strcpy(user, "unknown");
+		_strcpy(user, "unknown");
 	}
 
 	return (user);
-}
-
-/**
- * ifCmdUnsetEnv - unsets an env variable if found
- * @tokens: tokenized list of commands
- *
- * Return: 1 if successful, otherwise 0
- */
-int ifCmdUnsetEnv(char **tokens)
-{
-	if (tokens[0] != NULL && (strcmp(tokens[0], "unsetenv") == 0))
-	{
-		if (_unsetenv(tokens[1]) == 0)
-			return (1);
-	}
-	return (0);
 }

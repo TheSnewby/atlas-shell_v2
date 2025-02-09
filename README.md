@@ -4,4 +4,4 @@
 
 Deshon Stout (deshon.stout@atlasschool.com)  
 Stephen Newby ()  
-Nathan Wilson ()  
+Nathan Wilson (Nathaniel.wilson@atlasschool.com)
