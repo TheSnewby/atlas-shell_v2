@@ -18,3 +18,25 @@ void freeIfCmdCd(char *previous_cwd, char *home, char *pwd)
 				free(pwd);
 
 }
+
+char* _strstr(char *sentence, char *word)
+{
+	if (!word)
+	{
+		return (sentence);
+	}
+	for (; *sentence; sentence++)
+	{
+		char *a = sentence;
+		char *b = word;
+
+		while (*a && *b && *a == *b)
+		{
+			a++;
+			b++;
+		}
+		if (!*b)
+			return (sentence);
+	}
+	return (NULL);
+}
