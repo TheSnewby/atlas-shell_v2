@@ -253,8 +253,4 @@ void rev(char *str, ssize_t len)
     printf("%s", buffer);
 
     close(fd);
-<<<<<<< HEAD
 } */
-=======
-}
->>>>>>> 157579b278c6511f6d410d5b72dc55cbc1de2eae
