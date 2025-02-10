@@ -14,7 +14,7 @@
  * 0 if it's not a custom command,
  * -1 on error
  */
-int customCmd(char **tokens, int interactive, char *input)
+int customCmd(char **tokens, int interactive)
 {
 	int ifRtn;
 	/* ------------------ custom command "env" ------------------ */
