@@ -97,8 +97,7 @@ void ifCmdExit(char **tokens, int interactive, char *input)
 		if (interactive)
 			printf("%s\nThe %sGates Of Shell%s have closed. Goodbye.\n%s",
 				   CLR_YELLOW_BOLD, CLR_RED_BOLD, CLR_YELLOW_BOLD, CLR_DEFAULT);
-		free(input);
-		free(tokens);	  /* Free the tokens */
+		resetAll(tokens, input, NULL);
 		safeExit(status); /* Call safeExit, which handles freeing environ */
 	}
 }
