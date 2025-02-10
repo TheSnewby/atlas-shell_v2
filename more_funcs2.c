@@ -11,12 +11,11 @@
 void freeIfCmdCd(char *previous_cwd, char *home, char *pwd)
 {
 	if (previous_cwd)
-				free(previous_cwd);
-			if (home)
-				free(home);
-			if (pwd)
-				free(pwd);
-
+		free(previous_cwd);
+	if (home)
+		free(home);
+	if (pwd)
+		free(pwd);
 }
 
 char* _strstr(char *sentence, char *word)

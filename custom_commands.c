@@ -14,7 +14,7 @@
  * 0 if it's not a custom command,
  * -1 on error
  */
-int customCmd(char **tokens, int interactive)
+int customCmd(char **tokens, int interactive, char *input)
 {
 	int ifRtn;
 	/* ------------------ custom command "env" ------------------ */
@@ -22,7 +22,7 @@ int customCmd(char **tokens, int interactive)
 		return (1);  /* might convert all returns to function return values */
 
 	/* ----------------- custom command "exit" ----------------- */
-	ifCmdExit(tokens, interactive);
+	ifCmdExit(tokens, interactive, input);
 
 	/* ----------------- custom command "setenv" ----------------- */
 	if (ifCmdSetEnv(tokens))
@@ -40,7 +40,6 @@ int customCmd(char **tokens, int interactive)
 	ifRtn = ifCmdCd(tokens);
 	if (ifRtn)
 		return (ifRtn);
-
 	/* ----------------- custom command "echo" ----------------- */
 	if (ifCmdEcho(tokens))
 		return (1);
@@ -85,7 +84,7 @@ int ifCmdSelfDestruct(char **tokens)
  * @tokens: tokenized array of user-inputs
  * @interactive: isatty() return value. 1 if interactive, 0 otherwise
  */
-void ifCmdExit(char **tokens, int interactive)
+void ifCmdExit(char **tokens, int interactive, char *input)
 {
 	int status = EXIT_SUCCESS;
 
@@ -98,7 +97,7 @@ void ifCmdExit(char **tokens, int interactive)
 		if (interactive)
 			printf("%s\nThe %sGates Of Shell%s have closed. Goodbye.\n%s",
 				   CLR_YELLOW_BOLD, CLR_RED_BOLD, CLR_YELLOW_BOLD, CLR_DEFAULT);
-
+		free(input);
 		free(tokens);	  /* Free the tokens */
 		safeExit(status); /* Call safeExit, which handles freeing environ */
 	}
@@ -277,6 +276,7 @@ int ifCmdEcho(char **tokens)
 		{
 			echol(tokens[1], tokens[3]);
 		} */
+		return (1);  /* signals it was the echo command */
 	}
-return (1);
+	return (0);  /* signals it wasn't the echo command */
 }
