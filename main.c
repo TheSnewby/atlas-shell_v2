@@ -77,28 +77,26 @@ void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens)
 	//	return; /* Return to the main loop after handling logical operators */
 	// }
 	/* Handle built-in commands */
-	custom_cmd_rtn = customCmd(tokens, isAtty);
-	if (custom_cmd_rtn == 1)
+	custom_cmd_rtn = customCmd(tokens, isAtty, input);
+	if (custom_cmd_rtn != 0)
 	{
-		return; /* Built-in command was handled, return to the main loop */
+		if (custom_cmd_rtn == 2)  /* OLDPLD not set */
+			fprintf(stderr, "%s: 1: cd: OLDPWD not set\n", argv[0]);
+		else if (custom_cmd_rtn == 3)  /* too many arguments */
+			fprintf(stderr, "%s: 1: cd: too many arguments\n", argv[0]);
+		else if (custom_cmd_rtn == 4) /* cd /root w/out permission */
+			fprintf(stderr, "%s: 1: cd: can't cd to /root\n", argv[0]);
 	}
-	else if (custom_cmd_rtn == -1)
-	{
-		if (!isAtty) /*error occurred in non-interactive*/
-		{
-			safeExit(EXIT_FAILURE);
-		}
-	}
-	else /* Not a built-in command, try executing as external command*/
+	else if ((custom_cmd_rtn == -1) && !isAtty)
+		safeExit(EXIT_FAILURE);
+	else if (!custom_cmd_rtn) /* Not a built-in command, try executing as external command*/
 	{
 		int run_cmd_rtn = execute_command(tokens);
 		if (run_cmd_rtn != 0)
 		{
 			fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
 			if (!isAtty)
-			{
 				safeExit(127); /*standard not found error status*/
-			}
 		}
 	}
 }
@@ -107,22 +105,18 @@ void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens)
  * resetAll - frees all dynamically allotted memory to reset for next cmd
  * @tokens: array of strings needing free()
  * ...: list of variables to free
+ * NOTE: must be called with a final paramater VOID 
  */
 void resetAll(char **tokens, ...)
 {
 	va_list vars;
-	int i;
 	char *free_me;
 
 	if (tokens != NULL)
-	{
-		for (i = 0; tokens[i] != NULL; i++)
-			if (tokens[i])
-				free(tokens[i]);
 		free(tokens);
-	}
 	va_start(vars, tokens);
 	free_me = va_arg(vars, char *);
+
 	while (free_me != NULL)
 	{
 		free(free_me);

@@ -67,14 +67,11 @@ void shellLoop(int isAtty, char *argv[])
 		if (_strstr(input, "&&") || _strstr(input, "||") || _strstr(input, ";"))
 		{
 			execute_logical_commands(input);
-			free(tokens);
-			free(input);
 			continue; /* Return to the main loop after handling logical operators */
 		}
 
 		executeIfValid(isAtty, argv, input, tokens); /*No more paths*/
-		free(tokens);
-		free(input);
+		resetAll(tokens, input, NULL);
 	}
 }
 
