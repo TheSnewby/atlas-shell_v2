@@ -53,7 +53,7 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens)
 	int custom_cmd_rtn;
 
 	/* Handle built-in commands */
-	custom_cmd_rtn = customCmd(tokens, isAtty, input);
+	custom_cmd_rtn = customCmd(tokens, isAtty);
 	if (custom_cmd_rtn != 0)
 	{
 
