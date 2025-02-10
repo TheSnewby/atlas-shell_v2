@@ -1,26 +1,6 @@
 #include "main.h"
 #include "colors.h"
 
-/*
- * shellLoop variables descriptions - because we can't put them on
- * the line they are declared due to betty forcing us to put multiple
- * on each line to shorten the function below 40 lines
- *
- * @size: size for getline()
- * @user: current user name
- * @hostname: host name or device name
- * @path: current working directory
- * @input: user input
- * @tokens: array of strings of tokenized user inputs deliminated by spaces
- * @cmd: user-inputed command with possible path prefixed
- * @cmd_token: tool for strtok
- * @paths: array of strings of env paths
- * @custom_cmd_rtn: return value of customCmd()
- * @run_cmd_rtn: return value of executeCommand()
- * @tokens_count: number of tokens while initializing the tokens
- * @i: iterator variable for a for loop somewhere
- */
-
 /**
  * shellLoop - main loop for input/output.
  *
@@ -31,6 +11,7 @@ void shellLoop(int isAtty, char *argv[])
 {
 	size_t size;
 	char *user, *hostname, path[PATH_MAX], *input, **tokens = NULL;
+	int custom_cmd_rtn;
 
 	while (1)
 	{
@@ -40,41 +21,98 @@ void shellLoop(int isAtty, char *argv[])
 		hostname = getHostname();
 		size = 0;
 		input = NULL;
+		tokens = NULL; /* Initialize tokens to NULL each iteration. */
 
 		printPrompt(isAtty, user, hostname, path);
+
 		if (getline(&input, &size, stdin) == -1)
 		{ /* gets input; plus EOF (^D) check */
 			if (isAtty)
 			{
-				printf("\n%sCtrl-D Entered. %s\n",
-					   CLR_DEFAULT_BOLD, CLR_YELLOW_BOLD);
-				printf("The %sGates Of Shell%s have closed.",
-					   CLR_RED_BOLD, CLR_YELLOW_BOLD);
-				printf("Goodbye.\n%s\n", CLR_DEFAULT);
+				printf("\n%sCtrl-D Entered. %s\n", CLR_DEFAULT_BOLD, CLR_YELLOW_BOLD);
+				printf("The %sGates Of Shell%s have closed. Goodbye.\n%s",
+					   CLR_RED_BOLD, CLR_YELLOW_BOLD, CLR_DEFAULT);
 			}
-			free(input);
+			free(input); /* Free input before exiting */
 			safeExit(EXIT_SUCCESS);
 		}
 
 		input[_strcspn(input, "\n")] = 0; /* remove trailing newline */
 
-		tokens = parse_command(input); /* tokenize input */
-		if (tokens == NULL)
+		/* --- Piping Logic (BEFORE built-in/external command handling) --- */
+		char *command1, *command2;
+		if (split_command_line_on_pipe(input, &command1, &command2) == 0)
 		{
+			/* Successfully split on a pipe. */
+			char **args1 = parse_command(command1);
+			char **args2 = parse_command(command2);
+
+			if (args1 && args2)
+			{
+				execute_pipe_command(args1, args2);
+				/* Free the args arrays allocated by parse_command. */
+				free(args1);
+				free(args2);
+			}
+			else
+			{
+				fprintf(stderr, "Failed to parse commands\n");
+			}
 			free(input);
-			continue; /* Go back to start of the loop */
+			free(user);
+			free(hostname);
+			continue; /* Go back to the top of the loop. */
 		}
 		if (_strstr(input, "&&") || _strstr(input, "||") || _strstr(input, ";"))
 		{
-			execute_logical_commands(input);
+
+			execute_logical_commands(input); /* handle logical operators */
+			free(tokens);
+			free(input);
+			free(user);
+			free(hostname);
 			continue; /* Return to the main loop after handling logical operators */
 		}
 
-		executeIfValid(isAtty, argv, input, tokens); /*No more paths*/
-		resetAll(tokens, input, NULL);
+		tokens = parse_command(input);
+		if (tokens == NULL)
+		{
+			free(input);
+			free(user);
+			free(hostname);
+			continue; /* Empty command or parse error, go to next iteration. */
+		}
+
+		/* --- Built-in Command Handling --- */
+		custom_cmd_rtn = customCmd(tokens, isAtty);
+		if (custom_cmd_rtn == 1)
+		{
+			/* Built-in command was handled. Free resources and continue. */
+			free(tokens);
+			free(input);
+			free(user);
+			free(hostname);
+			continue;
+		}
+		/* --- External Command Handling --- */
+		/* If we get here, it was NOT a built-in command. Duh */
+
+		executeIfValid(isAtty, argv, tokens);
+		/* --- Cleanup (ALWAYS done after each command) --- */
+		free(tokens);
+		free(input);
+		free(user);
+		free(hostname);
+
+		//	execute_logical_commands(input);
+		//	continue; /* Return to the main loop after handling logical operators */
+	//	}
+
+	//	executeIfValid(isAtty, argv, input, tokens); /*No more paths*/
+		//resetAll(tokens, input, NULL);
+
 	}
 }
-
 /**
  * printPrompt - prints prompt in color ("[Go$H] | user@hostname:path$ ")
  *
@@ -100,30 +138,4 @@ void printPrompt(int isAtty, char *user, char *hostname, char *path)
 
 	free(user);
 	free(hostname);
-}
-
-/**
- * saveInput - get & save input
- *
- * @isAtty: isatty() return. if 1 interactive, 0 otherwsie
- * @tokens: empty container for tokenized inputs
- * @size: size of input
- * @input: user-input
- */
-void saveInput(int isAtty, size_t *size, char **input)
-{
-	if (getline(input, size, stdin) == -1) /* gets input; plus EOF (^D) check */
-	{
-		if (isAtty)
-		{
-			printf("\n%sCtrl-D Entered. %s\n",
-				   CLR_DEFAULT_BOLD, CLR_YELLOW_BOLD);
-			printf("The %sGates Of Shell%s have closed.",
-				   CLR_RED_BOLD, CLR_YELLOW_BOLD);
-			printf("Goodbye.\n%s\n", CLR_DEFAULT);
-		}
-
-		free(*input);
-		safeExit(EXIT_SUCCESS);
-	}
 }

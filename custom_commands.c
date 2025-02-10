@@ -19,10 +19,14 @@ int customCmd(char **tokens, int interactive, char *input)
 	int ifRtn;
 	/* ------------------ custom command "env" ------------------ */
 	if (ifCmdEnv(tokens))
-		return (1);  /* might convert all returns to function return values */
+		return (1); /* might convert all returns to function return values */
 
 	/* ----------------- custom command "exit" ----------------- */
-	ifCmdExit(tokens, interactive, input);
+
+	if (ifCmdExit(tokens, interactive) == 1) /* exits with or without exit code*/
+	{
+		return (1); /* now it returns 1, if it exits */
+	}
 
 	/* ----------------- custom command "setenv" ----------------- */
 	if (ifCmdSetEnv(tokens))
@@ -84,23 +88,50 @@ int ifCmdSelfDestruct(char **tokens)
  * @tokens: tokenized array of user-inputs
  * @interactive: isatty() return value. 1 if interactive, 0 otherwise
  */
-void ifCmdExit(char **tokens, int interactive, char *input)
+int ifCmdExit(char **tokens, int interactive)
 {
-	int status = EXIT_SUCCESS;
+	int exit_code = EXIT_SUCCESS; // Default exit code
 
-	if (tokens[0] != NULL &&
+	if (tokens != NULL && tokens[0] != NULL &&
 		(_strcmp(tokens[0], "exit") == 0 || _strcmp(tokens[0], "quit") == 0))
 	{
-		if (tokens[1] != NULL && isNumber(tokens[1]))
-			status = _atoi_safe(tokens[1]);
+
+		if (tokens[1] != NULL)
+		{ // Check for an exit code argument
+			if (isNumber(tokens[1]))
+			{
+				exit_code = _atoi_safe(tokens[1]);
+				if (exit_code == 0)
+				{
+					exit_code = 2; // invalid number
+				}
+			}
+			else
+			{
+				// Handle non-numeric argument (error)
+				if (interactive)
+				{
+					selfDestruct(5); /* or another **appropriate** action */
+				}
+				else
+				{ /* not interactive, print to standard error. */
+					fprintf(stderr, "exit: Illegal number: %s\n", tokens[1]);
+				}
+				safeExit(2); /* exit with error if not number */
+			}
+		}
 
 		if (interactive)
+		{
 			printf("%s\nThe %sGates Of Shell%s have closed. Goodbye.\n%s",
 				   CLR_YELLOW_BOLD, CLR_RED_BOLD, CLR_YELLOW_BOLD, CLR_DEFAULT);
-		free(input);
-		free(tokens);	  /* Free the tokens */
-		safeExit(status); /* Call safeExit, which handles freeing environ */
+		}
+
+		safeExit(exit_code); /* Exit with the determined code */
+		return 1;			 /* Should never reach here, but good practice */
 	}
+
+	return 0; // Not an exit/quit command
 }
 
 /**
@@ -166,9 +197,9 @@ int ifCmdCd(char **tokens)
 
 	if (getcwd(cwd_buf, PATH_MAX) == NULL)
 	{
-		freeIfCmdCd(previous_cwd, home, pwd);  /* frees malloc'd strings */
+		freeIfCmdCd(previous_cwd, home, pwd); /* frees malloc'd strings */
 		perror("getcwd");
-		return(-1);
+		return (-1);
 	}
 	if (!pwd) /* set PWD if not already set */
 		_setenv("PWD", cwd_buf, 1);
@@ -181,11 +212,14 @@ int ifCmdCd(char **tokens)
 	if ((tokens[0] != NULL) && (_strcmp(tokens[0], "cd") == 0)) /* cd command found */
 	{
 		if (tokens[2] != NULL) /* too many arguments */
-			error_msg = 3;
+		{
+			freeIfCmdCd(previous_cwd, home, pwd);
+			return (3); /* custom error */
+		}
 		else if (tokens[1] != NULL)
 		{
 
-			if (_strcmp(tokens[1], "-") == 0)  /* previous path */
+			if (_strcmp(tokens[1], "-") == 0) /* previous path */
 				if (previous_cwd)
 				{
 					chdir_rtn = chdir(previous_cwd);
@@ -200,6 +234,7 @@ int ifCmdCd(char **tokens)
 					printf("%s\n", cwd_buf);
 			else if ((_strncmp(tokens[1], "/root", 5) == 0) && (access(tokens[1], X_OK) != 0))
 				error_msg = 4;
+
 			else if (tokens[1][0] == '/')  /* absolute path */
 			{
 				chdir_rtn = chdir(tokens[1]);
@@ -207,6 +242,7 @@ int ifCmdCd(char **tokens)
 					error_msg = 1;
 			}
 			else if (_strcmp(tokens[1], "~") == 0)  /* home */
+
 				if (home)
 				{
 					chdir_rtn = chdir(home);
@@ -215,23 +251,22 @@ int ifCmdCd(char **tokens)
 				}
 				else
 					error_msg = 0;
-			else  /* relative path */
+			else /* relative path */
 			{
 				_build_path(cwd_buf, tokens[1], abs_path);
 				chdir_rtn = chdir(abs_path);
 			}
 		}
+		else if (home) /* default go $HOME */
+		{
+			chdir_rtn = chdir(home);
+			free(home);
+			home = NULL;
+		}
 		else
-			if (home)  /* default go $HOME */
-			{
-				chdir_rtn = chdir(home);
-				free(home);
-				home = NULL;
-			}
-			else
-				error_msg = 0;
+			error_msg = 0;
 
-		if ((chdir_rtn == -1) || (error_msg > 0))  /* chdir failed or custom error */
+		if ((chdir_rtn == -1) || (error_msg > 0)) /* chdir failed or custom error */
 		{
 			if (error_msg == 1)
 				printf("%s\n", cwd_buf);
@@ -255,7 +290,7 @@ int ifCmdCd(char **tokens)
 			{
 				freeIfCmdCd(previous_cwd, home, pwd);
 				perror("getcwd");
-				return(-1);
+				return (-1);
 			}
 			_setenv("PWD", cwd_buf, 1);
 		}

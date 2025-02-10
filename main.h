@@ -13,7 +13,7 @@
 #include <string.h>	   /* kinda useless */
 #include <sys/types.h> /* For pid_t, size_t */
 #include <sys/wait.h>  /* For waitpid, WIFEXITED, WEXITSTATUS */
-#include <unistd.h>/* For isatty, fork, execve, chdir, getcwd, dup2, close, pipe, access */
+#include <unistd.h>/* For isatty, fork, execve, chdir, getcwd, etc.. */
 #include "colors.h"
 
 /* ↓ STRUCTS AND MISC ↓ */
@@ -53,7 +53,7 @@ extern char **saved_environ; /* To store the original environ pointer */
 
 /* --- Main Shell Loop and Control --- */
 void shellLoop(int isAtty, char *argv[]);
-void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens);
+void executeIfValid(int isAtty, char *const *argv, char **tokens);
 void safeExit(int exit_code);
 void printPrompt(int isAtty, char *user, char *hostname, char *path);
 
@@ -63,7 +63,7 @@ int split_command_line_on_pipe(char *line, char **command1, char **command2);
 char *trim_whitespace(char *str);
 
 /* --- Command Execution --- */
-int execute_command(char **args);
+int execute_command(char *commandPath, char **arguments);
 int execute_pipe_command(char **command1, char **command2);
 void execute_logical_commands(char *line);
 void execute_commands_separated_by_semicolon(char *line);
