@@ -204,8 +204,12 @@ int ifCmdCd(char **tokens)
 			else if ((_strncmp(tokens[1], "/root", 5) == 0) && (access(tokens[1], X_OK) != 0))
 				error_msg = 4;
 			else if (tokens[1][0] == '/')  /* absolute path */
-					chdir_rtn = chdir(tokens[1]);
-			else if (_strcmp(tokens[1], "~") == 0)
+			{
+				chdir_rtn = chdir(tokens[1]);
+				if (chdir_rtn == -1)
+					error_msg = 1;
+			}
+			else if (_strcmp(tokens[1], "~") == 0)  /* home */
 				if (home)
 				{
 					chdir_rtn = chdir(home);
@@ -233,10 +237,12 @@ int ifCmdCd(char **tokens)
 
 		if ((chdir_rtn == -1) || (error_msg > 0))  /* chdir failed or custom error */
 		{
-			freeIfCmdCd(previous_cwd, home, pwd);
+			if (error_msg == 1)
+				printf("%s\n", cwd_buf);
 
+			freeIfCmdCd(previous_cwd, home, pwd);
 			if (chdir_rtn == -1)
-				return (-1);  //perror("chdir: ");
+				return (-1);
 			if (error_msg == 2)
 				return (2);
 			else if (error_msg == 4)
