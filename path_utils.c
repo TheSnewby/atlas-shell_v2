@@ -12,7 +12,6 @@
 int _build_path(const char *cwd, const char *rel_path, char *abs_path)
 {
 	char *current_dir;
-	char *next_dir;
 	char *path_copy;
 	int i = 0;
 
