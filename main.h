@@ -88,29 +88,13 @@ char *findPath(char *name);
 void destroyListPath(path_t *h);
 char *getUser(void);
 char *getHostname(void);
-
-int ifCmdEnv(char **tokens);
-
-int ifCmdSetEnv(char **tokens);
-
-int ifCmdUnsetEnv(char **tokens);
-
-int ifCmdCd(char **tokens);
-
 int ifCmdEcho(char **tokens);
 
-void safeExit(int exit_code);
-
 /* void echol(const char *file); */
-
 void rev(char *str, ssize_t len);
-
 void echodr(const char *input, const char *file);
-
 void echor(const char *input, const char *file);
-
 char* cat(const char *file);
-
 char* _strstr(char *sentence, char *word);
 
 size_t _strcspn(const char *str1, const char *str2);
@@ -129,5 +113,6 @@ char *_strcpy(char *dest, const char *src);
 char *_strdup(const char *str);
 int _strncmp(const char *s1, const char *s2, int n);
 void *_realloc_array(char **ptr, unsigned int new_size);
+int _build_path(const char *cwd, const char *rel_path, char *abs_path);
 
 #endif /* MAIN_H */
