@@ -192,9 +192,12 @@ int ifCmdCd(char **tokens)
 				if (previous_cwd)
 				{
 					chdir_rtn = chdir(previous_cwd);
+					if (chdir_rtn == -1)
+						printf("%s\n", _getenv("PWD"));
+					else
+						printf("%s\n", previous_cwd);
 					free(previous_cwd);
 					previous_cwd = NULL;
-					printf("%s\n", cwd_buf);
 				}
 				else
 					printf("%s\n", cwd_buf);

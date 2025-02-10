@@ -85,7 +85,7 @@ void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens)
 	{
 		if ((custom_cmd_rtn == -1) && (isAtty)) /* false directory */
 		{
-			fprintf(stderr, "%s: 1: cd: ", argv[0]);
+			fprintf(stderr, "%s: cd: ", argv[0]);
 			perror(NULL);
 		}
 		else if (custom_cmd_rtn == 3)  /* too many arguments */
