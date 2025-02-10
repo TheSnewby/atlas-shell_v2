@@ -181,10 +181,7 @@ int ifCmdCd(char **tokens)
 	if ((tokens[0] != NULL) && (_strcmp(tokens[0], "cd") == 0)) /* cd command found */
 	{
 		if (tokens[2] != NULL) /* too many arguments */
-		{
-			freeIfCmdCd(previous_cwd, home, pwd);
-			return(3);  /* custom error */
-		}
+			error_msg = 3;
 		else if (tokens[1] != NULL)
 		{
 
@@ -221,7 +218,6 @@ int ifCmdCd(char **tokens)
 			else  /* relative path */
 			{
 				_build_path(cwd_buf, tokens[1], abs_path);
-				// snprintf(abs_path, sizeof(abs_path) - 1, "%s/%s", cwd_buf, tokens[1]);
 				chdir_rtn = chdir(abs_path);
 			}
 		}
@@ -245,8 +241,10 @@ int ifCmdCd(char **tokens)
 				return (-1);
 			if (error_msg == 2)
 				return (2);
+			if (error_msg == 3)
+				return(3);  /* custom error */
 			else if (error_msg == 4)
-				return (4);
+				return (-1);
 			return (0); /* consider return errno */
 		}
 		else /* on success set OLD PWD and PWD */
@@ -269,7 +267,6 @@ int ifCmdCd(char **tokens)
 	}
 
 	freeIfCmdCd(previous_cwd, home, pwd);
-	/* printf("%s\n", cwd_buf); */
 	return (1); /* success */
 }
 
