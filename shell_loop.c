@@ -96,7 +96,7 @@ void shellLoop(int isAtty, char *argv[])
 		/* --- External Command Handling --- */
 		/* If we get here, it was NOT a built-in command. Duh */
 
-		executeIfValid(isAtty, argv, input, tokens);
+		executeIfValid(isAtty, argv, tokens);
 		/* --- Cleanup (ALWAYS done after each command) --- */
 		free(tokens);
 		free(input);

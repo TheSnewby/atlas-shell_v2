@@ -102,45 +102,41 @@ int execute_pipe_command(char **command1, char **command2)
  *
  * Return: 0 on success, appropriate error code on failure.
  */
-int execute_command(char *commandPath)
+int execute_command(char *commandPath, char **arguments)
 {
 	pid_t pid;
 	int status;
 
-	// if (args == NULL || args[0] == NULL)
-	// {
-	// 	return (1); // Return a non-zero value for empty command /* Moved this to execute if valid */
-	// }
-
 	pid = fork();
 	if (pid == -1)
 	{
-		/* Fork failed */
+		perror("fork");
 		return -1;
 	}
 	else if (pid == 0)
 	{
 		/* Child process */
-		/* Convert commandPath to char** */
-		char *args[2];
-		args[0] = commandPath;
-		args[1] = NULL;
-
-		execve(commandPath, args, environ);
-		/* If execve returns, it failed */
-		perror("execve");	/* Use perror to give a descriptive error */
-		exit(EXIT_FAILURE); /* Exit the child process on execve failure */
+		execve(commandPath, arguments, environ);
+		perror("execve");
+		exit(EXIT_FAILURE);
 	}
 	else
 	{
 		/* Parent process */
 		if (waitpid(pid, &status, 0) == -1)
 		{
-			return -1; /* waitpid failed */
+			perror("waitpid");
+			return -1;
 		}
+
 		if (WIFEXITED(status))
-		{ /* child process exited normally */
+		{
 			return WEXITSTATUS(status);
+		}
+		else if (WIFSIGNALED(status))
+		{
+			fprintf(stderr, "Command terminated by signal %d\n", WTERMSIG(status));
+			return -1;
 		}
 	}
 	return 0;

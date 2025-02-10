@@ -38,42 +38,6 @@ char *_getenv(const char *name)
 }
 
 /**
- * buildListPath - builds a singly linked list off the environ variable PATH
- *
- * Return: singly linked list of PATH variables, NULL if failed
- */
-path_t *buildListPath(void)
-{
-	path_t *new_node = NULL;
-	path_t *head = NULL;
-	char *path = _getenv("PATH");
-	char *temp_path = NULL;
-	char *token = NULL;
-
-	if (path == NULL)
-		return (NULL);
-	temp_path = _strdup(path);
-	token = strtok(temp_path, ":");
-
-	free(path);
-	while (token != NULL)
-	{
-		new_node = (path_t *)malloc(sizeof(path_t));
-		if (new_node == NULL)
-		{
-			free(temp_path);
-			return (NULL);
-		}
-		new_node->directory = _strdup(token);
-		new_node->next = head;
-		head = new_node;
-		token = strtok(NULL, ":");
-	}
-	free(temp_path);
-	return (head);
-}
-
-/**
  * _setenv - sets an environmental variable to a new value,
  * or appends a new value if not found
  * @name: name of environmental variable to be set

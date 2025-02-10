@@ -81,7 +81,7 @@ int ifCmdSelfDestruct(char **tokens)
  * @tokens: tokenized array of user-inputs
  * @interactive: isatty() return value. 1 if interactive, 0 otherwise
  */
-int ifCmdExit(char **tokens, int interactive)
+void ifCmdExit(char **tokens, int interactive)
 {
 	int status = EXIT_SUCCESS;
 

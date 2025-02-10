@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
  * @input: user-input
  * @tokens: array of strings of user inputs delimited by spaces
  */
-void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens)
+void executeIfValid(int isAtty, char *const *argv, char **tokens)
 {
 	int custom_cmd_rtn;
 
@@ -81,7 +81,7 @@ void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens)
 		return;
 	}
 
-	int run_cmd_rtn = execute_command(full_path);
+	int run_cmd_rtn = execute_command(tokens[0], tokens);
 	free(full_path);
 
 	if (run_cmd_rtn != 0)
