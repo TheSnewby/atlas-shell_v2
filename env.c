@@ -60,6 +60,17 @@ int _setenv(const char *name, const char *value, int overwrite)
 		return (-1);
 	sprintf(new_line, "%s=%s", name, value);
 
+	if (!environ)
+	{
+		char **new_environ = malloc(sizeof(char *) * 2);
+		temp_line = _strdup(new_line);
+		new_environ[0] = temp_line;
+		new_environ[1] = NULL;
+		environ = new_environ;
+		free(new_line);
+		return (0);
+	}
+
 	for (i = 0; environ[i] != NULL && overwrite != 0; i++) /* looks for name */
 	{
 		temp_line = _strdup(environ[i]);
@@ -120,6 +131,9 @@ int _unsetenv(const char *name)
 
 	if ((name == NULL) || (_strlen(name) == 0))
 		return (-1);
+
+	if (!environ)
+		return (0);
 
 	/* find size of array and location of possible match */
 	for (i = 0; environ[i] != NULL; i++)

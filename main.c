@@ -18,6 +18,9 @@ int main(int argc, char *argv[])
 			   CLR_YELLOW_BOLD, CLR_RED_BOLD, CLR_YELLOW_BOLD);
 	/* --------------------------------------------------------------------- */
 	initialize_environ(); /* makes environ dynamically allocated */
+	//then check unsetenv PATH
+	//then make PATH empty string
+	//then unsetenv PATH and setenv PATH1 and execute ls
 
 	shellLoop(isInteractive, argv); /* main shell loop */
 
@@ -80,8 +83,11 @@ void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens)
 	custom_cmd_rtn = customCmd(tokens, isAtty, input);
 	if (custom_cmd_rtn != 0)
 	{
-		if (custom_cmd_rtn == 2)  /* OLDPLD not set */
-			fprintf(stderr, "%s: 1: cd: OLDPWD not set\n", argv[0]);
+		if ((custom_cmd_rtn == -1) && (isAtty)) /* false directory */
+		{
+			fprintf(stderr, "%s: 1: cd: ", argv[0]);
+			perror(NULL);
+		}
 		else if (custom_cmd_rtn == 3)  /* too many arguments */
 			fprintf(stderr, "%s: 1: cd: too many arguments\n", argv[0]);
 		else if (custom_cmd_rtn == 4) /* cd /root w/out permission */

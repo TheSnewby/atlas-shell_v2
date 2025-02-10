@@ -115,6 +115,9 @@ int ifCmdEnv(char **tokens)
 
 	if (tokens[0] != NULL && (_strcmp(tokens[0], "env") == 0))
 	{
+		if (!environ)
+			return (1);
+
 		for (i = 0; environ[i] != NULL; i++)
 			printf("%s\n", environ[i]);
 		return (1); /* indicate success */
@@ -194,7 +197,7 @@ int ifCmdCd(char **tokens)
 					printf("%s\n", cwd_buf);
 				}
 				else
-					error_msg = 2;
+					printf("%s\n", cwd_buf);
 			else if ((_strncmp(tokens[1], "/root", 5) == 0) && (access(tokens[1], X_OK) != 0))
 				error_msg = 4;
 			else if (tokens[1][0] == '/')  /* absolute path */
@@ -230,7 +233,7 @@ int ifCmdCd(char **tokens)
 			freeIfCmdCd(previous_cwd, home, pwd);
 
 			if (chdir_rtn == -1)
-				perror("chdir: ");
+				return (-1);  //perror("chdir: ");
 			if (error_msg == 2)
 				return (2);
 			else if (error_msg == 4)
