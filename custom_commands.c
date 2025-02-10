@@ -210,7 +210,8 @@ int ifCmdCd(char **tokens)
 					error_msg = 0;
 			else  /* relative path */
 			{
-				snprintf(abs_path, sizeof(abs_path) - 1, "%s/%s", cwd_buf, tokens[1]);
+				_build_path(cwd_buf, tokens[1], abs_path);
+				// snprintf(abs_path, sizeof(abs_path) - 1, "%s/%s", cwd_buf, tokens[1]);
 				chdir_rtn = chdir(abs_path);
 			}
 		}
