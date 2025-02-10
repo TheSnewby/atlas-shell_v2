@@ -11,7 +11,6 @@ void shellLoop(int isAtty, char *argv[])
 {
 	size_t size;
 	char *user, *hostname, path[PATH_MAX], *input, **tokens = NULL;
-	int custom_cmd_rtn;
 
 	while (1)
 	{
@@ -33,7 +32,8 @@ void shellLoop(int isAtty, char *argv[])
 				printf("The %sGates Of Shell%s have closed. Goodbye.\n%s",
 					   CLR_RED_BOLD, CLR_YELLOW_BOLD, CLR_DEFAULT);
 			}
-			free(input); /* Free input before exiting */
+			if (input)
+				free(input); /* Free input before exiting */
 			safeExit(EXIT_SUCCESS);
 		}
 
@@ -59,18 +59,12 @@ void shellLoop(int isAtty, char *argv[])
 				fprintf(stderr, "Failed to parse commands\n");
 			}
 			free(input);
-			free(user);
-			free(hostname);
 			continue; /* Go back to the top of the loop. */
 		}
 		if (_strstr(input, "&&") || _strstr(input, "||") || _strstr(input, ";"))
 		{
-
 			execute_logical_commands(input); /* handle logical operators */
-			free(tokens);
-			free(input);
-			free(user);
-			free(hostname);
+			resetAll(tokens, input);
 			continue; /* Return to the main loop after handling logical operators */
 		}
 
@@ -78,39 +72,18 @@ void shellLoop(int isAtty, char *argv[])
 		if (tokens == NULL)
 		{
 			free(input);
-			free(user);
-			free(hostname);
 			continue; /* Empty command or parse error, go to next iteration. */
 		}
 
-		/* --- Built-in Command Handling --- */
-		custom_cmd_rtn = customCmd(tokens, isAtty);
-		if (custom_cmd_rtn == 1)
-		{
-			/* Built-in command was handled. Free resources and continue. */
-			free(tokens);
+		if (input)
 			free(input);
-			free(user);
-			free(hostname);
-			continue;
-		}
-		/* --- External Command Handling --- */
-		/* If we get here, it was NOT a built-in command. Duh */
-
 		executeIfValid(isAtty, argv, tokens);
 		/* --- Cleanup (ALWAYS done after each command) --- */
-		free(tokens);
-		free(input);
-		free(user);
-		free(hostname);
+		resetAll(tokens, NULL);
 
 		//	execute_logical_commands(input);
 		//	continue; /* Return to the main loop after handling logical operators */
 	//	}
-
-	//	executeIfValid(isAtty, argv, input, tokens); /*No more paths*/
-		//resetAll(tokens, input, NULL);
-
 	}
 }
 /**

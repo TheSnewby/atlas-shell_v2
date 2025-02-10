@@ -5,10 +5,6 @@
  *
  * @tokens: tokenized user-input
  * @interactive: if the shell is running in interactive mode (isAtty)
- * @f1: variable to be freed if the command exits. (i.e. input)
- * @f2: variable to be freed if the command exits. (i.e. cmd)
- * @f3: variable to be freed if the command exits. (i.e. cmd_token)
- * @argv: array of user inputs
  *
  * Return: 1 if it was a custom command and it was successfully executed,
  * 0 if it's not a custom command,
@@ -23,10 +19,8 @@ int customCmd(char **tokens, int interactive)
 
 	/* ----------------- custom command "exit" ----------------- */
 
-	if (ifCmdExit(tokens, interactive) == 1) /* exits with or without exit code*/
-	{
+	if (ifCmdExit(tokens, interactive)) /* exits with or without exit code*/
 		return (1); /* now it returns 1, if it exits */
-	}
 
 	/* ----------------- custom command "setenv" ----------------- */
 	if (ifCmdSetEnv(tokens))
@@ -50,17 +44,10 @@ int customCmd(char **tokens, int interactive)
 
 	return (0); /* indicate that the input is not a custom command */
 }
-/*
- * note: customCmd() was variadic, but we undid that because of
- * problems calling resetAll() using the args variable.
- */
 
 /**
  * ifCmdSelfDestruct - self destruct oscar mike golf
  * @tokens: tokenized array of user-inputs
- * @f1: variable to be freed if the command exits. (i.e. input)
- * @f2: variable to be freed if the command exits. (i.e. cmd)
- * @f3: variable to be freed if the command exits. (i.e. cmd_token)
  * Return: 0 if successful, -1 otherwise
  */
 int ifCmdSelfDestruct(char **tokens)
@@ -92,10 +79,9 @@ int ifCmdExit(char **tokens, int interactive)
 {
 	int exit_code = EXIT_SUCCESS; // Default exit code
 
-	if (tokens != NULL && tokens[0] != NULL &&
-		(_strcmp(tokens[0], "exit") == 0 || _strcmp(tokens[0], "quit") == 0))
+	if ((tokens != NULL) && (tokens[0] != NULL) &&
+		((_strcmp(tokens[0], "exit") == 0) || (_strcmp(tokens[0], "quit") == 0)))
 	{
-
 		if (tokens[1] != NULL)
 		{ // Check for an exit code argument
 			if (isNumber(tokens[1]))
@@ -126,7 +112,7 @@ int ifCmdExit(char **tokens, int interactive)
 			printf("%s\nThe %sGates Of Shell%s have closed. Goodbye.\n%s",
 				   CLR_YELLOW_BOLD, CLR_RED_BOLD, CLR_YELLOW_BOLD, CLR_DEFAULT);
 		}
-
+		resetAll(tokens, NULL);
 		safeExit(exit_code); /* Exit with the determined code */
 		return 1;			 /* Should never reach here, but good practice */
 	}
@@ -201,6 +187,7 @@ int ifCmdCd(char **tokens)
 		perror("getcwd");
 		return (-1);
 	}
+
 	if (!pwd) /* set PWD if not already set */
 		_setenv("PWD", cwd_buf, 1);
 	else
@@ -212,10 +199,7 @@ int ifCmdCd(char **tokens)
 	if ((tokens[0] != NULL) && (_strcmp(tokens[0], "cd") == 0)) /* cd command found */
 	{
 		if (tokens[2] != NULL) /* too many arguments */
-		{
-			freeIfCmdCd(previous_cwd, home, pwd);
-			return (3); /* custom error */
-		}
+			error_msg = 3;
 		else if (tokens[1] != NULL)
 		{
 
@@ -234,7 +218,6 @@ int ifCmdCd(char **tokens)
 					printf("%s\n", cwd_buf);
 			else if ((_strncmp(tokens[1], "/root", 5) == 0) && (access(tokens[1], X_OK) != 0))
 				error_msg = 4;
-
 			else if (tokens[1][0] == '/')  /* absolute path */
 			{
 				chdir_rtn = chdir(tokens[1]);
@@ -242,7 +225,6 @@ int ifCmdCd(char **tokens)
 					error_msg = 1;
 			}
 			else if (_strcmp(tokens[1], "~") == 0)  /* home */
-
 				if (home)
 				{
 					chdir_rtn = chdir(home);
@@ -257,14 +239,17 @@ int ifCmdCd(char **tokens)
 				chdir_rtn = chdir(abs_path);
 			}
 		}
-		else if (home) /* default go $HOME */
+		else /* default go $HOME */
 		{
-			chdir_rtn = chdir(home);
-			free(home);
-			home = NULL;
+			if (home)
+			{
+				chdir_rtn = chdir(home);
+				free(home);
+				home = NULL;
+			}
+			else
+				error_msg = 0;
 		}
-		else
-			error_msg = 0;
 
 		if ((chdir_rtn == -1) || (error_msg > 0)) /* chdir failed or custom error */
 		{
