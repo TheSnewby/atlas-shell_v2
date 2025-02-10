@@ -99,8 +99,6 @@ int ifCmdCd(char **tokens);
 
 int ifCmdEcho(char **tokens);
 
-void initialize_environ();
-
 void safeExit(int exit_code);
 
 /* void echol(const char *file); */
