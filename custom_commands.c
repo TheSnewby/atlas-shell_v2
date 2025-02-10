@@ -19,7 +19,7 @@ int customCmd(char **tokens, int interactive)
 	int ifRtn;
 	/* ------------------ custom command "env" ------------------ */
 	if (ifCmdEnv(tokens))
-		return (1);  /* might convert all returns to function return values */
+		return (1); /* might convert all returns to function return values */
 
 	/* ----------------- custom command "exit" ----------------- */
 	ifCmdExit(tokens, interactive);
@@ -81,7 +81,7 @@ int ifCmdSelfDestruct(char **tokens)
  * @tokens: tokenized array of user-inputs
  * @interactive: isatty() return value. 1 if interactive, 0 otherwise
  */
-void ifCmdExit(char **tokens, int interactive)
+int ifCmdExit(char **tokens, int interactive)
 {
 	int status = EXIT_SUCCESS;
 
@@ -160,9 +160,9 @@ int ifCmdCd(char **tokens)
 
 	if (getcwd(cwd_buf, PATH_MAX) == NULL)
 	{
-		freeIfCmdCd(previous_cwd, home, pwd);  /* frees malloc'd strings */
+		freeIfCmdCd(previous_cwd, home, pwd); /* frees malloc'd strings */
 		perror("getcwd");
-		return(-1);
+		return (-1);
 	}
 	if (!pwd) /* set PWD if not already set */
 		_setenv("PWD", cwd_buf, 1);
@@ -177,12 +177,12 @@ int ifCmdCd(char **tokens)
 		if (tokens[2] != NULL) /* too many arguments */
 		{
 			freeIfCmdCd(previous_cwd, home, pwd);
-			return(3);  /* custom error */
+			return (3); /* custom error */
 		}
 		else if (tokens[1] != NULL)
 		{
 
-			if (_strcmp(tokens[1], "-") == 0)  /* previous path */
+			if (_strcmp(tokens[1], "-") == 0) /* previous path */
 				if (previous_cwd)
 				{
 					chdir_rtn = chdir(previous_cwd);
@@ -194,8 +194,8 @@ int ifCmdCd(char **tokens)
 					error_msg = 2;
 			else if ((_strncmp(tokens[1], "/root", 5) == 0) && (access(tokens[1], X_OK) != 0))
 				error_msg = 4;
-			else if (tokens[1][0] == '/')  /* absolute path */
-					chdir_rtn = chdir(tokens[1]);
+			else if (tokens[1][0] == '/') /* absolute path */
+				chdir_rtn = chdir(tokens[1]);
 			else if (_strcmp(tokens[1], "~") == 0)
 				if (home)
 				{
@@ -205,23 +205,22 @@ int ifCmdCd(char **tokens)
 				}
 				else
 					error_msg = 0;
-			else  /* relative path */
+			else /* relative path */
 			{
 				snprintf(abs_path, sizeof(abs_path) - 1, "%s/%s", cwd_buf, tokens[1]);
 				chdir_rtn = chdir(abs_path);
 			}
 		}
+		else if (home) /* default go $HOME */
+		{
+			chdir_rtn = chdir(home);
+			free(home);
+			home = NULL;
+		}
 		else
-			if (home)  /* default go $HOME */
-			{
-				chdir_rtn = chdir(home);
-				free(home);
-				home = NULL;
-			}
-			else
-				error_msg = 0;
+			error_msg = 0;
 
-		if ((chdir_rtn == -1) || (error_msg > 0))  /* chdir failed or custom error */
+		if ((chdir_rtn == -1) || (error_msg > 0)) /* chdir failed or custom error */
 		{
 			freeIfCmdCd(previous_cwd, home, pwd);
 
@@ -241,7 +240,7 @@ int ifCmdCd(char **tokens)
 			{
 				freeIfCmdCd(previous_cwd, home, pwd);
 				perror("getcwd");
-				return(-1);
+				return (-1);
 			}
 			_setenv("PWD", cwd_buf, 1);
 		}
