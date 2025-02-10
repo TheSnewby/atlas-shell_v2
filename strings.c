@@ -61,6 +61,9 @@ int _strlen(const char *s)
 	int count = 0;
 	int index;
 
+	if (s == NULL)
+		return (0);
+
 	for (index = 0; s[index] != '\0'; index++)
 		count++;
 

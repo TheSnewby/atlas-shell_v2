@@ -18,9 +18,6 @@ int main(int argc, char *argv[])
 			   CLR_YELLOW_BOLD, CLR_RED_BOLD, CLR_YELLOW_BOLD);
 	/* --------------------------------------------------------------------- */
 	initialize_environ(); /* makes environ dynamically allocated */
-	//then check unsetenv PATH
-	//then make PATH empty string
-	//then unsetenv PATH and setenv PATH1 and execute ls
 
 	shellLoop(isInteractive, argv); /* main shell loop */
 
@@ -45,48 +42,20 @@ int main(int argc, char *argv[])
  *
  * @isAtty: result of isatty(), 1 if interactive, 0 otherwsie
  * @argv: carrier of filename in [0]
- * @input: user-input
  * @tokens: array of strings of user inputs delimited by spaces
  */
-void executeIfValid(int isAtty, char *const *argv, char **tokens)
+void executeIfValid(int isAtty, char *const *argv, char **tokens, char * input)
 {
-	int custom_cmd_rtn;
+	int custom_cmd_rtn, run_cmd_rtn;
+	char *full_path = NULL;
 
-	/* Handle built-in commands */
-	custom_cmd_rtn = customCmd(tokens, isAtty);
-	if (custom_cmd_rtn != 0)
-	{
-
-		return; /* Built-in command was handled, return to the main loop */
-	}
-	else if (custom_cmd_rtn == -1)
-	{
-		if (!isAtty) /*error occurred in non-interactive*/
-		{
-			safeExit(EXIT_FAILURE);
-		}
-		return;
-	}
-
-	/* Not a built-in command, try executing as external command*/
 	if (tokens[0] == NULL)
 	{
 		return; /* Empty command - just return to the prompt */
 	}
 
-	char *full_path = findPath(tokens[0]);
+	full_path = findPath(tokens[0]);
 	if (full_path == NULL)
-
-		//if (custom_cmd_rtn == -1) /* false directory */
-		//	fprintf(stderr, "%s: 1: cd: can't cd to %s\n", argv[0], tokens[1]);
-	//	else if (custom_cmd_rtn == 3)  /* too many arguments */
-		//	fprintf(stderr, "%s: 1: cd: too many arguments\n", argv[0]);
-
-	//	if ((custom_cmd_rtn == -1) && !isAtty)
-		//	safeExit(EXIT_SUCCESS);
-	//}
-	//else  /* Not a built-in command, try executing as external command*/
-
 	{
 		fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
 		if (!isAtty)
@@ -95,36 +64,49 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens)
 		}
 		return;
 	}
-
-	int run_cmd_rtn = execute_command(tokens[0], tokens);
 	free(full_path);
 
-	if (run_cmd_rtn != 0)
+	/* Handle built-in commands */
+	custom_cmd_rtn = customCmd(tokens, isAtty, input);
+	if (custom_cmd_rtn != 0)
 	{
-		/* Handle errors from execute_command */
-		if (run_cmd_rtn == 127)
-		{
-			/* Already handled the "not found" case, but this is here for clarity and in case execute_command changes */
-			fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
+		if (custom_cmd_rtn == -1) /* false directory */
+			fprintf(stderr, "%s: 1: cd: can't cd to %s\n", argv[0], tokens[1]);
+		else if (custom_cmd_rtn == 3)  /* too many arguments */
+			fprintf(stderr, "%s: 1: cd: too many arguments\n", argv[0]);
 
-		}
-		else if (run_cmd_rtn == -1)
-		{ /* fork failed */
-			perror("fork failed");
-		}
-		else
-		{
-			/* Other execve errors: use perror to print a descriptive message */
-			fprintf(stderr, "%s: 1: %s: ", argv[0], tokens[0]);
-			errno = run_cmd_rtn; /* Set errno, to error code */
-			perror("");
-		}
+		if ((custom_cmd_rtn == -1) && !isAtty)
+			safeExit(EXIT_SUCCESS);
+	}
+	else  /* Not a built-in command, try executing as external command*/
+	{
+		run_cmd_rtn = execute_command(tokens[0], tokens);
 
-		if (!isAtty)
+		if (run_cmd_rtn != 0)
 		{
-			/* use run_cmd_rtn exit status. */
-			safeExit(run_cmd_rtn);
+			/* Handle errors from execute_command */
+			if (run_cmd_rtn == 127)
+			{
+				/* Already handled the "not found" case, but this is here for clarity and in case execute_command changes */
+				fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
+			}
+			else if (run_cmd_rtn == -1)
+			{ /* fork failed */
+				perror("fork failed");
+			}
+			else
+			{
+				/* Other execve errors: use perror to print a descriptive message */
+				fprintf(stderr, "%s: 1: %s: ", argv[0], tokens[0]);
+				errno = run_cmd_rtn; /* Set errno, to error code */
+				perror("");
+			}
 
+			if (!isAtty)
+			{
+				/* use run_cmd_rtn exit status. */
+				safeExit(run_cmd_rtn);
+			}
 		}
 	}
 }
