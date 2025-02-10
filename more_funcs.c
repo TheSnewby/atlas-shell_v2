@@ -188,4 +188,3 @@ int runCommand(char *commandPath, char **args, char **envPaths)
 	}
 	return (0); /* success */
 }
-

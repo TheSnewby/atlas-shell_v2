@@ -49,33 +49,6 @@ void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens)
 {
 	int custom_cmd_rtn;
 
-	/* Check for pipe */
-	char *command1, *command2;
-
-	if (split_command_line_on_pipe(input, &command1, &command2) == 0)
-	{
-		char **args1 = parse_command(command1);
-		char **args2 = parse_command(command2);
-
-		if (args1 && args2)
-		{
-			execute_pipe_command(args1, args2);
-			free(args1);
-			free(args2);
-		}
-		else
-		{
-			fprintf(stderr, "Failed to parse commands\n");
-		}
-		return; /* Return to the main loop after handling the pipe */
-	}
-
-	/* Check for logical operators */
-	// if (strstr(input, "&&") || strstr(input, "||") || strstr(input, ";"))
-	// {
-	//	execute_logical_commands(input);
-	//	return; /* Return to the main loop after handling logical operators */
-	// }
 	/* Handle built-in commands */
 	custom_cmd_rtn = customCmd(tokens, isAtty);
 	if (custom_cmd_rtn == 1)
@@ -88,17 +61,53 @@ void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens)
 		{
 			safeExit(EXIT_FAILURE);
 		}
+		return;
 	}
-	else /* Not a built-in command, try executing as external command*/
+
+	/* Not a built-in command, try executing as external command*/
+	if (tokens[0] == NULL)
 	{
-		int run_cmd_rtn = execute_command(tokens);
-		if (run_cmd_rtn != 0)
+		return; /* Empty command - just return to the prompt */
+	}
+
+	char *full_path = findPath(tokens[0]);
+	if (full_path == NULL)
+	{
+		fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
+		if (!isAtty)
 		{
+			safeExit(127); /* Standard not found error status */
+		}
+		return;
+	}
+
+	int run_cmd_rtn = execute_command(full_path);
+	free(full_path);
+
+	if (run_cmd_rtn != 0)
+	{
+		/* Handle errors from execute_command */
+		if (run_cmd_rtn == 127)
+		{
+			/* Already handled the "not found" case, but this is here for clarity and in case execute_command changes */
 			fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
-			if (!isAtty)
-			{
-				safeExit(127); /*standard not found error status*/
-			}
+		}
+		else if (run_cmd_rtn == -1)
+		{ /* fork failed */
+			perror("fork failed");
+		}
+		else
+		{
+			/* Other execve errors: use perror to print a descriptive message */
+			fprintf(stderr, "%s: 1: %s: ", argv[0], tokens[0]);
+			errno = run_cmd_rtn; /* Set errno, to error code */
+			perror("");
+		}
+
+		if (!isAtty)
+		{
+			/* use run_cmd_rtn exit status. */
+			safeExit(run_cmd_rtn);
 		}
 	}
 }
