@@ -18,6 +18,9 @@ int main(int argc, char *argv[])
 			   CLR_YELLOW_BOLD, CLR_RED_BOLD, CLR_YELLOW_BOLD);
 	/* --------------------------------------------------------------------- */
 	initialize_environ(); /* makes environ dynamically allocated */
+	//then check unsetenv PATH
+	//then make PATH empty string
+	//then unsetenv PATH and setenv PATH1 and execute ls
 
 	shellLoop(isInteractive, argv); /* main shell loop */
 
@@ -50,9 +53,10 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens)
 	int custom_cmd_rtn;
 
 	/* Handle built-in commands */
-	custom_cmd_rtn = customCmd(tokens, isAtty);
-	if (custom_cmd_rtn == 1)
+	custom_cmd_rtn = customCmd(tokens, isAtty, input);
+	if (custom_cmd_rtn != 0)
 	{
+
 		return; /* Built-in command was handled, return to the main loop */
 	}
 	else if (custom_cmd_rtn == -1)
@@ -72,6 +76,17 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens)
 
 	char *full_path = findPath(tokens[0]);
 	if (full_path == NULL)
+
+		//if (custom_cmd_rtn == -1) /* false directory */
+		//	fprintf(stderr, "%s: 1: cd: can't cd to %s\n", argv[0], tokens[1]);
+	//	else if (custom_cmd_rtn == 3)  /* too many arguments */
+		//	fprintf(stderr, "%s: 1: cd: too many arguments\n", argv[0]);
+
+	//	if ((custom_cmd_rtn == -1) && !isAtty)
+		//	safeExit(EXIT_SUCCESS);
+	//}
+	//else  /* Not a built-in command, try executing as external command*/
+
 	{
 		fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
 		if (!isAtty)
@@ -91,6 +106,7 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens)
 		{
 			/* Already handled the "not found" case, but this is here for clarity and in case execute_command changes */
 			fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
+
 		}
 		else if (run_cmd_rtn == -1)
 		{ /* fork failed */
@@ -108,6 +124,7 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens)
 		{
 			/* use run_cmd_rtn exit status. */
 			safeExit(run_cmd_rtn);
+
 		}
 	}
 }
@@ -116,22 +133,18 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens)
  * resetAll - frees all dynamically allotted memory to reset for next cmd
  * @tokens: array of strings needing free()
  * ...: list of variables to free
+ * NOTE: must be called with a final paramater VOID 
  */
 void resetAll(char **tokens, ...)
 {
 	va_list vars;
-	int i;
 	char *free_me;
 
 	if (tokens != NULL)
-	{
-		for (i = 0; tokens[i] != NULL; i++)
-			if (tokens[i])
-				free(tokens[i]);
 		free(tokens);
-	}
 	va_start(vars, tokens);
 	free_me = va_arg(vars, char *);
+
 	while (free_me != NULL)
 	{
 		free(free_me);

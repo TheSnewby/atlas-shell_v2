@@ -44,10 +44,12 @@ int split_command_line_on_pipe(char *line, char **command1, char **command2)
  */
 char **parse_command(char *command)
 {
-	int bufsize = 64, position = 0;
+	int bufsize = 64, position = 0, i;
 	char **tokens = malloc(bufsize * sizeof(char *));
 	char *token;
 
+	for (i = 0; i < bufsize; i++)
+		tokens[i] = NULL;
 	if (!tokens)
 	{
 		fprintf(stderr, "hsh: allocation error\n");

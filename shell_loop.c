@@ -37,7 +37,7 @@ void shellLoop(int isAtty, char *argv[])
 			safeExit(EXIT_SUCCESS);
 		}
 
-		input[strcspn(input, "\n")] = 0; /* Remove trailing newline. */
+		input[_strcspn(input, "\n")] = 0; /* remove trailing newline */
 
 		/* --- Piping Logic (BEFORE built-in/external command handling) --- */
 		char *command1, *command2;
@@ -63,8 +63,9 @@ void shellLoop(int isAtty, char *argv[])
 			free(hostname);
 			continue; /* Go back to the top of the loop. */
 		}
-		if (strstr(input, "&&") || strstr(input, "||") || strstr(input, ";"))
+		if (_strstr(input, "&&") || _strstr(input, "||") || _strstr(input, ";"))
 		{
+
 			execute_logical_commands(input); /* handle logical operators */
 			free(tokens);
 			free(input);
@@ -102,6 +103,14 @@ void shellLoop(int isAtty, char *argv[])
 		free(input);
 		free(user);
 		free(hostname);
+
+		//	execute_logical_commands(input);
+		//	continue; /* Return to the main loop after handling logical operators */
+	//	}
+
+	//	executeIfValid(isAtty, argv, input, tokens); /*No more paths*/
+		//resetAll(tokens, input, NULL);
+
 	}
 }
 /**
@@ -126,4 +135,7 @@ void printPrompt(int isAtty, char *user, char *hostname, char *path)
 		/* resets text color and prints '$ ' */
 		printf("%s$ ", CLR_DEFAULT);
 	}
+
+	free(user);
+	free(hostname);
 }

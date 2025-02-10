@@ -14,7 +14,7 @@
  * 0 if it's not a custom command,
  * -1 on error
  */
-int customCmd(char **tokens, int interactive)
+int customCmd(char **tokens, int interactive, char *input)
 {
 	int ifRtn;
 	/* ------------------ custom command "env" ------------------ */
@@ -22,10 +22,12 @@ int customCmd(char **tokens, int interactive)
 		return (1); /* might convert all returns to function return values */
 
 	/* ----------------- custom command "exit" ----------------- */
+
 	if (ifCmdExit(tokens, interactive) == 1) /* exits with or without exit code*/
 	{
 		return (1); /* now it returns 1, if it exits */
 	}
+
 	/* ----------------- custom command "setenv" ----------------- */
 	if (ifCmdSetEnv(tokens))
 		return (1);
@@ -42,6 +44,9 @@ int customCmd(char **tokens, int interactive)
 	ifRtn = ifCmdCd(tokens);
 	if (ifRtn)
 		return (ifRtn);
+	/* ----------------- custom command "echo" ----------------- */
+	if (ifCmdEcho(tokens))
+		return (1);
 
 	return (0); /* indicate that the input is not a custom command */
 }
@@ -141,6 +146,9 @@ int ifCmdEnv(char **tokens)
 
 	if (tokens[0] != NULL && (_strcmp(tokens[0], "env") == 0))
 	{
+		if (!environ)
+			return (1);
+
 		for (i = 0; environ[i] != NULL; i++)
 			printf("%s\n", environ[i]);
 		return (1); /* indicate success */
@@ -215,17 +223,26 @@ int ifCmdCd(char **tokens)
 				if (previous_cwd)
 				{
 					chdir_rtn = chdir(previous_cwd);
+					if (chdir_rtn == -1)
+						printf("%s\n", _getenv("PWD"));
+					else
+						printf("%s\n", previous_cwd);
 					free(previous_cwd);
 					previous_cwd = NULL;
-					printf("%s\n", cwd_buf);
 				}
 				else
-					error_msg = 2;
+					printf("%s\n", cwd_buf);
 			else if ((_strncmp(tokens[1], "/root", 5) == 0) && (access(tokens[1], X_OK) != 0))
 				error_msg = 4;
-			else if (tokens[1][0] == '/') /* absolute path */
+
+			else if (tokens[1][0] == '/')  /* absolute path */
+			{
 				chdir_rtn = chdir(tokens[1]);
-			else if (_strcmp(tokens[1], "~") == 0)
+				if (chdir_rtn == -1)
+					error_msg = 1;
+			}
+			else if (_strcmp(tokens[1], "~") == 0)  /* home */
+
 				if (home)
 				{
 					chdir_rtn = chdir(home);
@@ -236,7 +253,7 @@ int ifCmdCd(char **tokens)
 					error_msg = 0;
 			else /* relative path */
 			{
-				snprintf(abs_path, sizeof(abs_path) - 1, "%s/%s", cwd_buf, tokens[1]);
+				_build_path(cwd_buf, tokens[1], abs_path);
 				chdir_rtn = chdir(abs_path);
 			}
 		}
@@ -251,14 +268,18 @@ int ifCmdCd(char **tokens)
 
 		if ((chdir_rtn == -1) || (error_msg > 0)) /* chdir failed or custom error */
 		{
-			freeIfCmdCd(previous_cwd, home, pwd);
+			if (error_msg == 1)
+				printf("%s\n", cwd_buf);
 
+			freeIfCmdCd(previous_cwd, home, pwd);
 			if (chdir_rtn == -1)
-				perror("chdir: ");
+				return (-1);
 			if (error_msg == 2)
 				return (2);
+			if (error_msg == 3)
+				return(3);  /* custom error */
 			else if (error_msg == 4)
-				return (4);
+				return (-1);
 			return (0); /* consider return errno */
 		}
 		else /* on success set OLD PWD and PWD */
@@ -281,6 +302,26 @@ int ifCmdCd(char **tokens)
 	}
 
 	freeIfCmdCd(previous_cwd, home, pwd);
-	/* printf("%s\n", cwd_buf); */
 	return (1); /* success */
+}
+
+int ifCmdEcho(char **tokens)
+{
+	if (tokens[0] != NULL && (_strcmp(tokens[0], "echo") == 0))
+	{
+		if (tokens[2] != NULL && (_strcmp(tokens[2], ">") == 0))
+		{
+			echor(tokens[1], tokens[3]);
+		}
+		else if (tokens[2] != NULL && (_strcmp(tokens[2], ">>") == 0))
+		{
+			echodr(tokens[1], tokens[3]);
+		}
+		/* else if (tokens[2] != NULL && (_strcmp(tokens[2], "<") == 0))
+		{
+			echol(tokens[1], tokens[3]);
+		} */
+		return (1);  /* signals it was the echo command */
+	}
+	return (0);  /* signals it wasn't the echo command */
 }

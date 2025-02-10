@@ -69,10 +69,10 @@ void execute_logical_commands(char *line);
 void execute_commands_separated_by_semicolon(char *line);
 
 /* --- Built-in Command Handlers --- */
-int customCmd(char **tokens, int interactive);
+int customCmd(char **tokens, int interactive, char *input);
 int ifCmdCd(char **tokens);
 int ifCmdEnv(char **tokens);
-int ifCmdExit(char **tokens, int interactive);
+void ifCmdExit(char **tokens, int interactive, char *input);
 int ifCmdSelfDestruct(char **tokens);
 int ifCmdSetEnv(char **tokens);
 int ifCmdUnsetEnv(char **tokens);
