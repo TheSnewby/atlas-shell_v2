@@ -87,8 +87,6 @@ void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens)
 			fprintf(stderr, "%s: 1: cd: can't cd to %s\n", argv[0], tokens[1]);
 		else if (custom_cmd_rtn == 3)  /* too many arguments */
 			fprintf(stderr, "%s: 1: cd: too many arguments\n", argv[0]);
-		else if (custom_cmd_rtn == 4) /* cd /root w/out permission */
-			fprintf(stderr, "%s: 1: cd: can't cd to /root\n", argv[0]);
 
 		if ((custom_cmd_rtn == -1) && !isAtty)
 			safeExit(EXIT_SUCCESS);
@@ -100,7 +98,10 @@ void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens)
 		{
 			fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
 			if (!isAtty)
+			{
+				resetAll(tokens, input);
 				safeExit(127); /*standard not found error status*/
+			}
 		}
 	}
 }
