@@ -1,9 +1,14 @@
 #include "main.h"
 
+#include "main.h"
+
 /**
  * execute_pipe_command - Executes two commands, connecting their
  *                        standard input and output with a pipe.
- * @command1: The first command (left side of pipe).
+ * @command1: The first command (left side of pipe).  This is an array
+ *             of strings, where command1[0] is the command name,
+ *             and subsequent elements are the arguments.  This array
+ *             MUST be NULL-terminated.
  * @command2: The second command (right side of pipe).  Same format as
  *             command1.
  *
@@ -110,10 +115,6 @@ int execute_command(char **args)
 	{
 		return (1); // Return a non-zero value for empty command
 	}
-
-	if (access(args[0], F_OK) != 0) /* checks if cmd doesn't exist */
-		return (127);
-
 
 	pid = fork();
 	if (pid == -1)
