@@ -116,7 +116,25 @@ int execute_command(char *commandPath, char **arguments)
 	else if (pid == 0)
 	{
 		/* Child process */
-		execve(commandPath, arguments, environ);
+		char *paths = getenv("PATH");
+		if (paths == NULL)
+		{
+			paths = "/bin:/usr/bin"; /* Default PATH if none set */
+		}
+
+		char *path = strdup(paths);
+		char *saveptr = NULL;
+		char *dir = strtok_r(path, ":", &saveptr);
+		char fullPath[PATH_MAX];
+
+		while (dir != NULL)
+		{
+			snprintf(fullPath, PATH_MAX, "%s/%s", dir, commandPath);
+			execve(fullPath, arguments, environ);
+			dir = strtok_r(NULL, ":", &saveptr);
+		}
+
+		free(path);
 		perror("execve");
 		exit(EXIT_FAILURE);
 	}
@@ -133,11 +151,6 @@ int execute_command(char *commandPath, char **arguments)
 		{
 			return WEXITSTATUS(status);
 		}
-		else if (WIFSIGNALED(status))
-		{
-			fprintf(stderr, "Command terminated by signal %d\n", WTERMSIG(status));
-			return -1;
-		}
+		return -1;
 	}
-	return 0;
 }

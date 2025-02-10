@@ -22,8 +22,10 @@ int customCmd(char **tokens, int interactive)
 		return (1); /* might convert all returns to function return values */
 
 	/* ----------------- custom command "exit" ----------------- */
-	ifCmdExit(tokens, interactive);
-
+	if (ifCmdExit(tokens, interactive) == 1) /* exits with or without exit code*/
+	{
+		return (1); /* now it returns 1, if it exits */
+	}
 	/* ----------------- custom command "setenv" ----------------- */
 	if (ifCmdSetEnv(tokens))
 		return (1);
@@ -81,23 +83,50 @@ int ifCmdSelfDestruct(char **tokens)
  * @tokens: tokenized array of user-inputs
  * @interactive: isatty() return value. 1 if interactive, 0 otherwise
  */
-void ifCmdExit(char **tokens, int interactive)
+int ifCmdExit(char **tokens, int interactive)
 {
-	int status = EXIT_SUCCESS;
+	int exit_code = EXIT_SUCCESS; // Default exit code
 
-	if (tokens[0] != NULL &&
+	if (tokens != NULL && tokens[0] != NULL &&
 		(_strcmp(tokens[0], "exit") == 0 || _strcmp(tokens[0], "quit") == 0))
 	{
-		if (tokens[1] != NULL && isNumber(tokens[1]))
-			status = _atoi_safe(tokens[1]);
+
+		if (tokens[1] != NULL)
+		{ // Check for an exit code argument
+			if (isNumber(tokens[1]))
+			{
+				exit_code = _atoi_safe(tokens[1]);
+				if (exit_code == 0)
+				{
+					exit_code = 2; // invalid number
+				}
+			}
+			else
+			{
+				// Handle non-numeric argument (error)
+				if (interactive)
+				{
+					selfDestruct(5); /* or another **appropriate** action */
+				}
+				else
+				{ /* not interactive, print to standard error. */
+					fprintf(stderr, "exit: Illegal number: %s\n", tokens[1]);
+				}
+				safeExit(2); /* exit with error if not number */
+			}
+		}
 
 		if (interactive)
+		{
 			printf("%s\nThe %sGates Of Shell%s have closed. Goodbye.\n%s",
 				   CLR_YELLOW_BOLD, CLR_RED_BOLD, CLR_YELLOW_BOLD, CLR_DEFAULT);
+		}
 
-		free(tokens);	  /* Free the tokens */
-		safeExit(status); /* Call safeExit, which handles freeing environ */
+		safeExit(exit_code); /* Exit with the determined code */
+		return 1;			 /* Should never reach here, but good practice */
 	}
+
+	return 0; // Not an exit/quit command
 }
 
 /**

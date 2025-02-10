@@ -72,7 +72,7 @@ void execute_commands_separated_by_semicolon(char *line);
 int customCmd(char **tokens, int interactive);
 int ifCmdCd(char **tokens);
 int ifCmdEnv(char **tokens);
-void ifCmdExit(char **tokens, int interactive);
+int ifCmdExit(char **tokens, int interactive);
 int ifCmdSelfDestruct(char **tokens);
 int ifCmdSetEnv(char **tokens);
 int ifCmdUnsetEnv(char **tokens);
