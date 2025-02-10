@@ -10,7 +10,7 @@
  * 0 if it's not a custom command,
  * -1 on error
  */
-int customCmd(char **tokens, int interactive)
+int customCmd(char **tokens, int interactive, char *input)
 {
 	int ifRtn;
 	/* ------------------ custom command "env" ------------------ */
@@ -19,7 +19,7 @@ int customCmd(char **tokens, int interactive)
 
 	/* ----------------- custom command "exit" ----------------- */
 
-	if (ifCmdExit(tokens, interactive)) /* exits with or without exit code*/
+	if (ifCmdExit(tokens, interactive, input)) /* exits with or without exit code*/
 		return (1); /* now it returns 1, if it exits */
 
 	/* ----------------- custom command "setenv" ----------------- */
@@ -75,7 +75,7 @@ int ifCmdSelfDestruct(char **tokens)
  * @tokens: tokenized array of user-inputs
  * @interactive: isatty() return value. 1 if interactive, 0 otherwise
  */
-int ifCmdExit(char **tokens, int interactive)
+int ifCmdExit(char **tokens, int interactive, char *input)
 {
 	int exit_code = EXIT_SUCCESS; // Default exit code
 
@@ -103,6 +103,7 @@ int ifCmdExit(char **tokens, int interactive)
 				{ /* not interactive, print to standard error. */
 					fprintf(stderr, "exit: Illegal number: %s\n", tokens[1]);
 				}
+				resetAll(tokens, input, NULL);
 				safeExit(2); /* exit with error if not number */
 			}
 		}
@@ -112,7 +113,7 @@ int ifCmdExit(char **tokens, int interactive)
 			printf("%s\nThe %sGates Of Shell%s have closed. Goodbye.\n%s",
 				   CLR_YELLOW_BOLD, CLR_RED_BOLD, CLR_YELLOW_BOLD, CLR_DEFAULT);
 		}
-		resetAll(tokens, NULL);
+		resetAll(tokens, input, NULL);
 		safeExit(exit_code); /* Exit with the determined code */
 		return 1;			 /* Should never reach here, but good practice */
 	}

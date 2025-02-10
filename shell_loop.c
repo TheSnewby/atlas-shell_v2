@@ -75,7 +75,7 @@ void shellLoop(int isAtty, char *argv[])
 			continue; /* Empty command or parse error, go to next iteration. */
 		}
 
-		executeIfValid(isAtty, argv, tokens);
+		executeIfValid(isAtty, argv, tokens, input);
 		/* --- Cleanup (ALWAYS done after each command) --- */
 		resetAll(tokens, input, NULL);
 

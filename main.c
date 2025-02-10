@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
  * @argv: carrier of filename in [0]
  * @tokens: array of strings of user inputs delimited by spaces
  */
-void executeIfValid(int isAtty, char *const *argv, char **tokens)
+void executeIfValid(int isAtty, char *const *argv, char **tokens, char * input)
 {
 	int custom_cmd_rtn, run_cmd_rtn;
 	char *full_path = NULL;
@@ -67,7 +67,7 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens)
 	free(full_path);
 
 	/* Handle built-in commands */
-	custom_cmd_rtn = customCmd(tokens, isAtty);
+	custom_cmd_rtn = customCmd(tokens, isAtty, input);
 	if (custom_cmd_rtn != 0)
 	{
 		if (custom_cmd_rtn == -1) /* false directory */
