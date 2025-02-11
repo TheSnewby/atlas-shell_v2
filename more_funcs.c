@@ -238,7 +238,7 @@ void rev(char *str, ssize_t len)
     }
 }
 
-/* void echol(const char *file)
+void echol(const char *file)
 {
     int fd = open(file, O_RDONLY);
     if (fd == -1)
@@ -246,21 +246,26 @@ void rev(char *str, ssize_t len)
         perror("Error opening file");
         return;
     }
+	if (dup2(fd, STDIN_FILENO) == -1)
+	{
+		perror("Error redirecting input");
+		close(fd);
+		return;
+	}
+
+	close(fd);
 
     char buffer[1024];
-    ssize_t bytes_read = read(fd, buffer, sizeof(buffer) - 1);
-    
+    ssize_t bytes_read;
+
+	while ((bytes_read = read(fd, buffer, sizeof(buffer) - 1)) > 0)
+	{
+		buffer[bytes_read] = '\0';
+		printf("%s", buffer);
+	}
+
     if (bytes_read < 0)
     {
         perror("Error reading file");
-        close(fd);
-        return;
     }
-
-    buffer[bytes_read] = '\0';
-
-    rev(buffer, bytes_read);
-    printf("%s", buffer);
-
-    close(fd);
-} */
+}
