@@ -36,7 +36,6 @@ int customCmd(char **tokens, int interactive, char *input)
 
 	/* ----------------- custom command "cd" ----------------- */
 	ifRtn = ifCmdCd(tokens);
-	printf("ifRtn: %d\n", ifRtn);
 	if (ifRtn)
 		return (ifRtn);
 	/* ----------------- custom command "echo" ----------------- */

@@ -81,8 +81,6 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char * input)
 	else  /* Not a built-in command, try executing as external command*/
 	{
 		run_cmd_rtn = execute_command(tokens[0], tokens);
-		printf("run_cmd_rtn = %d\n", run_cmd_rtn);
-
 		if (run_cmd_rtn != 0)
 		{
 			/* Handle errors from execute_command */
@@ -110,7 +108,6 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char * input)
 				safeExit(run_cmd_rtn);
 			}
 		}
-		printf("reached end of else in execute if valid\n");
 		resetAll(tokens, input, NULL);
 	}
 }
@@ -134,6 +131,7 @@ void resetAll(char **tokens, ...)
 	while (free_me != NULL)
 	{
 		free(free_me);
+		free_me = NULL;
 		free_me = va_arg(vars, char *);
 	}
 	va_end(vars);
