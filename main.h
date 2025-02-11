@@ -88,18 +88,9 @@ char *findPath(char *name);
 void destroyListPath(path_t *h);
 char *getUser(void);
 char *getHostname(void);
-int ifCmdEcho(char **tokens);
-
-/* void echol(const char *cmd, const char *file); */
-void rev(char *str, ssize_t len);
-void echodr(const char *input, const char *file);
-void echor(char **tokens, const char *file);
-char* cat(const char *file, int flag);
 char* _strstr(char *sentence, char *word);
 
 size_t _strcspn(const char *str1, const char *str2);
-
-int ifCmdCat(char **tokens);
 /* --- Utility Functions --- */
 int isNumber(char *str);
 int _atoi_safe(const char *s);
