@@ -128,7 +128,7 @@ int execute_command(const char *commandPath, char **arguments)
 		}
 
 		char *path = _strdup(paths);
-		char *path = strdup(paths);
+		path = strdup(paths);
 		if (path == NULL)
 		{
 			exit(EXIT_FAILURE);
