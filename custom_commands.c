@@ -297,7 +297,7 @@ int ifCmdEcho(char **tokens)
 	{
 		if (tokens[1] != NULL && (_strcmp(tokens[1], ">") == 0))
 		{
-			echor(tokens[0], tokens[2]);
+			echor(tokens, tokens[2]);
 		}
 		else if (tokens[1] != NULL && (_strcmp(tokens[1], ">>") == 0))
 		{
