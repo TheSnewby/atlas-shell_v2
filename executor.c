@@ -119,13 +119,13 @@ int execute_command(char *commandPath, char **arguments)
 	else if (pid == 0)
 	{
 		/* Child process */
-		char *paths = getenv("PATH");
+		char *paths = _getenv("PATH");  /* malloced variable */
 		if (paths == NULL)
 		{
-			paths = "/bin:/usr/bin"; /* Default PATH if none set */
+			paths = _strdup("/bin:/usr/bin"); /* Default PATH if none set */
 		}
 
-		char *path = strdup(paths);
+		char *path = _strdup(paths);
 		char *saveptr = NULL;
 		char *dir = strtok_r(path, ":", &saveptr);
 		char fullPath[PATH_MAX];
@@ -137,8 +137,10 @@ int execute_command(char *commandPath, char **arguments)
 			dir = strtok_r(NULL, ":", &saveptr);
 		}
 
+		free(paths);
 		free(path);
-		perror("execve");
+		free(arguments);
+		/* perror("execve"); */  /* only for debugging */
 		exit(EXIT_FAILURE);
 	}
 	else

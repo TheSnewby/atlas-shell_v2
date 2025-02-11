@@ -36,6 +36,7 @@ int customCmd(char **tokens, int interactive, char *input)
 
 	/* ----------------- custom command "cd" ----------------- */
 	ifRtn = ifCmdCd(tokens);
+	printf("ifRtn: %d\n", ifRtn);
 	if (ifRtn)
 		return (ifRtn);
 	/* ----------------- custom command "echo" ----------------- */
@@ -251,7 +252,7 @@ int ifCmdCd(char **tokens)
 			else
 				error_msg = 0;
 		}
-
+		printf("%d || %d\n", chdir_rtn, error_msg);
 		if ((chdir_rtn == -1) || (error_msg > 0)) /* chdir failed or custom error */
 		{
 			if (error_msg == 1)

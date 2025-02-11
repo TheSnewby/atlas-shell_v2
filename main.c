@@ -68,7 +68,7 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char * input)
 
 	/* Handle built-in commands */
 	custom_cmd_rtn = customCmd(tokens, isAtty, input);
-	if (custom_cmd_rtn != 0)
+	if (custom_cmd_rtn)  /* user input is customCmd */
 	{
 		if (custom_cmd_rtn == -1) /* false directory */
 			fprintf(stderr, "%s: 1: cd: can't cd to %s\n", argv[0], tokens[1]);
@@ -81,6 +81,7 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char * input)
 	else  /* Not a built-in command, try executing as external command*/
 	{
 		run_cmd_rtn = execute_command(tokens[0], tokens);
+		printf("run_cmd_rtn = %d\n", run_cmd_rtn);
 
 		if (run_cmd_rtn != 0)
 		{
@@ -105,9 +106,12 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char * input)
 			if (!isAtty)
 			{
 				/* use run_cmd_rtn exit status. */
+				resetAll(tokens, input, NULL);
 				safeExit(run_cmd_rtn);
 			}
 		}
+		printf("reached end of else in execute if valid\n");
+		resetAll(tokens, input, NULL);
 	}
 }
 
