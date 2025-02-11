@@ -63,7 +63,7 @@ int split_command_line_on_pipe(char *line, char **command1, char **command2);
 char *trim_whitespace(char *str);
 
 /* --- Command Execution --- */
-int execute_command(char *commandPath, char **arguments);
+int execute_command(const char *commandPath, char **arguments);
 int execute_pipe_command(char **command1, char **command2);
 void execute_logical_commands(char *line);
 void execute_commands_separated_by_semicolon(char *line);

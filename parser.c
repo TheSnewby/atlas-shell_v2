@@ -76,7 +76,7 @@ char **parse_command(char *command)
 		token = strtok(NULL, " \t\r\n\a");
 	}
 	tokens[position] = NULL;
-	printf("%s\n", tokens[0]);
+	/* printf("%s\n", tokens[0]); */
 	return tokens;
 }
 

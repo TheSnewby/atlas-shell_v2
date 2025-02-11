@@ -1,4 +1,3 @@
-// logical_operators.c
 #include "main.h"
 #include <stdbool.h>
 
