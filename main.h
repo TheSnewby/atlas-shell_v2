@@ -90,7 +90,7 @@ char *getUser(void);
 char *getHostname(void);
 int ifCmdEcho(char **tokens);
 
-void echol(const char *file);
+/* void echol(const char *cmd, const char *file); */
 void rev(char *str, ssize_t len);
 void echodr(const char *input, const char *file);
 void echor(const char *input, const char *file);
