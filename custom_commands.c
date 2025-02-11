@@ -38,9 +38,6 @@ int customCmd(char **tokens, int interactive, char *input)
 	ifRtn = ifCmdCd(tokens);
 	if (ifRtn)
 		return (ifRtn);
-	/* ----------------- custom command "echo" ----------------- */
-	if (ifCmdEcho(tokens))
-		return (1);
 
 	return (0); /* indicate that the input is not a custom command */
 }
