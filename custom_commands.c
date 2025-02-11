@@ -280,3 +280,19 @@ int ifCmdEcho(char **tokens)
 		return (1);
 	}
 }
+
+int ifCmdCat(char **tokens)
+{
+	if (tokens[0] != NULL && (_strcmp(tokens[0], "cat") == 0))
+	{
+		if (tokens[1] != NULL && (_strcmp(tokens[1], "-e") == 0))
+		{
+			cat(tokens[2], 1);
+		}
+		else
+		{
+			cat(tokens[1], 0);
+		}
+		return (1);
+	}
+}

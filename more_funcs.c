@@ -190,7 +190,7 @@ char* cat(const char *file, int flag)
 
     buffer[bytesRead] = '\0';
     close(fd);
-	if (flag)
+	if (flag == 1)
 	{
 		for (char *ptr = buffer; *ptr != '\0'; ptr++)
 		{
