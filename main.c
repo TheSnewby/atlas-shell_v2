@@ -77,6 +77,7 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char * input)
 
 		if ((custom_cmd_rtn == -1) && !isAtty)
 			safeExit(EXIT_SUCCESS);
+	return;
 	}
 	else  /* Not a built-in command, try executing as external command*/
 	{

@@ -63,7 +63,7 @@ int split_command_line_on_pipe(char *line, char **command1, char **command2);
 char *trim_whitespace(char *str);
 
 /* --- Command Execution --- */
-int execute_command(char *commandPath, char **arguments);
+int execute_command(const char *commandPath, char **arguments);
 int execute_pipe_command(char **command1, char **command2);
 void execute_logical_commands(char *line);
 void execute_commands_separated_by_semicolon(char *line);
@@ -90,10 +90,10 @@ char *getUser(void);
 char *getHostname(void);
 int ifCmdEcho(char **tokens);
 
-/* void echol(const char *file); */
+/* void echol(const char *cmd, const char *file); */
 void rev(char *str, ssize_t len);
 void echodr(const char *input, const char *file);
-void echor(const char *input, const char *file);
+void echor(char **tokens, const char *file);
 char* cat(const char *file, int flag);
 char* _strstr(char *sentence, char *word);
 

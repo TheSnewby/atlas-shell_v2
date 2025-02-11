@@ -142,19 +142,36 @@ int runCommand(char *commandPath, char **args)
 	return (0); /* success */
 }
 
-void echor(const char *input, const char *file)
+void echor(char **tokens, const char *file)
 {
+	if (file == NULL)
+	{
+		fprintf(stderr, "Error: No file specified\n");
+		return;
+	}
 	int fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (fd == -1)
 	{
 		perror("Error opening file");
 		return;
 	}
-	if (write(fd, input, strlen(input)) < 0)
+	for (int i = 2; tokens[i] != NULL; i++)
 	{
-		perror("Error writing to file");
-		close(fd);
-		return;
+		if (write(fd, tokens[i], _strlen(tokens[i])) < 0)
+		{
+			perror("Error writing to file");
+			close(fd);
+			return;
+		}
+		if (tokens[i + 1] != NULL)
+		{
+			if (write(fd, " ", 1) < 0)
+			{
+				perror("Error writing space");
+				close(fd);
+				return;
+			}
+		}
 	}
 	if (write(fd, "\n", 1) < 0)
 	{
@@ -213,7 +230,7 @@ void echodr(const char *input, const char *file)
 		perror("Error opening file");
 		return;
 	}
-	if (write(fd, input, strlen(input)) < 0)
+	if (write(fd, input, _strlen(input)) < 0)
 	{
 		perror("Error writing to file");
 		close(fd);
@@ -240,28 +257,34 @@ void rev(char *str, ssize_t len)
 	}
 }
 
-/* void echol(const char *file)
+/* void echol(const char *cmd, const char *file)
 {
-	int fd = open(file, O_RDONLY);
-	if (fd == -1)
+    int fd = open(file, O_RDONLY);
+    if (fd == -1)
+    {
+        perror("Error opening file");
+        return;
+    }
+	if (dup2(fd, STDIN_FILENO) == -1)
 	{
-		perror("Error opening file");
-		return;
-	}
-
-	char buffer[1024];
-	ssize_t bytes_read = read(fd, buffer, sizeof(buffer) - 1);
-
-	if (bytes_read < 0)
-	{
-		perror("Error reading file");
+		perror("Error redirecting input");
 		close(fd);
 		return;
 	}
 
-	buffer[bytes_read] = '\0';
+	close(fd);
 
-	rev(buffer, bytes_read);
-	printf("%s", buffer);
-  close(fd);
+    char buffer[1024];
+	ssize_t bytes_read;
+
+	while ((bytes_read = read(STDIN_FILENO, buffer, sizeof(buffer) - 1)) > 0)
+	{
+		buffer[bytes_read] = '\0';
+		printf("%s", buffer);
+	}
+
+    if (bytes_read < 0)
+    {
+        perror("Error reading file");
+    }
 } */
