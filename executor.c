@@ -1,6 +1,6 @@
 #include "main.h"
-
-#include "main.h"
+#define FORK_ERROR -1
+#define WAITPID_ERROR -2
 
 /**
  * execute_pipe_command - Executes two commands, connecting their
@@ -28,8 +28,11 @@ int execute_pipe_command(char **command1, char **command2)
 		return -1;
 	}
 
-	if (access(command1[0], F_OK) != 0) /* checks if cmd doesn't exist */
+	if (access(command1[0], F_OK) != 0)
+	{ /* checks if cmd doesn't exist */
+		fprintf(stderr, "Command not executable: %s\n", command1[0]);
 		return (127);
+	}
 
 	pid1 = fork();
 	if (pid1 == -1)
@@ -105,11 +108,10 @@ int execute_pipe_command(char **command1, char **command2)
  *
  * Return: 0 on success, appropriate error code on failure.
  */
-int execute_command(char *commandPath, char **arguments)
+int execute_command(const char *commandPath, char **arguments)
 {
 	pid_t pid;
 	int status;
-
 	pid = fork();
 	if (pid == -1)
 	{
@@ -124,19 +126,21 @@ int execute_command(char *commandPath, char **arguments)
 		{
 			paths = "/bin:/usr/bin"; /* Default PATH if none set */
 		}
-
 		char *path = strdup(paths);
+		if (path == NULL)
+		{
+			perror("strdup");
+			exit(EXIT_FAILURE);
+		}
 		char *saveptr = NULL;
 		char *dir = strtok_r(path, ":", &saveptr);
 		char fullPath[PATH_MAX];
-
 		while (dir != NULL)
 		{
 			snprintf(fullPath, PATH_MAX, "%s/%s", dir, commandPath);
 			execve(fullPath, arguments, environ);
 			dir = strtok_r(NULL, ":", &saveptr);
 		}
-
 		free(path);
 		perror("execve");
 		exit(EXIT_FAILURE);
@@ -149,7 +153,6 @@ int execute_command(char *commandPath, char **arguments)
 			perror("waitpid");
 			return -1;
 		}
-
 		if (WIFEXITED(status))
 		{
 			return WEXITSTATUS(status);
