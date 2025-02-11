@@ -94,7 +94,7 @@ int ifCmdEcho(char **tokens);
 void rev(char *str, ssize_t len);
 void echodr(const char *input, const char *file);
 void echor(const char *input, const char *file);
-char* cat(const char *file);
+char* cat(const char *file, int flag);
 char* _strstr(char *sentence, char *word);
 
 size_t _strcspn(const char *str1, const char *str2);
