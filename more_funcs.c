@@ -155,7 +155,7 @@ void echor(char **tokens, const char *file)
 		perror("Error opening file");
 		return;
 	}
-	for (int i = 2; &tokens[i] != NULL; i++)
+	for (int i = 2; tokens[i] != NULL; i++)
 	{
 		if (write(fd, tokens[i], _strlen(tokens[i])) < 0)
 		{
