@@ -157,7 +157,7 @@ void echor(char **tokens, const char *file)
 	}
 	for (int i = 2; tokens[i] != '\0'; i++)
 	{
-		if (write(fd, input[i], _strlen(tokens[i])) < 0)
+		if (write(fd, tokens[i], _strlen(tokens[i])) < 0)
 		{
 			perror("Error writing to file");
 			close(fd);
