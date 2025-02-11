@@ -295,13 +295,13 @@ int ifCmdEcho(char **tokens)
 {
 	if (tokens[0] != NULL && (_strcmp(tokens[0], "echo") == 0))
 	{
-		if (tokens[2] != NULL && (_strcmp(tokens[2], ">") == 0))
+		if (tokens[1] != NULL && (_strcmp(tokens[1], ">") == 0))
 		{
-			echor(tokens[1], tokens[3]);
+			echor(tokens[0], tokens[2]);
 		}
-		else if (tokens[2] != NULL && (_strcmp(tokens[2], ">>") == 0))
+		else if (tokens[1] != NULL && (_strcmp(tokens[1], ">>") == 0))
 		{
-			echodr(tokens[1], tokens[3]);
+			echodr(tokens[0], tokens[2]);
 		}
 		/* else if (tokens[2] != NULL && (_strcmp(tokens[2], "<") == 0))
 		{
