@@ -303,10 +303,10 @@ int ifCmdEcho(char **tokens)
 		{
 			echodr(tokens[1], tokens[3]);
 		}
-		/* else if (tokens[2] != NULL && (_strcmp(tokens[2], "<") == 0))
+		else if (tokens[2] != NULL && (_strcmp(tokens[2], "<") == 0))
 		{
 			echol(tokens[1], tokens[3]);
-		} */
+		}
 		return (1);  /* signals it was the echo command */
   }
 	return (0);  /* signals it wasn't the echo command */
@@ -326,5 +326,5 @@ int ifCmdCat(char **tokens)
 		}
 		return (1);
 	}
-	return (0);  /* signals it wasn't the echo command */
+	return (0);
 }
