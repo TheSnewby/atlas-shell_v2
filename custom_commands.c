@@ -308,6 +308,23 @@ int ifCmdEcho(char **tokens)
 			echol(tokens[1], tokens[3]);
 		} */
 		return (1);  /* signals it was the echo command */
+  }
+	return (0);  /* signals it wasn't the echo command */
+}
+
+int ifCmdCat(char **tokens)
+{
+	if (tokens[0] != NULL && (_strcmp(tokens[0], "cat") == 0))
+	{
+		if (tokens[1] != NULL && (_strcmp(tokens[1], "-e") == 0))
+		{
+			cat(tokens[2], 1);
+		}
+		else
+		{
+			cat(tokens[1], 0);
+		}
+		return (1);
 	}
 	return (0);  /* signals it wasn't the echo command */
 }

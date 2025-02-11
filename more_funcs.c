@@ -165,7 +165,7 @@ void echor(const char *input, const char *file)
 	close(fd);
 }
 
-char *cat(const char *file)
+char* cat(const char *file, int flag)
 {
 	int fd = open(file, O_RDONLY);
 	if (fd == -1)
@@ -190,10 +190,19 @@ char *cat(const char *file)
 		close(fd);
 		return NULL;
 	}
-
-	buffer[bytesRead] = '\0';
-	close(fd);
-	return buffer;
+    buffer[bytesRead] = '\0';
+    close(fd);
+	if (flag == 1)
+	{
+		for (char *ptr = buffer; *ptr != '\0'; ptr++)
+		{
+			if (*ptr == '\n')
+			{
+				*ptr = '$';
+			}
+		}
+	}
+    return buffer;
 }
 
 void echodr(const char *input, const char *file)
@@ -254,6 +263,5 @@ void rev(char *str, ssize_t len)
 
 	rev(buffer, bytes_read);
 	printf("%s", buffer);
-
-	close(fd);
+  close(fd);
 } */
