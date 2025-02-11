@@ -1,26 +1,6 @@
 #include "main.h"
 #include "colors.h"
 
-/*
- * shellLoop variables descriptions - because we can't put them on
- * the line they are declared due to betty forcing us to put multiple
- * on each line to shorten the function below 40 lines
- *
- * @size: size for getline()
- * @user: current user name
- * @hostname: host name or device name
- * @path: current working directory
- * @input: user input
- * @tokens: array of strings of tokenized user inputs deliminated by spaces
- * @cmd: user-inputed command with possible path prefixed
- * @cmd_token: tool for strtok
- * @paths: array of strings of env paths
- * @custom_cmd_rtn: return value of customCmd()
- * @run_cmd_rtn: return value of runCommand()
- * @tokens_count: number of tokens while initializing the tokens
- * @i: iterator variable for a for loop somewhere
- */
-
 /**
  * shellLoop - main loop for input/output.
  *
@@ -40,44 +20,70 @@ void shellLoop(int isAtty, char *argv[])
 		hostname = getHostname();
 		size = 0;
 		input = NULL;
+		tokens = NULL; /* Initialize tokens to NULL each iteration. */
 
 		printPrompt(isAtty, user, hostname, path);
+
 		if (getline(&input, &size, stdin) == -1)
 		{ /* gets input; plus EOF (^D) check */
 			if (isAtty)
 			{
-				printf("\n%sCtrl-D Entered. %s\n",
-					   CLR_DEFAULT_BOLD, CLR_YELLOW_BOLD);
-				printf("The %sGates Of Shell%s have closed.",
-					   CLR_RED_BOLD, CLR_YELLOW_BOLD);
-				printf("Goodbye.\n%s\n", CLR_DEFAULT);
+				printf("\n%sCtrl-D Entered. %s\n", CLR_DEFAULT_BOLD, CLR_YELLOW_BOLD);
+				printf("The %sGates Of Shell%s have closed. Goodbye.\n%s",
+					   CLR_RED_BOLD, CLR_YELLOW_BOLD, CLR_DEFAULT);
 			}
-			free(input);
+			if (input)
+				free(input); /* Free input before exiting */
 			safeExit(EXIT_SUCCESS);
 		}
 
 		input[_strcspn(input, "\n")] = 0; /* remove trailing newline */
 
-		tokens = parse_command(input); /* tokenize input */
-		if (tokens == NULL)
+		/* --- Piping Logic (BEFORE built-in/external command handling) --- */
+		char *command1, *command2;
+		if (split_command_line_on_pipe(input, &command1, &command2) == 0)
 		{
+			/* Successfully split on a pipe. */
+			char **args1 = parse_command(command1);
+			char **args2 = parse_command(command2);
+
+			if (args1 && args2)
+			{
+				execute_pipe_command(args1, args2);
+				/* Free the args arrays allocated by parse_command. */
+				free(args1);
+				free(args2);
+			}
+			else
+			{
+				fprintf(stderr, "Failed to parse commands\n");
+			}
 			free(input);
-			continue; /* Go back to start of the loop */
+			continue; /* Go back to the top of the loop. */
 		}
 		if (_strstr(input, "&&") || _strstr(input, "||") || _strstr(input, ";"))
 		{
-			execute_logical_commands(input);
-			free(tokens);
-			free(input);
+			execute_logical_commands(input); /* handle logical operators */
+			resetAll(tokens, input);
 			continue; /* Return to the main loop after handling logical operators */
 		}
 
-		executeIfValid(isAtty, argv, input, tokens); /*No more paths*/
-		free(tokens);
-		free(input);
+		tokens = parse_command(input);
+		if (tokens == NULL)
+		{
+			free(input);
+			continue; /* Empty command or parse error, go to next iteration. */
+		}
+
+		executeIfValid(isAtty, argv, tokens, input);
+		/* --- Cleanup (ALWAYS done after each command) --- */
+		resetAll(tokens, input, NULL);
+
+		//	execute_logical_commands(input);
+		//	continue; /* Return to the main loop after handling logical operators */
+	//	}
 	}
 }
-
 /**
  * printPrompt - prints prompt in color ("[Go$H] | user@hostname:path$ ")
  *
@@ -100,30 +106,7 @@ void printPrompt(int isAtty, char *user, char *hostname, char *path)
 		/* resets text color and prints '$ ' */
 		printf("%s$ ", CLR_DEFAULT);
 	}
-}
 
-/**
- * saveInput - get & save input
- *
- * @isAtty: isatty() return. if 1 interactive, 0 otherwsie
- * @tokens: empty container for tokenized inputs
- * @size: size of input
- * @input: user-input
- */
-void saveInput(int isAtty, size_t *size, char **input)
-{
-	if (getline(input, size, stdin) == -1) /* gets input; plus EOF (^D) check */
-	{
-		if (isAtty)
-		{
-			printf("\n%sCtrl-D Entered. %s\n",
-				   CLR_DEFAULT_BOLD, CLR_YELLOW_BOLD);
-			printf("The %sGates Of Shell%s have closed.",
-				   CLR_RED_BOLD, CLR_YELLOW_BOLD);
-			printf("Goodbye.\n%s\n", CLR_DEFAULT);
-		}
-
-		free(*input);
-		safeExit(EXIT_SUCCESS);
-	}
+	free(user);
+	free(hostname);
 }

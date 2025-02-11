@@ -105,16 +105,10 @@ int execute_pipe_command(char **command1, char **command2)
  *
  * Return: 0 on success, appropriate error code on failure.
  */
-int execute_command(char **args)
+int execute_command(char *commandPath, char **arguments)
 {
 	pid_t pid;
 	int status;
-	// char *full_path;
-
-	if (args == NULL || args[0] == NULL)
-	{
-		return (1); // Return a non-zero value for empty command
-	}
 
 	pid = fork();
 	if (pid == -1)
@@ -122,26 +116,44 @@ int execute_command(char **args)
 		perror("fork");
 		return -1;
 	}
+	else if (pid == 0)
+	{
+		/* Child process */
+		char *paths = getenv("PATH");
+		if (paths == NULL)
+		{
+			paths = "/bin:/usr/bin"; /* Default PATH if none set */
+		}
 
-	if (pid == 0)
-	{ /* Child process */
-		/* Try execvp first. This handles absolute/relative paths AND PATH lookup */
-		execvp(args[0], args);
+		char *path = strdup(paths);
+		char *saveptr = NULL;
+		char *dir = strtok_r(path, ":", &saveptr);
+		char fullPath[PATH_MAX];
 
-		/* If execvp fails, it means the command wasn't found (or there was another error) */
-		perror("execvp"); /* Use perror to print a more informative error */
-		exit(127);		  /* Exit with a "command not found" status */
+		while (dir != NULL)
+		{
+			snprintf(fullPath, PATH_MAX, "%s/%s", dir, commandPath);
+			execve(fullPath, arguments, environ);
+			dir = strtok_r(NULL, ":", &saveptr);
+		}
+
+		free(path);
+		perror("execve");
+		exit(EXIT_FAILURE);
 	}
 	else
-	{ /* Parent process */
-		waitpid(pid, &status, 0);
+	{
+		/* Parent process */
+		if (waitpid(pid, &status, 0) == -1)
+		{
+			perror("waitpid");
+			return -1;
+		}
+
 		if (WIFEXITED(status))
 		{
 			return WEXITSTATUS(status);
 		}
-		else
-		{
-			return -1; /* Indicate an error if the child didn't exit normally */
-		}
+		return -1;
 	}
 }
