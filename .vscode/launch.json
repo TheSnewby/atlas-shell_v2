@@ -1,13 +1,15 @@
 {
   "version": "0.2.0",
   "configurations": [
+	
+
     {
       "name": "C/C++ Runner: Debug Session",
       "type": "lldb",
       "request": "launch",
       "args": [],
       "cwd": "/Users/nathan/Repositories/ShellV2/atlas-shell_v2",
-      "program": "/Users/nathan/Repositories/ShellV2/atlas-shell_v2/build/Debug/outDebug"
+      "program": "${workspaceFolder}/hsh"
     }
   ]
 }

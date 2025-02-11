@@ -18,7 +18,7 @@ void execute_commands_separated_by_semicolon(char *line)
 		args = parse_command(command);
 		if (args[0] != NULL)
 		{
-			execute_command(args);
+			execute_command(args[0], args);
 		}
 		free(args);
 		command = strtok_r(NULL, ";", &saveptr);
@@ -82,7 +82,7 @@ void execute_logical_commands(char *line)
 			args = parse_command(command);
 			if (args[0] != NULL)
 			{
-				status = execute_command(args);
+				status = execute_command(args[0], args);
 			}
 			free(args);
 		}

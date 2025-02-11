@@ -13,7 +13,7 @@
 #include <string.h>	   /* kinda useless */
 #include <sys/types.h> /* For pid_t, size_t */
 #include <sys/wait.h>  /* For waitpid, WIFEXITED, WEXITSTATUS */
-#include <unistd.h>/* For isatty, fork, execve, chdir, getcwd, dup2, close, pipe, access */
+#include <unistd.h>/* For isatty, fork, execve, chdir, getcwd, etc.. */
 #include "colors.h"
 
 /* ↓ STRUCTS AND MISC ↓ */
@@ -53,7 +53,7 @@ extern char **saved_environ; /* To store the original environ pointer */
 
 /* --- Main Shell Loop and Control --- */
 void shellLoop(int isAtty, char *argv[]);
-void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens);
+void executeIfValid(int isAtty, char *const *argv, char **tokens, char *input);
 void safeExit(int exit_code);
 void printPrompt(int isAtty, char *user, char *hostname, char *path);
 
@@ -63,21 +63,21 @@ int split_command_line_on_pipe(char *line, char **command1, char **command2);
 char *trim_whitespace(char *str);
 
 /* --- Command Execution --- */
-int execute_command(char **args);
+int execute_command(char *commandPath, char **arguments);
 int execute_pipe_command(char **command1, char **command2);
 void execute_logical_commands(char *line);
 void execute_commands_separated_by_semicolon(char *line);
 
 /* --- Built-in Command Handlers --- */
-int customCmd(char **tokens, int interactive);
+int customCmd(char **tokens, int interactive, char *input);
 int ifCmdCd(char **tokens);
 int ifCmdEnv(char **tokens);
-void ifCmdExit(char **tokens, int interactive);
+int ifCmdExit(char **tokens, int interactive, char *input);
 int ifCmdSelfDestruct(char **tokens);
 int ifCmdSetEnv(char **tokens);
 int ifCmdUnsetEnv(char **tokens);
 void selfDestruct(int countdown);
-
+void freeIfCmdCd(char *previous_cwd, char *home, char *pwd);
 /* --- Environment Variable Handling --- */
 char *_getenv(const char *name);
 int _setenv(const char *name, const char *value, int overwrite);
@@ -88,31 +88,13 @@ char *findPath(char *name);
 void destroyListPath(path_t *h);
 char *getUser(void);
 char *getHostname(void);
-
-int ifCmdEnv(char **tokens);
-
-int ifCmdSetEnv(char **tokens);
-
-int ifCmdUnsetEnv(char **tokens);
-
-int ifCmdCd(char **tokens);
-
 int ifCmdEcho(char **tokens);
 
-void initialize_environ();
-
-void safeExit(int exit_code);
-
 /* void echol(const char *file); */
-
 void rev(char *str, ssize_t len);
-
 void echodr(const char *input, const char *file);
-
 void echor(const char *input, const char *file);
-
 char* cat(const char *file);
-
 char* _strstr(char *sentence, char *word);
 
 size_t _strcspn(const char *str1, const char *str2);
@@ -133,5 +115,6 @@ char *_strcpy(char *dest, const char *src);
 char *_strdup(const char *str);
 int _strncmp(const char *s1, const char *s2, int n);
 void *_realloc_array(char **ptr, unsigned int new_size);
+int _build_path(const char *cwd, const char *rel_path, char *abs_path);
 
 #endif /* MAIN_H */

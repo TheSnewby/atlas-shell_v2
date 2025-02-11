@@ -97,7 +97,7 @@ int _atoi_safe(const char *s)
 }
 
 /**
- * runCommand - runs execve on a command. Handles forking and errors.
+ * runCommand - DEPRECATED runs execve on a command. Handles forking and errors.
  *
  * @commandPath: command to run, including path
  * @args: array of args for commandPath, including the command (without path)
@@ -142,7 +142,7 @@ int runCommand(char *commandPath, char **args)
 	return (0); /* success */
 }
 
-void echor(const char *input, const char *file) 
+void echor(const char *input, const char *file)
 {
 	int fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (fd == -1)
@@ -157,37 +157,39 @@ void echor(const char *input, const char *file)
 		return;
 	}
 	if (write(fd, "\n", 1) < 0)
-    {
-        perror("Error writing newline");
-        close(fd);
-        return;
-    }
+	{
+		perror("Error writing newline");
+		close(fd);
+		return;
+	}
 	close(fd);
 }
 
 char* cat(const char *file, int flag)
 {
-    int fd = open(file, O_RDONLY);
-    if (fd == -1) {
-        perror("Error opening file");
-        return NULL;
-    }
+	int fd = open(file, O_RDONLY);
+	if (fd == -1)
+	{
+		perror("Error opening file");
+		return NULL;
+	}
 
-    char *buffer = malloc(1024);
-    if (!buffer) {
-        perror("Memory allocation failed");
-        close(fd);
-        return NULL;
-    }
+	char *buffer = malloc(1024);
+	if (!buffer)
+	{
+		perror("Memory allocation failed");
+		close(fd);
+		return NULL;
+	}
 
-    ssize_t bytesRead = read(fd, buffer, 1023);
-    if (bytesRead == -1) {
-        perror("Error reading file");
-        free(buffer);
-        close(fd);
-        return NULL;
-    }
-
+	ssize_t bytesRead = read(fd, buffer, 1023);
+	if (bytesRead == -1)
+	{
+		perror("Error reading file");
+		free(buffer);
+		close(fd);
+		return NULL;
+	}
     buffer[bytesRead] = '\0';
     close(fd);
 	if (flag == 1)
@@ -203,7 +205,7 @@ char* cat(const char *file, int flag)
     return buffer;
 }
 
-void echodr(const char *input, const char *file) 
+void echodr(const char *input, const char *file)
 {
 	int fd = open(file, O_WRONLY | O_CREAT | O_APPEND, 0644);
 	if (fd == -1)
@@ -218,49 +220,48 @@ void echodr(const char *input, const char *file)
 		return;
 	}
 	if (write(fd, "\n", 1) < 0)
-    {
-        perror("Error writing newline");
-        close(fd);
-        return;
-    }
+	{
+		perror("Error writing newline");
+		close(fd);
+		return;
+	}
 	close(fd);
 }
 
 void rev(char *str, ssize_t len)
 {
-    ssize_t i, j;
-    char temp;
-    for (i = 0, j = len - 1; i < j; i++, j--)
-    {
-        temp = str[i];
-        str[i] = str[j];
-        str[j] = temp;
-    }
+	ssize_t i, j;
+	char temp;
+	for (i = 0, j = len - 1; i < j; i++, j--)
+	{
+		temp = str[i];
+		str[i] = str[j];
+		str[j] = temp;
+	}
 }
 
 /* void echol(const char *file)
 {
-    int fd = open(file, O_RDONLY);
-    if (fd == -1)
-    {
-        perror("Error opening file");
-        return;
-    }
+	int fd = open(file, O_RDONLY);
+	if (fd == -1)
+	{
+		perror("Error opening file");
+		return;
+	}
 
-    char buffer[1024];
-    ssize_t bytes_read = read(fd, buffer, sizeof(buffer) - 1);
-    
-    if (bytes_read < 0)
-    {
-        perror("Error reading file");
-        close(fd);
-        return;
-    }
+	char buffer[1024];
+	ssize_t bytes_read = read(fd, buffer, sizeof(buffer) - 1);
 
-    buffer[bytes_read] = '\0';
+	if (bytes_read < 0)
+	{
+		perror("Error reading file");
+		close(fd);
+		return;
+	}
 
-    rev(buffer, bytes_read);
-    printf("%s", buffer);
+	buffer[bytes_read] = '\0';
 
-    close(fd);
+	rev(buffer, bytes_read);
+	printf("%s", buffer);
+  close(fd);
 } */

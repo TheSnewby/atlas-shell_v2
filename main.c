@@ -42,62 +42,70 @@ int main(int argc, char *argv[])
  *
  * @isAtty: result of isatty(), 1 if interactive, 0 otherwsie
  * @argv: carrier of filename in [0]
- * @input: user-input
  * @tokens: array of strings of user inputs delimited by spaces
  */
-void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens)
+void executeIfValid(int isAtty, char *const *argv, char **tokens, char * input)
 {
-	int custom_cmd_rtn;
+	int custom_cmd_rtn, run_cmd_rtn;
+	char *full_path = NULL;
 
-	/* Check for pipe */
-	char *command1, *command2;
-
-	if (split_command_line_on_pipe(input, &command1, &command2) == 0)
+	if (tokens[0] == NULL)
 	{
-		char **args1 = parse_command(command1);
-		char **args2 = parse_command(command2);
-
-		if (args1 && args2)
-		{
-			execute_pipe_command(args1, args2);
-			free(args1);
-			free(args2);
-		}
-		else
-		{
-			fprintf(stderr, "Failed to parse commands\n");
-		}
-		return; /* Return to the main loop after handling the pipe */
+		return; /* Empty command - just return to the prompt */
 	}
 
-	/* Check for logical operators */
-	// if (strstr(input, "&&") || strstr(input, "||") || strstr(input, ";"))
-	// {
-	//	execute_logical_commands(input);
-	//	return; /* Return to the main loop after handling logical operators */
-	// }
+	full_path = findPath(tokens[0]);
+	if (full_path == NULL)
+	{
+		fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
+		if (!isAtty)
+		{
+			safeExit(127); /* Standard not found error status */
+		}
+		return;
+	}
+	free(full_path);
+
 	/* Handle built-in commands */
-	custom_cmd_rtn = customCmd(tokens, isAtty);
-	if (custom_cmd_rtn == 1)
+	custom_cmd_rtn = customCmd(tokens, isAtty, input);
+	if (custom_cmd_rtn != 0)
 	{
-		return; /* Built-in command was handled, return to the main loop */
+		if (custom_cmd_rtn == -1) /* false directory */
+			fprintf(stderr, "%s: 1: cd: can't cd to %s\n", argv[0], tokens[1]);
+		else if (custom_cmd_rtn == 3)  /* too many arguments */
+			fprintf(stderr, "%s: 1: cd: too many arguments\n", argv[0]);
+
+		if ((custom_cmd_rtn == -1) && !isAtty)
+			safeExit(EXIT_SUCCESS);
 	}
-	else if (custom_cmd_rtn == -1)
+	else  /* Not a built-in command, try executing as external command*/
 	{
-		if (!isAtty) /*error occurred in non-interactive*/
-		{
-			safeExit(EXIT_FAILURE);
-		}
-	}
-	else /* Not a built-in command, try executing as external command*/
-	{
-		int run_cmd_rtn = execute_command(tokens);
+		run_cmd_rtn = execute_command(tokens[0], tokens);
+
 		if (run_cmd_rtn != 0)
 		{
-			fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
+			/* Handle errors from execute_command */
+			if (run_cmd_rtn == 127)
+			{
+				/* Already handled the "not found" case, but this is here for clarity and in case execute_command changes */
+				fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
+			}
+			else if (run_cmd_rtn == -1)
+			{ /* fork failed */
+				perror("fork failed");
+			}
+			else
+			{
+				/* Other execve errors: use perror to print a descriptive message */
+				fprintf(stderr, "%s: 1: %s: ", argv[0], tokens[0]);
+				errno = run_cmd_rtn; /* Set errno, to error code */
+				perror("");
+			}
+
 			if (!isAtty)
 			{
-				safeExit(127); /*standard not found error status*/
+				/* use run_cmd_rtn exit status. */
+				safeExit(run_cmd_rtn);
 			}
 		}
 	}
@@ -107,22 +115,18 @@ void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens)
  * resetAll - frees all dynamically allotted memory to reset for next cmd
  * @tokens: array of strings needing free()
  * ...: list of variables to free
+ * NOTE: must be called with a final paramater VOID 
  */
 void resetAll(char **tokens, ...)
 {
 	va_list vars;
-	int i;
 	char *free_me;
 
 	if (tokens != NULL)
-	{
-		for (i = 0; tokens[i] != NULL; i++)
-			if (tokens[i])
-				free(tokens[i]);
 		free(tokens);
-	}
 	va_start(vars, tokens);
 	free_me = va_arg(vars, char *);
+
 	while (free_me != NULL)
 	{
 		free(free_me);
