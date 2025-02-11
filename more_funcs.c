@@ -149,14 +149,13 @@ void echor(char **tokens, const char *file)
 		fprintf(stderr, "Error: No file specified\n");
 		return;
 	}
-	int i = 2;
 	int fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (fd == -1)
 	{
 		perror("Error opening file");
 		return;
 	}
-	for (int i = 2; input[i] != '\0'; i++)
+	for (int i = 2; tokens[i] != '\0'; i++)
 	{
 		if (write(fd, input[i], _strlen(tokens[i])) < 0)
 		{
