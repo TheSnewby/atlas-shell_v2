@@ -68,7 +68,7 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char * input)
 
 	/* Handle built-in commands */
 	custom_cmd_rtn = customCmd(tokens, isAtty, input);
-	if (custom_cmd_rtn != 0)
+	if (custom_cmd_rtn)  /* user input is customCmd */
 	{
 		if (custom_cmd_rtn == -1) /* false directory */
 			fprintf(stderr, "%s: 1: cd: can't cd to %s\n", argv[0], tokens[1]);
@@ -82,7 +82,6 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char * input)
 	else  /* Not a built-in command, try executing as external command*/
 	{
 		run_cmd_rtn = execute_command(tokens[0], tokens);
-
 		if (run_cmd_rtn != 0)
 		{
 			/* Handle errors from execute_command */
@@ -106,9 +105,11 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char * input)
 			if (!isAtty)
 			{
 				/* use run_cmd_rtn exit status. */
+				resetAll(tokens, input, NULL);
 				safeExit(run_cmd_rtn);
 			}
 		}
+		resetAll(tokens, input, NULL);
 	}
 }
 
@@ -131,6 +132,7 @@ void resetAll(char **tokens, ...)
 	while (free_me != NULL)
 	{
 		free(free_me);
+		free_me = NULL;
 		free_me = va_arg(vars, char *);
 	}
 	va_end(vars);
