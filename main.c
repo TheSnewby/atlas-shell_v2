@@ -99,7 +99,7 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char * input)
 			else
 			{
 				/* Other execve errors: use perror to print a descriptive message */
-				fprintf(stderr, "%s: 1: %s: ", argv[0], tokens[0]);
+				fprintf(stderr, "%s: 2: %s: ", argv[0], tokens[0]);
 				errno = run_cmd_rtn; /* Set errno, to error code */
 				perror("");
 			}
