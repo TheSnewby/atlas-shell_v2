@@ -71,6 +71,8 @@ int ifCmdSelfDestruct(char **tokens)
  * ifCmdExit: if user-input is "exit" or "quit"
  * @tokens: tokenized array of user-inputs
  * @interactive: isatty() return value. 1 if interactive, 0 otherwise
+ *
+ * Return: 0 if the command isn't "exit" or "quit"
  */
 int ifCmdExit(char **tokens, int interactive, char *input)
 {
@@ -94,6 +96,7 @@ int ifCmdExit(char **tokens, int interactive, char *input)
 				// Handle non-numeric argument (error)
 				if (interactive)
 				{
+					resetAll(tokens, input, NULL);
 					selfDestruct(5); /* or another **appropriate** action */
 				}
 				else
@@ -115,7 +118,7 @@ int ifCmdExit(char **tokens, int interactive, char *input)
 		return 1;			 /* Should never reach here, but good practice */
 	}
 
-	return 0; // Not an exit/quit command
+	return 0; /* Not an exit/quit command */
 }
 
 /**
