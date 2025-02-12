@@ -233,7 +233,7 @@ int ifCmdCd(char **tokens)
 			else if (access(tokens[1], X_OK) != 0)  /* not permission */
 			{
 				// printf("\nNOT PERMISSION\n\n");
-				error_msg = 1;
+				error_msg = 2;
 			}
 			else if (is_directory(tokens[1]) == 0)  /* is not a directory */
 			{

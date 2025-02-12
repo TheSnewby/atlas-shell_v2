@@ -70,7 +70,7 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char * input)
 	custom_cmd_rtn = customCmd(tokens, isAtty, input);
 	if (custom_cmd_rtn)  /* user input is customCmd */
 	{
-		if (custom_cmd_rtn == -1) /* false directory */
+		if (custom_cmd_rtn == 2) /* false directory */
 			fprintf(stderr, "%s: 1: cd: can't cd to %s\n", argv[0], tokens[1]);
 		else if (custom_cmd_rtn == 3)  /* too many arguments */
 			fprintf(stderr, "%s: 1: cd: too many arguments\n", argv[0]);
