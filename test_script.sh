@@ -16,7 +16,12 @@ cd
 setenv HOME /etc
 cd ~
 cd -
-cd /root"
+cd /root
+
+ 
+    
+       
+fakeCmd"
 
 echo "===== Running in Non-Interactive Mode ====="
 echo "$COMMANDS" | $VALGRIND_CMD
