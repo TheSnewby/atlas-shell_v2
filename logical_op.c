@@ -39,11 +39,11 @@ void execute_command_group(char *command_group)
 			char *next_sep = saveptr2;
 			if (next_sep != NULL)
 			{
-				if (strncmp(next_sep, "&&", 2) == 0)
+				if (_strncmp(next_sep, "&&", 2) == 0)
 				{
 					sep_type = SEP_AND;
 				}
-				else if (strncmp(next_sep, "||", 2) == 0)
+				else if (_strncmp(next_sep, "||", 2) == 0)
 				{
 					sep_type = SEP_OR;
 				}
