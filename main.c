@@ -28,11 +28,6 @@ int main(int argc, char *argv[])
 
 	return (EXIT_SUCCESS);
 	/* -------------------------------------------------------------------- */
-	/*
-	 * note: 'On exit' code will probably never run unless something goes wrong.
-	 * TODO: We should consider returning EXIT_FAILURE
-	 *  or using break instead of exit(EXIT_SUCCESS)
-	 */
 }
 
 /**
@@ -70,25 +65,25 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char *input)
 		{
 			safeExit(127); /* Standard not found error status */
 		}
-		return; // Return after handling "not found"
+		return; /* Return after handling "not found" */
 	}
 
-	int run_cmd_rtn = execute_command(full_path, tokens); // Correct call!
-	free(full_path);									  // Free AFTER using the path
+	int run_cmd_rtn = execute_command(full_path, tokens);
+	free(full_path);									  /* Free AFTER using the path */
 
 	if (run_cmd_rtn != 0)
 	{
 		/* Handle errors from execute_command (other than not found) */
 		if (run_cmd_rtn == -1)
 		{
-			perror("fork failed"); // More specific message
+			perror("fork failed"); /* More specific message */
 		}
 		else
 		{
 			/* Other execve errors: use perror to print a descriptive message */
 			fprintf(stderr, "%s: 1: %s: ", argv[0], tokens[0]);
-			errno = run_cmd_rtn; // Set errno, to error code
-			perror("");			 // Use an empty string with perror
+			errno = run_cmd_rtn; /* Set errno, to error code */
+			perror("");			 /* Use an empty string with perror */
 		}
 
 		if (!isAtty)
