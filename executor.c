@@ -128,7 +128,6 @@ int execute_command(const char *commandPath, char **arguments)
 		}
 
 		char *path = _strdup(paths);
-		path = strdup(paths);
 		if (path == NULL)
 		{
 			exit(EXIT_FAILURE);
@@ -138,7 +137,11 @@ int execute_command(const char *commandPath, char **arguments)
 		char fullPath[PATH_MAX];
 		while (dir != NULL)
 		{
-			snprintf(fullPath, PATH_MAX, "%s/%s", dir, commandPath);
+			if ((_strncmp(commandPath, "/bin", 4) == 0) ||
+			(_strncmp(commandPath, "/user/bin", 9) == 0))
+				_strcpy(fullPath, commandPath);
+			else
+				snprintf(fullPath, PATH_MAX, "%s/%s", dir, commandPath);
 			execve(fullPath, arguments, environ);
 			dir = strtok_r(NULL, ":", &saveptr);
 		}
