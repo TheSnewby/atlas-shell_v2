@@ -1,4 +1,6 @@
 #include "main.h"
+#include <signal.h>
+
 
 /**
  * main - starts the program and the loop
@@ -18,8 +20,6 @@ int main(int argc, char *argv[])
 			   CLR_YELLOW_BOLD, CLR_RED_BOLD, CLR_YELLOW_BOLD);
 	/* --------------------------------------------------------------------- */
 	initialize_environ(); /* makes environ dynamically allocated */
-
-	signal(SIGCHLD, SIG_IGN);
 
 	shellLoop(isInteractive, argv); /* main shell loop */
 
