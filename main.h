@@ -10,10 +10,11 @@
 #include <stdarg.h>	   /* For va_list, va_start, va_arg, va_end */
 #include <stdio.h>	   /* For printf, fprintf, perror, getline etc */
 #include <stdlib.h>	   /* For malloc, free, realloc, exit, getenv */
-#include <string.h>	   /* kinda useless */
+#include <string.h>	   /* kinda useless  -  BIG TRUE */
 #include <sys/types.h> /* For pid_t, size_t */
 #include <sys/wait.h>  /* For waitpid, WIFEXITED, WEXITSTATUS */
-#include <unistd.h>/* For isatty, fork, execve, chdir, getcwd, etc.. */
+#include <unistd.h>    /* For isatty, fork, execve, chdir, getcwd, etc.. */
+#include <sys/stat.h>  /* For stat and S_ISDIR */
 #include "colors.h"
 
 /* ↓ STRUCTS AND MISC ↓ */
@@ -78,6 +79,7 @@ int ifCmdSetEnv(char **tokens);
 int ifCmdUnsetEnv(char **tokens);
 void selfDestruct(int countdown);
 void freeIfCmdCd(char *previous_cwd, char *home, char *pwd);
+
 /* --- Environment Variable Handling --- */
 char *_getenv(const char *name);
 int _setenv(const char *name, const char *value, int overwrite);
@@ -88,23 +90,15 @@ char *findPath(char *name);
 void destroyListPath(path_t *h);
 char *getUser(void);
 char *getHostname(void);
-int ifCmdEcho(char **tokens);
-
-/* void echol(const char *file); */
-void rev(char *str, ssize_t len);
-void echodr(const char *input, const char *file);
-void echor(const char *input, const char *file);
-char* cat(const char *file, int flag);
 char* _strstr(char *sentence, char *word);
-
 size_t _strcspn(const char *str1, const char *str2);
 
-int ifCmdCat(char **tokens);
 /* --- Utility Functions --- */
 int isNumber(char *str);
 int _atoi_safe(const char *s);
 void resetAll(char **tokens, ...);
 void freeIfCmdCd(char *previous_cwd, char *home, char *pwd);
+int is_directory(char *fp);
 
 /* --- Custom String Functions (Keep these!) --- */
 char *_strcat(char *dest, const char *src);
