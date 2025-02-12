@@ -16,88 +16,123 @@
  *         either command fails, or -1 on system call errors (pipe, fork).
  *         Returns 127 if either command is not found.
  */
-int execute_pipe_command(char **command1, char **command2)
+void execute_pipe_command(char **commands, int num_commands)
 {
-	int pipefd[2];
-	pid_t pid1, pid2;
-	int status1, status2; /* Store status of *both* children */
-
-	if (pipe(pipefd) == -1)
+	if (num_commands <= 0)
 	{
-		perror("pipe");
-		return -1;
+		return; // Nothing to do
 	}
 
-	if (access(command1[0], F_OK) != 0)
-	{ /* checks if cmd doesn't exist */
-		fprintf(stderr, "Command not executable: %s\n", command1[0]);
-		return (127);
-	}
-
-	pid1 = fork();
-	if (pid1 == -1)
+	if (num_commands == 1)
 	{
-		perror("fork");
-		close(pipefd[0]);
-		close(pipefd[1]);
-		return -1;
-	}
-
-	if (pid1 == 0)
-	{ /*Child process 1 */
-		close(pipefd[0]);
-		dup2(pipefd[1], STDOUT_FILENO);
-		close(pipefd[1]);
-
-		char *full_path1 = findPath(command1[0]);
-		if (full_path1)
+		// If there's only one command, we don't need pipes.  Just execute it.
+		char **args = parse_command(commands[0]);
+		if (args != NULL)
 		{
-			execve(full_path1, command1, environ);
-			free(full_path1);
+			if (args[0] != NULL)
+			{ // check for empty command
+				char *full_path = findPath(args[0]);
+				if (full_path != NULL)
+				{
+					execute_command(full_path, args);
+					free(full_path);
+				}
+				else
+				{ // command not found
+					fprintf(stderr, "%s: command not found\n", args[0]);
+				}
+			}
+			free(args);
 		}
-		fprintf(stderr, "hsh: 1: %s: not found\n", command1[0]);
-		exit(127); /* Command not found */
+		return;
 	}
 
-	pid2 = fork();
-	if (pid2 == -1)
+	// --- Multiple commands, create pipes ---
+
+	int pipes[num_commands - 1][2]; // Array of pipes
+	pid_t pids[num_commands];		// Array to store child PIDs
+
+	// Create all necessary pipes
+	for (int i = 0; i < num_commands - 1; i++)
 	{
-		perror("fork");
-		close(pipefd[0]);
-		close(pipefd[1]);
-		waitpid(pid1, NULL, 0); /* Cleanup, but don't check status here */
-		return -1;
-	}
-
-	if (pid2 == 0)
-	{ /* Child process 2 */
-		close(pipefd[1]);
-		dup2(pipefd[0], STDIN_FILENO);
-		close(pipefd[0]);
-
-		char *full_path2 = findPath(command2[0]);
-		if (full_path2)
+		if (pipe(pipes[i]) < 0)
 		{
-			execve(full_path2, command2, environ);
-			free(full_path2);
+			perror("pipe");
+			return; // Handle pipe creation failure
 		}
-		fprintf(stderr, "hsh: 1: %s: not found\n", command2[0]);
-		exit(127); /* Command not found */
 	}
 
-	/* Parent process */
-	close(pipefd[0]);
-	close(pipefd[1]);
-	waitpid(pid1, &status1, 0); /* Wait for *both* children, store *both* statuses */
-	waitpid(pid2, &status2, 0);
+	// Fork and execute each command
+	for (int i = 0; i < num_commands; i++)
+	{
+		pids[i] = fork();
+		if (pids[i] < 0)
+		{
+			perror("fork");
+			return; // Handle fork failure
+		}
+		else if (pids[i] == 0)
+		{
+			// Child process
 
-	if (WIFEXITED(status2))
-	{
-		return WEXITSTATUS(status2); /* Return status of *second* command */
+			// Redirect input (except for the first command)
+			if (i > 0)
+			{
+				if (dup2(pipes[i - 1][0], STDIN_FILENO) < 0)
+				{
+					perror("dup2 (stdin)");
+					exit(EXIT_FAILURE);
+				}
+			}
+
+			// Redirect output (except for the last command)
+			if (i < num_commands - 1)
+			{
+				if (dup2(pipes[i][1], STDOUT_FILENO) < 0)
+				{
+					perror("dup2 (stdout)");
+					exit(EXIT_FAILURE);
+				}
+			}
+
+			// Close all pipe ends in the child
+			for (int j = 0; j < num_commands - 1; j++)
+			{
+				close(pipes[j][0]);
+				close(pipes[j][1]);
+			}
+
+			// Parse the command
+			char **args = parse_command(commands[i]);
+			if (args == NULL || args[0] == NULL)
+			{										// check for parsing errors
+				fprintf(stderr, "Invalid command\n"); // error message
+				exit(EXIT_FAILURE);
+			}
+			char *full_path = findPath(args[0]); // find full path
+			if (full_path == NULL)
+			{
+				fprintf(stderr, "%s: command not found\n", args[0]);
+				exit(127); // exit 127
+			}
+			// Execute the command
+			execve(full_path, args, environ);
+			perror("execve"); // If execve returns, it failed
+			exit(EXIT_FAILURE);
+		}
 	}
-	else
+
+	// Parent process: Close all pipe ends
+	for (int i = 0; i < num_commands - 1; i++)
 	{
-		return -1; /* Error if second command didn't exit normally */
+		close(pipes[i][0]);
+		close(pipes[i][1]);
+	}
+
+	// Wait for all child processes to finish
+	for (int i = 0; i < num_commands; i++)
+	{
+		waitpid(pids[i], NULL, 0);
 	}
 }
 
@@ -112,51 +147,38 @@ int execute_command(const char *commandPath, char **arguments)
 {
 	pid_t pid;
 	int status;
+
 	pid = fork();
 	if (pid == -1)
 	{
 		perror("fork");
-		return -1;
+		return FORK_ERROR;
 	}
 	else if (pid == 0)
 	{
-		/* Child process */
-		char *paths = getenv("PATH");
-		if (paths == NULL)
-		{
-			paths = "/bin:/usr/bin"; /* Default PATH if none set */
-		}
-		char *path = strdup(paths);
-		if (path == NULL)
-		{
-			perror("strdup");
-			exit(EXIT_FAILURE);
-		}
-		char *saveptr = NULL;
-		char *dir = strtok_r(path, ":", &saveptr);
-		char fullPath[PATH_MAX];
-		while (dir != NULL)
-		{
-			snprintf(fullPath, PATH_MAX, "%s/%s", dir, commandPath);
-			execve(fullPath, arguments, environ);
-			dir = strtok_r(NULL, ":", &saveptr);
-		}
-		free(path);
-		perror("execve");
-		exit(EXIT_FAILURE);
+		// Child process
+		execve(commandPath, arguments, environ);
+		perror("execve");	// execve failed
+		exit(EXIT_FAILURE); // Exit the child!
 	}
 	else
 	{
-		/* Parent process */
+		// Parent process
 		if (waitpid(pid, &status, 0) == -1)
 		{
 			perror("waitpid");
-			return -1;
+			return WAITPID_ERROR;
 		}
+
 		if (WIFEXITED(status))
 		{
 			return WEXITSTATUS(status);
 		}
-		return -1;
+		else if (WIFSIGNALED(status))
+		{
+			fprintf(stderr, "Command terminated by signal %d\n", WTERMSIG(status));
+			return -1; // Or a specific signal error code
+		}
 	}
+	return 0; // Success
 }

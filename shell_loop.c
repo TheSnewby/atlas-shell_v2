@@ -1,31 +1,27 @@
 #include "main.h"
 #include "colors.h"
 
-/**
- * shellLoop - main loop for input/output.
- *
- * @isAtty: is interactive mode
- * @argv: args passed into main()
- */
 void shellLoop(int isAtty, char *argv[])
 {
 	size_t size;
 	char *user, *hostname, path[PATH_MAX], *input, **tokens = NULL;
+	int num_commands;
+	char **commands = NULL;
 
 	while (1)
 	{
-		/* initialize vars */
+		// Initialize variables
 		getcwd(path, sizeof(path));
 		user = getUser();
 		hostname = getHostname();
 		size = 0;
 		input = NULL;
-		tokens = NULL; /* Initialize tokens to NULL each iteration. */
+		tokens = NULL;
 
 		printPrompt(isAtty, user, hostname, path);
 
 		if (getline(&input, &size, stdin) == -1)
-		{ /* gets input; plus EOF (^D) check */
+		{
 			if (isAtty)
 			{
 				printf("\n%sCtrl-D Entered. %s\n", CLR_DEFAULT_BOLD, CLR_YELLOW_BOLD);
@@ -33,80 +29,65 @@ void shellLoop(int isAtty, char *argv[])
 					   CLR_RED_BOLD, CLR_YELLOW_BOLD, CLR_DEFAULT);
 			}
 			if (input)
-				free(input); /* Free input before exiting */
+				free(input);
 			safeExit(EXIT_SUCCESS);
 		}
 
-		input[_strcspn(input, "\n")] = 0; /* remove trailing newline */
+		input[_strcspn(input, "\n")] = 0; // Remove trailing newline
 
-		/* --- Piping Logic (BEFORE built-in/external command handling) --- */
-		char *command1, *command2;
-		if (split_command_line_on_pipe(input, &command1, &command2) == 0)
-		{
-			/* Successfully split on a pipe. */
-			char **args1 = parse_command(command1);
-			char **args2 = parse_command(command2);
-
-			if (args1 && args2)
+		// Piping Logic
+		if (strchr(input, '|'))
+		{ // Check if there's a pipe in the command
+			if (split_command_line_on_pipe(input, &commands, &num_commands) == 0)
 			{
-				execute_pipe_command(args1, args2);
-				/* Free the args arrays allocated by parse_command. */
-				free(args1);
-				free(args2);
+				execute_pipe_command(commands, num_commands);
+				for (int i = 0; i < num_commands; i++)
+				{
+					free(commands[i]);
+				}
+				free(commands);
+				free(input);
+				continue;
 			}
 			else
 			{
-				fprintf(stderr, "Failed to parse commands\n");
+				fprintf(stderr, "Failed to split commands\n");
 			}
-			free(input);
-			continue; /* Go back to the top of the loop. */
-		}
-		if (_strstr(input, "&&") || _strstr(input, "||") || _strstr(input, ";"))
-		{
-			execute_logical_commands(input); /* handle logical operators */
-			resetAll(tokens, input);
-			continue; /* Return to the main loop after handling logical operators */
 		}
 
+		// Logical Operators
+		if (_strstr(input, "&&") || _strstr(input, "||") || _strstr(input, ";"))
+		{
+			execute_logical_commands(input);
+			resetAll(tokens, input);
+			continue;
+		}
+
+		// Parse and Execute Single Command
 		tokens = parse_command(input);
 		if (tokens == NULL)
 		{
 			free(input);
-			continue; /* Empty command or parse error, go to next iteration. */
+			continue;
 		}
 
 		executeIfValid(isAtty, argv, tokens, input);
-		/* --- Cleanup (ALWAYS done after each command) --- */
-		resetAll(tokens, input, NULL);
 
-		//	execute_logical_commands(input);
-		//	continue; /* Return to the main loop after handling logical operators */
-	//	}
+		// Cleanup
+		resetAll(tokens, input, NULL);
 	}
 }
-/**
- * printPrompt - prints prompt in color ("[Go$H] | user@hostname:path$ ")
- *
- * @isAtty: is interactive mode
- * @user: environment variable for user's username
- * @hostname: environment variable for user's hostname or device name.
- * @path: current working directory
- */
+
 void printPrompt(int isAtty, char *user, char *hostname, char *path)
 {
-	if (isAtty) /* checks interactive mode */
+	if (isAtty)
 	{
-		/* print thing to let us know we're in this shell, not the real one */
 		printf("%s[%sGo$H%s]%s | ", CLR_YELLOW_BOLD, CLR_RED_BOLD,
-			   CLR_YELLOW_BOLD, CLR_DEFAULT); /*Go$H stands for Gates of Shell*/
-		/* prints user@host in green (i.e. julien@ubuntu) */
+			   CLR_YELLOW_BOLD, CLR_DEFAULT);
 		printf("%s%s@%s", CLR_GREEN_BOLD, user, hostname);
-		/* prints the path in blue */
 		printf("%s:%s%s", CLR_DEFAULT_BOLD, CLR_BLUE_BOLD, path);
-		/* resets text color and prints '$ ' */
 		printf("%s$ ", CLR_DEFAULT);
 	}
-
 	free(user);
 	free(hostname);
 }
