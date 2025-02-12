@@ -203,8 +203,20 @@ int ifCmdCd(char **tokens)
 			error_msg = 3;
 		else if (tokens[1] != NULL)
 		{
-
-			if (_strcmp(tokens[1], "-") == 0) /* previous path */
+			if (_strcmp(tokens[1], "~") == 0)  /* home */
+			{
+				if (home)
+				{
+					chdir_rtn = chdir(home);
+					if (chdir_rtn == -1)
+						error_msg = 1;
+					free(home);
+					home = NULL;
+				}
+				else
+					error_msg = 0;
+			}
+			else if (_strcmp(tokens[1], "-") == 0) /* previous path */
 				if (previous_cwd)
 				{
 					chdir_rtn = chdir(previous_cwd);
@@ -217,27 +229,29 @@ int ifCmdCd(char **tokens)
 				}
 				else
 					printf("%s\n", cwd_buf);
-			else if ((_strncmp(tokens[1], "/root", 5) == 0) && (access(tokens[1], X_OK) != 0))
+			// else if ((_strncmp(tokens[1], "/root", 5) == 0) && (access(tokens[1], X_OK) != 0))
+			else if (access(tokens[1], X_OK) != 0)  /* not permission */
+			{
+				// printf("\nNOT PERMISSION\n\n");
+				error_msg = 1;
+			}
+			else if (is_directory(tokens[1]) == 0)  /* is not a directory */
+			{
+				// printf("\nNOT DIRECTORY\n\n");
 				error_msg = 4;
+			}
 			else if (tokens[1][0] == '/')  /* absolute path */
 			{
 				chdir_rtn = chdir(tokens[1]);
 				if (chdir_rtn == -1)
 					error_msg = 1;
 			}
-			else if (_strcmp(tokens[1], "~") == 0)  /* home */
-				if (home)
-				{
-					chdir_rtn = chdir(home);
-					free(home);
-					home = NULL;
-				}
-				else
-					error_msg = 0;
 			else /* relative path */
 			{
 				_build_path(cwd_buf, tokens[1], abs_path);
 				chdir_rtn = chdir(abs_path);
+				if (chdir_rtn == -1)
+					error_msg = 1;
 			}
 		}
 		else /* default go $HOME */
@@ -253,18 +267,18 @@ int ifCmdCd(char **tokens)
 		}
 		if ((chdir_rtn == -1) || (error_msg > 0)) /* chdir failed or custom error */
 		{
-			if (error_msg == 1)
+			if ((error_msg == 1) || (error_msg == 4))
 				printf("%s\n", cwd_buf);
 
 			freeIfCmdCd(previous_cwd, home, pwd);
 			if (chdir_rtn == -1)
 				return (-1);
+			if ((error_msg == 1) || (error_msg == 4))
+				return (1);
 			if (error_msg == 2)
 				return (2);
 			if (error_msg == 3)
 				return(3);  /* custom error */
-			else if (error_msg == 4)
-				return (-1);
 			return (0); /* consider return errno */
 		}
 		else /* on success set OLD PWD and PWD */

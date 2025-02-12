@@ -76,7 +76,10 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char * input)
 			fprintf(stderr, "%s: 1: cd: too many arguments\n", argv[0]);
 
 		if ((custom_cmd_rtn == -1) && !isAtty)
-			safeExit(EXIT_SUCCESS);
+			{
+				resetAll(tokens, input, NULL);
+				safeExit(EXIT_SUCCESS);
+			}
 	}
 	else  /* Not a built-in command, try executing as external command*/
 	{
