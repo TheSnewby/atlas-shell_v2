@@ -77,7 +77,6 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char * input)
 
 		if ((custom_cmd_rtn == -1) && !isAtty)
 			safeExit(EXIT_SUCCESS);
-	return;
 	}
 	else  /* Not a built-in command, try executing as external command*/
 	{
@@ -109,8 +108,8 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char * input)
 				safeExit(run_cmd_rtn);
 			}
 		}
-		resetAll(tokens, input, NULL);
 	}
+	resetAll(tokens, input, NULL);
 }
 
 /**
@@ -131,7 +130,8 @@ void resetAll(char **tokens, ...)
 
 	while (free_me != NULL)
 	{
-		free(free_me);
+		if (free_me)
+			free(free_me);
 		free_me = NULL;
 		free_me = va_arg(vars, char *);
 	}
