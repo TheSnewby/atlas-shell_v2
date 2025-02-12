@@ -19,6 +19,8 @@ int main(int argc, char *argv[])
 	/* --------------------------------------------------------------------- */
 	initialize_environ(); /* makes environ dynamically allocated */
 
+	signal(SIGCHLD, SIG_IGN);
+
 	shellLoop(isInteractive, argv); /* main shell loop */
 
 	/* ------------------- On exit - one time execution ------------------- */
@@ -43,65 +45,55 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char *input)
 {
 	int custom_cmd_rtn;
 
-	/* Not a built-in command, try executing as external command */
+	/* --- Built-in Command Handling --- */
+	custom_cmd_rtn = customCmd(tokens, isAtty, input);
+	if (custom_cmd_rtn == 1)
+	{
+		return; /* Built-in was handled. */
+	}
+
+	/* --- External Command Handling --- */
+
+	/* Check for empty command *before* doing anything else. */
 	if (tokens[0] == NULL)
 	{
-		return; /* Empty command - just return. */
+		return;
 	}
 
-/* Handle built-in commands */
-	custom_cmd_rtn = customCmd(tokens, isAtty, input);
-	if (custom_cmd_rtn)  /* user input is customCmd */
-	{
-		if (custom_cmd_rtn == 2) /* false directory */
-			fprintf(stderr, "%s: 1: cd: can't cd to %s\n", argv[0], tokens[1]);
-		else if (custom_cmd_rtn == 3)  /* too many arguments */
-			fprintf(stderr, "%s: 1: cd: too many arguments\n", argv[0]);
-
-		if ((custom_cmd_rtn == -1) && !isAtty)
-			{
-				resetAll(tokens, input, NULL);
-				safeExit(EXIT_SUCCESS);
-			}
-	}
-  else{
-    char *full_path = findPath(tokens[0]);
+	/* *Now* we find the path, since it's not a built-in. */
+	char *full_path = findPath(tokens[0]);
 	if (full_path == NULL)
 	{
 		fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
 		if (!isAtty)
 		{
-			safeExit(127); /* Standard not found error status */
+			safeExit(127);
 		}
-		return; // Return after handling "not found"
+		return; /* Return here after handling "not found" */
 	}
-	int run_cmd_rtn = execute_command(full_path, tokens); // Correct call!
-	free(full_path);									  // Free AFTER using the path
 
+	/* Execute the command (using the FULL PATH and ALL arguments) */
+	int run_cmd_rtn = execute_command(full_path, tokens);
+	free(full_path); /* Free *after* execute_command */
+
+	/* Handle errors from execute_command */
 	if (run_cmd_rtn != 0)
 	{
-		/* Handle errors from execute_command (other than not found) */
 		if (run_cmd_rtn == -1)
 		{
-			perror("fork failed"); // More specific message
+			perror("fork"); /* Most likely cause if execute_command fails */
 		}
 		else
 		{
-			/* Other execve errors: use perror to print a descriptive message */
-			fprintf(stderr, "%s: 1: %s: ", argv[0], tokens[0]);
-			errno = run_cmd_rtn; // Set errno, to error code
-			perror("");			 // Use an empty string with perror
+			errno = run_cmd_rtn;
+			perror("Command failed"); /* Generic error, use perror */
 		}
 
 		if (!isAtty)
 		{
-      resetAll(tokens, input, NULL);
-			safeExit(run_cmd_rtn);
-    }
-    
+			safeExit(run_cmd_rtn); /* Exit with the error code */
 		}
 	}
-	// resetAll(tokens, input, NULL);
 }
 
 /**
