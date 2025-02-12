@@ -64,44 +64,44 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char *input)
 				safeExit(EXIT_SUCCESS);
 			}
 	}
-  else{
-    char *full_path = findPath(tokens[0]);
-	if (full_path == NULL)
-	{
-		fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
-		if (!isAtty)
+	else{
+		char *full_path = findPath(tokens[0]);
+		if (full_path == NULL)
 		{
-			safeExit(127); /* Standard not found error status */
+			fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
+			if (!isAtty)
+			{
+				safeExit(127); /* Standard not found error status */
+			}
+			return; // Return after handling "not found"
 		}
-		return; // Return after handling "not found"
-	}
-	int run_cmd_rtn = execute_command(full_path, tokens); // Correct call!
-	free(full_path);									  // Free AFTER using the path
+		int run_cmd_rtn = execute_command(full_path, tokens); // Correct call!
+		free(full_path);									  // Free AFTER using the path
 
-	if (run_cmd_rtn != 0)
-	{
-		/* Handle errors from execute_command (other than not found) */
-		if (run_cmd_rtn == -1)
+		if (run_cmd_rtn != 0)
 		{
-			perror("fork failed"); // More specific message
-		}
-		else
-		{
-			/* Other execve errors: use perror to print a descriptive message */
-			fprintf(stderr, "%s: 1: %s: ", argv[0], tokens[0]);
-			errno = run_cmd_rtn; // Set errno, to error code
-			perror("");			 // Use an empty string with perror
-		}
+			/* Handle errors from execute_command (other than not found) */
+			if (run_cmd_rtn == -1)
+			{
+				perror("fork failed"); // More specific message
+			}
+			else if(run_cmd_rtn == 2)
+				;
+			else
+			{
+				/* Other execve errors: use perror to print a descriptive message */
+				fprintf(stderr, "%s: 1: %s: ", argv[0], tokens[0]);
+				errno = run_cmd_rtn; // Set errno, to error code
+				perror("");			 // Use an empty string with perror
+			}
 
-		if (!isAtty)
-		{
-      resetAll(tokens, input, NULL);
+			if (!isAtty)
+			{
+			resetAll(tokens, input, NULL);
 			safeExit(run_cmd_rtn);
-    }
-    
+			}
 		}
 	}
-	// resetAll(tokens, input, NULL);
 }
 
 /**
