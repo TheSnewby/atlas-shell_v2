@@ -77,7 +77,7 @@ void shellLoop(int isAtty, char *argv[])
 
 		executeIfValid(isAtty, argv, tokens, input);
 		/* --- Cleanup (ALWAYS done after each command) --- */
-		// resetAll(tokens, input, NULL);
+		resetAll(tokens, input, NULL);
 	}
 }
 /**

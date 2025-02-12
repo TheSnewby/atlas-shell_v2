@@ -15,7 +15,8 @@ unsetenv HOME
 cd
 setenv HOME /etc
 cd ~
-cd -"
+cd -
+cd /root"
 
 echo "===== Running in Non-Interactive Mode ====="
 echo "$COMMANDS" | $VALGRIND_CMD

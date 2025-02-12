@@ -112,7 +112,7 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char * input)
 			}
 		}
 	}
-	resetAll(tokens, input, NULL);
+	// resetAll(tokens, input, NULL);
 }
 
 /**
