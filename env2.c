@@ -57,9 +57,9 @@ char *findPath(char *name)
 	char *temp_path = NULL;
 
 	head = buildListPath(); /* populates list and points at head */
-	if (!head)
+	if (head == NULL)
 	{
-		return (_strdup(name)); /*Return copy of name*/
+		return (NULL); /*Return copy of name*/
 	}
 	temp = head; /* iterator initialization */
 

@@ -80,6 +80,8 @@ void shellLoop(int isAtty, char *argv[])
 		/* --- Cleanup (ALWAYS done after each command) --- */
 		free(tokens);
 		free(input);
+		free(user);
+		free(hostname);
 	}
 }
 /**
