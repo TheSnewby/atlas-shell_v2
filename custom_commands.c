@@ -38,9 +38,6 @@ int customCmd(char **tokens, int interactive, char *input)
 	ifRtn = ifCmdCd(tokens);
 	if (ifRtn)
 		return (ifRtn);
-	/* ----------------- custom command "echo" ----------------- */
-	if (ifCmdEcho(tokens))
-		return (1);
 
 	return (0); /* indicate that the input is not a custom command */
 }
@@ -74,6 +71,8 @@ int ifCmdSelfDestruct(char **tokens)
  * ifCmdExit: if user-input is "exit" or "quit"
  * @tokens: tokenized array of user-inputs
  * @interactive: isatty() return value. 1 if interactive, 0 otherwise
+ *
+ * Return: 0 if the command isn't "exit" or "quit"
  */
 int ifCmdExit(char **tokens, int interactive, char *input)
 {
@@ -97,6 +96,7 @@ int ifCmdExit(char **tokens, int interactive, char *input)
 				// Handle non-numeric argument (error)
 				if (interactive)
 				{
+					resetAll(tokens, input, NULL);
 					selfDestruct(5); /* or another **appropriate** action */
 				}
 				else
@@ -118,7 +118,7 @@ int ifCmdExit(char **tokens, int interactive, char *input)
 		return 1;			 /* Should never reach here, but good practice */
 	}
 
-	return 0; // Not an exit/quit command
+	return 0; /* Not an exit/quit command */
 }
 
 /**
@@ -203,8 +203,20 @@ int ifCmdCd(char **tokens)
 			error_msg = 3;
 		else if (tokens[1] != NULL)
 		{
-
-			if (_strcmp(tokens[1], "-") == 0) /* previous path */
+			if (_strcmp(tokens[1], "~") == 0)  /* home */
+			{
+				if (home)
+				{
+					chdir_rtn = chdir(home);
+					if (chdir_rtn == -1)
+						error_msg = 1;
+					free(home);
+					home = NULL;
+				}
+				else
+					error_msg = 0;
+			}
+			else if (_strcmp(tokens[1], "-") == 0) /* previous path */
 				if (previous_cwd)
 				{
 					chdir_rtn = chdir(previous_cwd);
@@ -217,27 +229,29 @@ int ifCmdCd(char **tokens)
 				}
 				else
 					printf("%s\n", cwd_buf);
-			else if ((_strncmp(tokens[1], "/root", 5) == 0) && (access(tokens[1], X_OK) != 0))
+			// else if ((_strncmp(tokens[1], "/root", 5) == 0) && (access(tokens[1], X_OK) != 0))
+			else if (access(tokens[1], X_OK) != 0)  /* not permission */
+			{
+				// printf("\nNOT PERMISSION\n\n");
+				error_msg = 2;
+			}
+			else if (is_directory(tokens[1]) == 0)  /* is not a directory */
+			{
+				// printf("\nNOT DIRECTORY\n\n");
 				error_msg = 4;
+			}
 			else if (tokens[1][0] == '/')  /* absolute path */
 			{
 				chdir_rtn = chdir(tokens[1]);
 				if (chdir_rtn == -1)
 					error_msg = 1;
 			}
-			else if (_strcmp(tokens[1], "~") == 0)  /* home */
-				if (home)
-				{
-					chdir_rtn = chdir(home);
-					free(home);
-					home = NULL;
-				}
-				else
-					error_msg = 0;
 			else /* relative path */
 			{
 				_build_path(cwd_buf, tokens[1], abs_path);
 				chdir_rtn = chdir(abs_path);
+				if (chdir_rtn == -1)
+					error_msg = 1;
 			}
 		}
 		else /* default go $HOME */
@@ -251,21 +265,20 @@ int ifCmdCd(char **tokens)
 			else
 				error_msg = 0;
 		}
-
 		if ((chdir_rtn == -1) || (error_msg > 0)) /* chdir failed or custom error */
 		{
-			if (error_msg == 1)
+			if ((error_msg == 1) || (error_msg == 4))
 				printf("%s\n", cwd_buf);
 
 			freeIfCmdCd(previous_cwd, home, pwd);
 			if (chdir_rtn == -1)
 				return (-1);
+			if ((error_msg == 1) || (error_msg == 4))
+				return (1);
 			if (error_msg == 2)
 				return (2);
 			if (error_msg == 3)
 				return(3);  /* custom error */
-			else if (error_msg == 4)
-				return (-1);
 			return (0); /* consider return errno */
 		}
 		else /* on success set OLD PWD and PWD */
@@ -289,42 +302,4 @@ int ifCmdCd(char **tokens)
 
 	freeIfCmdCd(previous_cwd, home, pwd);
 	return (1); /* success */
-}
-
-int ifCmdEcho(char **tokens)
-{
-	if (tokens[0] != NULL && (_strcmp(tokens[0], "echo") == 0))
-	{
-		if (tokens[2] != NULL && (_strcmp(tokens[2], ">") == 0))
-		{
-			echor(tokens[1], tokens[3]);
-		}
-		else if (tokens[2] != NULL && (_strcmp(tokens[2], ">>") == 0))
-		{
-			echodr(tokens[1], tokens[3]);
-		}
-		/* else if (tokens[2] != NULL && (_strcmp(tokens[2], "<") == 0))
-		{
-			echol(tokens[1], tokens[3]);
-		} */
-		return (1);  /* signals it was the echo command */
-  }
-	return (0);  /* signals it wasn't the echo command */
-}
-
-int ifCmdCat(char **tokens)
-{
-	if (tokens[0] != NULL && (_strcmp(tokens[0], "cat") == 0))
-	{
-		if (tokens[1] != NULL && (_strcmp(tokens[1], "-e") == 0))
-		{
-			cat(tokens[2], 1);
-		}
-		else
-		{
-			cat(tokens[1], 0);
-		}
-		return (1);
-	}
-	return (0);  /* signals it wasn't the echo command */
 }
