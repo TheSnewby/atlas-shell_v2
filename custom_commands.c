@@ -101,7 +101,8 @@ int ifCmdExit(char **tokens, int interactive, char *input)
 				}
 				else
 				{ /* not interactive, print to standard error. */
-					fprintf(stderr, "exit: Illegal number: %s\n", tokens[1]);
+					fprintf(stderr, "./hsh: 1: exit: Illegal number: %s\n",
+						tokens[1]);
 				}
 				resetAll(tokens, input, NULL);
 				safeExit(2); /* exit with error if not number */
