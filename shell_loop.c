@@ -1,6 +1,11 @@
 #include "main.h"
 #include "colors.h"
-
+/**
+ * shellLoop - main loop for input/output.
+ *
+ * @isAtty: is interactive mode
+ * @argv: args passed into main()
+ */
 void shellLoop(int isAtty, char *argv[])
 {
 	size_t size;
@@ -10,7 +15,7 @@ void shellLoop(int isAtty, char *argv[])
 
 	while (1)
 	{
-		// Initialize variables
+		/* Initialize variables */
 		getcwd(path, sizeof(path));
 		user = getUser();
 		hostname = getHostname();
@@ -33,11 +38,11 @@ void shellLoop(int isAtty, char *argv[])
 			safeExit(EXIT_SUCCESS);
 		}
 
-		input[_strcspn(input, "\n")] = 0; // Remove trailing newline
+		input[_strcspn(input, "\n")] = 0; /* Remove trailing newline */
 
-		// Piping Logic
-		if (strchr(input, '|'))
-		{ // Check if there's a pipe in the command
+		/* Piping Logic */
+		if (_strchr(input, '|'))
+		{ /* Check if there's a pipe in the command */
 			if (split_command_line_on_pipe(input, &commands, &num_commands) == 0)
 			{
 				execute_pipe_command(commands, num_commands);
@@ -55,7 +60,7 @@ void shellLoop(int isAtty, char *argv[])
 			}
 		}
 
-		// Logical Operators
+		/* Logical Operators */
 		if (_strstr(input, "&&") || _strstr(input, "||") || _strstr(input, ";"))
 		{
 			execute_logical_commands(input);
@@ -63,7 +68,7 @@ void shellLoop(int isAtty, char *argv[])
 			continue;
 		}
 
-		// Parse and Execute Single Command
+		/* Parse and Execute Single Command */
 		tokens = parse_command(input);
 		if (tokens == NULL)
 		{
@@ -73,11 +78,18 @@ void shellLoop(int isAtty, char *argv[])
 
 		executeIfValid(isAtty, argv, tokens, input);
 
-		// Cleanup
+		/* Cleanup */
 		resetAll(tokens, input, NULL);
 	}
 }
-
+/**
+ * printPrompt - prints prompt in color ("[Go$H] | user@hostname:path$ ")
+ *
+ * @isAtty: is interactive mode
+ * @user: environment variable for user's username
+ * @hostname: environment variable for user's hostname or device name.
+ * @path: current working directory
+ */
 void printPrompt(int isAtty, char *user, char *hostname, char *path)
 {
 	if (isAtty)
