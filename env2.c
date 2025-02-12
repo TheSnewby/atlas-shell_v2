@@ -103,11 +103,6 @@ void destroyListPath(path_t *h)
 		free(temp);
 	}
 }
-/**
- * getHostname - retrieves hostname from env or sets a new hostname
- *
- * Return: hostname
- */
 char *getHostname(void)
 {
 	char *hostname = _getenv("NAME");
@@ -118,8 +113,11 @@ char *getHostname(void)
 		hostname = _getenv(("WSL_DISTRO_NAME"));
 	if (!hostname)
 	{
-		hostname = malloc(8);
-		_strcpy(hostname, "unknown");
+		hostname = _strdup("unknown"); /* ALWAYS duplicate */
+	}
+	else
+	{ /* always duplicate */
+		hostname = _strdup(hostname);
 	}
 
 	return (hostname);
@@ -138,9 +136,11 @@ char *getUser(void)
 		user = _getenv("LOGNAME");
 	if (!user)
 	{
-		user = malloc(8);
-		_strcpy(user, "unknown");
+		user = _strdup("unknown"); /* ALWAYS duplicate */
 	}
-
+	else
+	{ /* always duplicate */
+		user = _strdup(user);
+	}
 	return (user);
 }

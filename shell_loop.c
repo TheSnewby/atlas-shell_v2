@@ -64,7 +64,7 @@ void shellLoop(int isAtty, char *argv[])
 		if (_strstr(input, "&&") || _strstr(input, "||") || _strstr(input, ";"))
 		{
 			execute_logical_commands(input);
-			resetAll(tokens, input);
+			free(input);
 			continue;
 		}
 
@@ -78,7 +78,8 @@ void shellLoop(int isAtty, char *argv[])
 
 		executeIfValid(isAtty, argv, tokens, input);
 		/* --- Cleanup (ALWAYS done after each command) --- */
-		resetAll(tokens, input, NULL);
+		free(tokens);
+		free(input);
 	}
 }
 /**
@@ -99,6 +100,4 @@ void printPrompt(int isAtty, char *user, char *hostname, char *path)
 		printf("%s:%s%s", CLR_DEFAULT_BOLD, CLR_BLUE_BOLD, path);
 		printf("%s$ ", CLR_DEFAULT);
 	}
-	free(user);
-	free(hostname);
 }
