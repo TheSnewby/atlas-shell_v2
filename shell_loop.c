@@ -77,9 +77,9 @@ void shellLoop(int isAtty, char *argv[])
 			free(input);
 			continue;
 		}
-		if (_strchr(tokens, ">"))
+		if (_strchr(*tokens, ">"))
 		{
-			RightShift(tokens);
+			RightDirect(tokens);
 		}
 		// --- Built-in Command Handling ---
 		custom_cmd_rtn = customCmd(tokens, isAtty, input);
