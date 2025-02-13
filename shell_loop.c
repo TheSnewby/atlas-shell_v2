@@ -71,7 +71,7 @@ void shellLoop(int isAtty, char *argv[])
 		}
 		if (_strstr(input, ">"))
 		{
-			i = 0;
+			int i = 0;
 			while (input != NULL)
 			{
 				if (input[i] == '>')
