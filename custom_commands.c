@@ -327,7 +327,6 @@ int RightDirect(char *line) {
         } else {
             tokens[position++] = token;
         }
-
         if (position >= bufsize) {
             bufsize += 64;
             tokens = realloc(tokens, bufsize * sizeof(char *));
@@ -336,7 +335,6 @@ int RightDirect(char *line) {
                 exit(EXIT_FAILURE);
             }
         }
-
         token = strtok(NULL, " \t\r\n\a");
     }
     tokens[position] = NULL;
@@ -383,10 +381,11 @@ int RightDirect(char *line) {
 		{
 			fprintf(stderr, "./hsh: %d: %s: not found\n", 1, args[0]);
 			free(tokens);
-			exit(127);
+			exit(1);
 		}
         execvp(args[0], args);
         perror("execvp");
+		free(tokens);
         exit(1);
     } else {
         close(fd);
