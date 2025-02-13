@@ -42,12 +42,12 @@ int customCmd(char **tokens, int interactive, char *input)
 	/* ----------------- custom command "echo" ----------------- */
 	if (ifCmdEcho(tokens))
 	{
-		if (_strstr(tokens, ">"))
+		for (int i = 0; tokens[i] != NULL; i++)
 		{
-			RightDirect(tokens);
+			if (_strcmp(tokens[i], ">") == 0)
+				return RightDirect(tokens);
 		}
 	}
-
 	return (0); /* indicate that the input is not a custom command */
 }
 
@@ -317,27 +317,56 @@ int ifCmdCd(char **tokens)
 
 int RightDirect(char **tokens)
 {
-	int fd;
-	char *filename = tokens[2];
+    int fd, i = 0;
+    char *filename = NULL;
+    char *command[100];
 
-	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (fd == -1)
-	{
-		perror("open");
-		return (-1);
-	}
-	char *command = tokens[0];
-	char *args[] = {command, NULL};
-	if (dup2(fd, STDOUT_FILENO) == -1)
-	{
-		perror("dup2");
-		close(fd);
-		return (-1);
-	}
-	close(fd);
-	execvp(command, args);
-	perror("execvp");
-	return (-1);
+    while (tokens[i] != NULL)
+    {
+        if (_strcmp(tokens[i], ">") == 0)
+        {
+            tokens[i] = NULL;
+            filename = tokens[i + 1];
+            break;
+        }
+        command[i] = tokens[i];
+        i++;
+    }
+    command[i] = NULL;
+
+    if (filename == NULL)
+    {
+        fprintf(stderr, "Error: No output file specified\n");
+        return -1;
+    }
+
+    fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd == -1)
+    {
+        perror("open");
+        return -1;
+    }
+
+    pid_t pid = fork();
+    if (pid == -1)
+    {
+        perror("fork");
+        close(fd);
+        return -1;
+    }
+
+    if (pid == 0)
+    {
+        dup2(fd, STDOUT_FILENO);
+        close(fd);
+        execvp(command[0], command);
+        perror("execvp");
+        exit(EXIT_FAILURE);
+    }
+
+    close(fd);
+    wait(NULL);
+    return 1;
 }
 
 int ifCmdEcho(**tokens)
