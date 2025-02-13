@@ -102,9 +102,9 @@ int ifCmdExit(char **tokens, int interactive, char *input)
 					exit_code = 2; // invalid number
 				}
 			}
-			else
+			else /* string */
 			{
-				fprintf(stderr, "./hsh: exit: %s: numeric argument required\n",
+				fprintf(stderr, "./hsh: 1: exit: Illegal number: %s\n",
 						tokens[1]);
 				resetAll(tokens, input, NULL);
 				safeExit(2); /* exit with error if not number */
