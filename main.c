@@ -43,20 +43,30 @@ int main(int argc, char *argv[])
 void executeIfValid(int isAtty, char *const *argv, char **tokens, char *input)
 {
 	int custom_cmd_rtn;
-
-	/* Handle built-in commands */
-	custom_cmd_rtn = customCmd(tokens, isAtty, input);
-	if (custom_cmd_rtn == 1)
-	{
-		return; /* Built-in command was handled, return to the main loop */
-	}
-
-	/* Not a built-in command, try executing as external command*/
-	/* *** CHECK FOR EMPTY COMMAND HERE *** */
 	if (tokens[0] == NULL)
 	{
 		return; /*  Empty command - just return to the prompt */
 	}
+
+	/* Handle built-in commands */
+	custom_cmd_rtn = customCmd(tokens, isAtty, input);
+	if (custom_cmd_rtn)
+	{
+		if (custom_cmd_rtn == 2) /* false directory */
+			fprintf(stderr, "%s: 1: cd: can't cd to %s\n", argv[0], tokens[1]);
+		else if (custom_cmd_rtn == 3)  /* too many arguments */
+			fprintf(stderr, "%s: 1: cd: too many arguments\n", argv[0]);
+
+		if ((custom_cmd_rtn == -1) && !isAtty)
+			{
+				resetAll(tokens, input, NULL);
+				safeExit(EXIT_SUCCESS);
+			}
+		return;
+	}
+
+	/* Not a built-in command, try executing as external command*/
+	/* *** CHECK FOR EMPTY COMMAND HERE *** */
 
 	char *full_path = findPath(tokens[0]);
 	if (full_path == NULL)
@@ -64,8 +74,8 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char *input)
 		fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
 		if (!isAtty)
 		{
+			resetAll(tokens, input, NULL);
 			safeExit(127); /* Standard not found error status */
-
 		}
 		return; /* Return after handling "not found" */
 	}
