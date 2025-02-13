@@ -302,11 +302,9 @@ int ifCmdCd(char **tokens)
 int RightDirect(char *line)
 {
 	int fd, i = 0, j = 0, k = 0, position = 0;
-	char **tokens = malloc(bufsize * sizeof(* char);
-	char *token;
     	char *filename;
     	char *args[100];
-	int bufsize = 64
+	int bufsize = 64;
 	char **tokens = malloc(bufsize * sizeof(char *));
 	char *token;
 
