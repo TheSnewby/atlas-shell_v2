@@ -48,7 +48,9 @@ typedef enum
 } SeparatorType;
 
 extern char **environ;		 /* The environment variables */
-extern char **saved_environ; /* To store the original environ pointer */
+extern char **saved_environ;
+extern char *input;
+extern char **tokens;
 
 /* ↓ FUNCTION PROTOTYPES ↓ */
 
