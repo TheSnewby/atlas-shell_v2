@@ -101,7 +101,8 @@ int ifCmdExit(char **tokens, int interactive, char *input)
 				}
 				else
 				{ /* not interactive, print to standard error. */
-					fprintf(stderr, "exit: Illegal number: %s\n", tokens[1]);
+					fprintf(stderr, "./hsh: 1: exit: Illegal number: %s\n",
+						tokens[1]);
 				}
 				// resetAll(tokens, input, NULL);
 				safeExit(2); /* exit with error if not number */
@@ -303,4 +304,41 @@ int ifCmdCd(char **tokens)
 
 	freeIfCmdCd(previous_cwd, home, pwd);
 	return (1); /* success */
+}
+
+int StreamDirect(char **tokens)
+{
+	if (_strcmp(tokens[0], "echo") == 0)
+	{
+		if (_strstr(*tokens, ">"))
+		{
+			RightDirect(tokens);
+		}
+	}
+	return (1);
+}
+
+int RightDirect(char **tokens)
+{
+	int fd;
+	char *filename = tokens[2];
+
+	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (fd == -1)
+	{
+		perror("open");
+		return (-1);
+	}
+	char *command = tokens[0];
+	char *args[] = {command, NULL};
+	if (dup2(fd, STDOUT_FILENO) == -1)
+	{
+		perror("dup2");
+		close(fd);
+		return (-1);
+	}
+	close(fd);
+	execvp(command, args);
+	perror("execvp");
+	return (-1);
 }

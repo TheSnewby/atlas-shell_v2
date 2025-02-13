@@ -158,7 +158,7 @@ int execute_command(const char *commandPath, char **arguments)
 	{
 		/* Child process */
 		execve(commandPath, arguments, environ);
-		perror("execve");	/* execve failed */
+		/* perror("execve"); *//* execve failed */
 		exit(EXIT_FAILURE); /* Exit the child! */
 	}
 	else
