@@ -10,6 +10,7 @@ void shellLoop(int isAtty, char *argv[])
 {
 	size_t size;
 	char *user, *hostname, path[PATH_MAX], *input, **tokens = NULL;
+	int custom_cmd_rtn;
 	int num_commands;
 	char **commands = NULL;
 
@@ -72,6 +73,15 @@ void shellLoop(int isAtty, char *argv[])
 		tokens = parse_command(input);
 		if (tokens == NULL)
 		{
+			free(input);
+			continue;
+		}
+		// --- Built-in Command Handling ---
+		custom_cmd_rtn = customCmd(tokens, isAtty, input);
+		if (custom_cmd_rtn == 1)
+		{
+			// Built-in was handled.  Free resources and continue.
+			free(tokens);
 			free(input);
 			continue;
 		}
