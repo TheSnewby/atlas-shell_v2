@@ -318,7 +318,6 @@ int ifCmdCd(char **tokens)
 int RightDirect(char **tokens)
 {
     int fd, i = 0;
-    char *command;
     char *args[100];
 
     while (tokens[i] != NULL)
@@ -347,19 +346,32 @@ int RightDirect(char **tokens)
         return -1;
     }
 
-    if (dup2(fd, STDOUT_FILENO) == -1)
+    pid_t pid = fork();
+    if (pid == -1)
     {
-        perror("dup2");
-        close(fd);
+        perror("fork");
         return -1;
     }
-    close(fd);
+    if (pid == 0)
+    {
+        if (dup2(fd, STDOUT_FILENO) == -1)
+        {
+            perror("dup2");
+            close(fd);
+            exit(1);
+        }
+        close(fd);
 
-    command = args[0];
-    execvp(command, args);
-    
-    perror("execvp");
-    return -1;
+        execvp(args[0], args);
+        perror("execvp");
+        exit(1);
+    }
+    else
+    {
+        close(fd);
+        wait(NULL);
+    }
+    return 1;
 }
 
 int ifCmdEcho(char **tokens)
