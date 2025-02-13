@@ -318,27 +318,27 @@ int ifCmdCd(char **tokens)
 int RightDirect(char **tokens)
 {
     int fd, i = 0;
-    char *filename = NULL;
-    char *command[100];
+    char *command;
+    char *args[100];
 
     while (tokens[i] != NULL)
     {
-        if (_strcmp(tokens[i], ">") == 0)
+        if (strcmp(tokens[i], ">") == 0)
         {
-            tokens[i] = NULL;
-            filename = tokens[i + 1];
             break;
         }
-        command[i] = tokens[i];
+        args[i] = tokens[i];
         i++;
     }
-    command[i] = NULL;
+    args[i] = NULL;
 
-    if (filename == NULL)
+    if (tokens[i] == NULL || tokens[i + 1] == NULL)
     {
-        fprintf(stderr, "Error: No output file specified\n");
+        fprintf(stderr, "Syntax error: Missing filename after '>'\n");
         return -1;
     }
+
+    char *filename = tokens[i + 1];
 
     fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (fd == -1)
@@ -347,26 +347,19 @@ int RightDirect(char **tokens)
         return -1;
     }
 
-    pid_t pid = fork();
-    if (pid == -1)
+    if (dup2(fd, STDOUT_FILENO) == -1)
     {
-        perror("fork");
+        perror("dup2");
         close(fd);
         return -1;
     }
-
-    if (pid == 0)
-    {
-        dup2(fd, STDOUT_FILENO);
-        close(fd);
-        execvp(command[0], command);
-        perror("execvp");
-        exit(EXIT_FAILURE);
-    }
-
     close(fd);
-    wait(NULL);
-    return 1;
+
+    command = args[0];
+    execvp(command, args);
+    
+    perror("execvp");
+    return -1;
 }
 
 int ifCmdEcho(char **tokens)
