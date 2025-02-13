@@ -88,30 +88,6 @@ char **parse_command(char *command)
 	}
 
 	token = strtok(command, " \t\r\n\a");
-	if (_strchr(input, '>'))
-	{
-		char *command = strtok(input, ">");
-		char *filename = strtok(NULL, ">");
-		
-		while (filename && *filename == ' ') filename++;
-
-		int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-		if (fd == -1)
-		{
-			perror("Error opening file for redirection");
-			return;
-		}
-
-		if (dup2(fd, STDOUT_FILENO) == -1)
-		{
-			perror("Error redirecting output");
-			return;
-		}
-
-		tokens = parse_command(command);
-		executeIfValid(isAtty, argv, tokens, input);
-		close(fd);
-	}
 	while (token != NULL)
 	{
 		tokens[position] = token;
