@@ -131,7 +131,6 @@ int _strncmp(const char *s1, const char *s2, int n)
  *
  * Return: string
  */
-
 char *_strtok_r(char *str, const char *delim, char **saveptr)
 {
 	char *token;
