@@ -409,7 +409,7 @@ int DoubleRightDirect(char *line) {
 
     token = strtok(line, " \t\r\n\a");
     while (token != NULL) {
-        char *marker = _strstr(token, '>>');
+        char *marker = _strstr(token, ">>");
         if (marker) {
             *marker = '\0';
             if (*token != '\0') {
