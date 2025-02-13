@@ -123,3 +123,41 @@ int _strncmp(const char *s1, const char *s2, int n)
 
 	return (diff);
 }
+/**
+ * _strtok_r - tokenize a string, thread-safe and reentrant
+ * @str: String to be tokenized.
+ * @delim: Delimiters.
+ * @saveptr: State variable for strtok_r
+ *
+ * Return: string
+ */
+
+char *_strtok_r(char *str, const char *delim, char **saveptr)
+{
+	char *token;
+
+	if (str == NULL)
+		str = *saveptr;
+	if (!str) /*No more tokens.*/
+		return (NULL);
+	/* Find beginning of token (skip delimiters)*/
+	str += _strspn(str, delim);
+	if (*str == '\0') /* If we hit the end, return NULL */
+	{
+		*saveptr = NULL;
+		return (NULL);
+	}
+	/* Find the end of the token*/
+	token = str;
+	str += _strcspn(str, delim);
+	if (*str != '\0') /* If we hit a delimiter, null-terminate and update saveptr */
+	{
+		*str = '\0';
+		*saveptr = str + 1;
+	}
+	else
+	{
+		*saveptr = NULL; /*No more tokens*/
+	}
+	return (token);
+}
