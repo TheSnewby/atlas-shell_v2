@@ -330,7 +330,7 @@ int RightDirect(char *line)
 			}
 			else
 			{
-				tokens[position++] = '>';
+				tokens[position++] = ">";
 			}
 		}
 		else
