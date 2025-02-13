@@ -95,24 +95,17 @@ int ifCmdExit(char **tokens, int interactive, char *input)
 			if (isNumber(tokens[1]))
 			{
 				exit_code = _atoi_safe(tokens[1]);
-				if (exit_code == 0)
+				if (exit_code <= 0)
 				{
+					fprintf(stderr, "./hsh: 1: exit: Illegal number: %d\n",
+						exit_code);
 					exit_code = 2; // invalid number
 				}
 			}
 			else
 			{
-				// // Handle non-numeric argument (error)
-				// if (interactive)
-				// {
-				// 	// resetAll(tokens, input, NULL);
-				// 	// selfDestruct(5); /* or another **appropriate** action */
-				// }
-				// else
-				// { /* not interactive, print to standard error. */
 				fprintf(stderr, "./hsh: exit: %s: numeric argument required\n",
 						tokens[1]);
-				// }
 				resetAll(tokens, input, NULL);
 				safeExit(2); /* exit with error if not number */
 			}
