@@ -102,18 +102,18 @@ int ifCmdExit(char **tokens, int interactive, char *input)
 			}
 			else
 			{
-				// Handle non-numeric argument (error)
-				if (interactive)
-				{
-					// resetAll(tokens, input, NULL);
-					selfDestruct(5); /* or another **appropriate** action */
-				}
-				else
-				{ /* not interactive, print to standard error. */
-					fprintf(stderr, "./hsh: 1: exit: Illegal number: %s\n",
+				// // Handle non-numeric argument (error)
+				// if (interactive)
+				// {
+				// 	// resetAll(tokens, input, NULL);
+				// 	// selfDestruct(5); /* or another **appropriate** action */
+				// }
+				// else
+				// { /* not interactive, print to standard error. */
+				fprintf(stderr, "./hsh: exit: %s: numeric argument required\n",
 						tokens[1]);
-				}
-				// resetAll(tokens, input, NULL);
+				// }
+				resetAll(tokens, input, NULL);
 				safeExit(2); /* exit with error if not number */
 			}
 		}
