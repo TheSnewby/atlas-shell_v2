@@ -10,6 +10,7 @@ void shellLoop(int isAtty, char *argv[])
 {
 	size_t size;
 	char *user, *hostname, path[PATH_MAX], *input, **tokens = NULL;
+	int custom_cmd_rtn;
 	int num_commands;
 	char **commands = NULL;
 
@@ -24,6 +25,8 @@ void shellLoop(int isAtty, char *argv[])
 		tokens = NULL;
 
 		printPrompt(isAtty, user, hostname, path);
+		free(user);
+		free(hostname);
 
 		if (getline(&input, &size, stdin) == -1)
 		{
@@ -33,8 +36,7 @@ void shellLoop(int isAtty, char *argv[])
 				printf("The %sGates Of Shell%s have closed. Goodbye.\n%s",
 					   CLR_RED_BOLD, CLR_YELLOW_BOLD, CLR_DEFAULT);
 			}
-			if (input)
-				free(input);
+			free(input);
 			safeExit(EXIT_SUCCESS);
 		}
 
@@ -64,7 +66,7 @@ void shellLoop(int isAtty, char *argv[])
 		if (_strstr(input, "&&") || _strstr(input, "||") || _strstr(input, ";"))
 		{
 			execute_logical_commands(input);
-			resetAll(tokens, input);
+			free(input);
 			continue;
 		}
 
@@ -75,10 +77,20 @@ void shellLoop(int isAtty, char *argv[])
 			free(input);
 			continue;
 		}
+		// --- Built-in Command Handling ---
+		custom_cmd_rtn = customCmd(tokens, isAtty, input);
+		if (custom_cmd_rtn == 1)
+		{
+			// Built-in was handled.  Free resources and continue.
+			free(tokens);
+			free(input);
+			continue;
+		}
 
 		executeIfValid(isAtty, argv, tokens, input);
 		/* --- Cleanup (ALWAYS done after each command) --- */
-		resetAll(tokens, input, NULL);
+		free(tokens);
+		free(input);
 	}
 }
 /**
@@ -99,6 +111,4 @@ void printPrompt(int isAtty, char *user, char *hostname, char *path)
 		printf("%s:%s%s", CLR_DEFAULT_BOLD, CLR_BLUE_BOLD, path);
 		printf("%s$ ", CLR_DEFAULT);
 	}
-	free(user);
-	free(hostname);
 }

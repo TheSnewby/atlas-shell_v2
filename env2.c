@@ -57,9 +57,9 @@ char *findPath(char *name)
 	char *temp_path = NULL;
 
 	head = buildListPath(); /* populates list and points at head */
-	if (!head)
+	if (head == NULL)
 	{
-		return (_strdup(name)); /*Return copy of name*/
+		return (NULL); /*Return copy of name*/
 	}
 	temp = head; /* iterator initialization */
 
@@ -69,7 +69,7 @@ char *findPath(char *name)
 		if (temp_path == NULL)
 		{
 			destroyListPath(head);
-			return (_strdup(name));
+			return (NULL);
 		}
 		_strcpy(temp_path, temp->directory);
 		_strcat(temp_path, "/");
@@ -83,8 +83,7 @@ char *findPath(char *name)
 		temp = temp->next; /* go to next location */
 	}
 	destroyListPath(head);
-	temp_path = _strdup(name); /* mallocs command name */
-	return (temp_path);		   /* returns malloced command name without a path */
+	return (NULL);		   /* returns malloced command name without a path */
 }
 
 /**
@@ -103,14 +102,10 @@ void destroyListPath(path_t *h)
 		free(temp);
 	}
 }
-/**
- * getHostname - retrieves hostname from env or sets a new hostname
- *
- * Return: hostname
- */
 char *getHostname(void)
 {
 	char *hostname = _getenv("NAME");
+	char *temp;
 
 	if (!hostname)
 		hostname = _getenv("HOSTNAME");
@@ -118,11 +113,14 @@ char *getHostname(void)
 		hostname = _getenv(("WSL_DISTRO_NAME"));
 	if (!hostname)
 	{
-		hostname = malloc(8);
-		_strcpy(hostname, "unknown");
+		return (_strdup("unknown")); /* ALWAYS duplicate */
 	}
-
-	return (hostname);
+	else
+	{
+		temp = _strdup(hostname);
+		free(hostname);
+		return (temp);
+	}
 }
 
 /**
@@ -133,14 +131,18 @@ char *getHostname(void)
 char *getUser(void)
 {
 	char *user = _getenv("USER");
+	char *temp;
 
 	if (!user)
 		user = _getenv("LOGNAME");
 	if (!user)
 	{
-		user = malloc(8);
-		_strcpy(user, "unknown");
+		return (_strdup("unknown")); /* direct return */
 	}
-
-	return (user);
+	else
+	{ /* always duplicate */
+		temp = _strdup(user);
+		free(user);
+		return (temp);
+	}
 }
