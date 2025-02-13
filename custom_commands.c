@@ -317,19 +317,18 @@ int ifCmdCd(char **tokens)
 
 int RightDirect(char **tokens)
 {
-    int fd, i = 0;
+    int fd, i = 0, j = 0;
+    char *filename;
     char *args[100];
 
     while (tokens[i] != NULL)
     {
         if (strcmp(tokens[i], ">") == 0)
-        {
             break;
-        }
-        args[i] = tokens[i];
+        args[j++] = tokens[i];
         i++;
     }
-    args[i] = NULL;
+    args[j] = NULL;
 
     if (tokens[i] == NULL || tokens[i + 1] == NULL)
     {
@@ -337,7 +336,7 @@ int RightDirect(char **tokens)
         return -1;
     }
 
-    char *filename = tokens[i + 1];
+    filename = tokens[i + 1];
 
     fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (fd == -1)
@@ -362,7 +361,7 @@ int RightDirect(char **tokens)
         }
         close(fd);
 
-        execvp(args[0], tokens[2]);
+        execvp(args[0], args);
         perror("execvp");
         exit(1);
     }
