@@ -69,20 +69,18 @@ void shellLoop(int isAtty, char *argv[])
 			free(input);
 			continue;
 		}
+		if (_strstr(input, ">"))
+		{
+			RightDirect(input);
+			free(input);
+			continue;
+		}
 		/* Parse and Execute Single Command */
 		tokens = parse_command(input);
 		if (tokens == NULL)
 		{
 			free(input);
 			continue;
-		}
-		int i = 0;
-		while (tokens != NULL)
-		{
-			if (tokens[i] == ">")
-			{
-				RightDirect(tokens);
-			}
 		}
 		// --- Built-in Command Handling ---
 		custom_cmd_rtn = customCmd(tokens, isAtty, input);
