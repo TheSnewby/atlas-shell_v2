@@ -71,29 +71,6 @@ void shellLoop(int isAtty, char *argv[])
 		}
 		if (_strstr(input, ">"))
 		{
-			int i = 0;
-			while (input != NULL)
-			{
-				if (input[i] == '>')
-				{
-					if (input[i - 1] == ' ')
-					{
-						continue;
-					}
-					else
-					{
-						input[i - 1] = ' ';
-					}
-					if (input[i + 1] == ' ')
-					{
-						continue;
-					}
-					else
-					{
-						input[i + 1] = ' ';
-					}
-				}
-			}
 			RightDirect(input);
 			free(input);
 			continue;
