@@ -109,7 +109,7 @@ int isCommand(const char *fp);
 /* --- Custom String Functions (Keep these!) --- */
 char *_strtok_r(char *str, const char *delim, char **saveptr);
 char *_strcat(char *dest, const char *src);
-char _strchr(const char *s, char c);
+char *_strchr(const char *s, char *c);
 int _strlen(const char *s);
 int _strcmp(const char *s1, const char *s2);
 char *_strcpy(char *dest, const char *src);
