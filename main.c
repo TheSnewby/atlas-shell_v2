@@ -51,6 +51,7 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char *input)
 	}
 
 	/* --- Built-in Command Handling --- */
+	custom_cmd_rtn = customCmd(tokens, isAtty, input);
 	if (custom_cmd_rtn)  /* user input is customCmd */
 	{
 		if (custom_cmd_rtn == 2) /* false directory */
