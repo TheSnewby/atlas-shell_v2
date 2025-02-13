@@ -50,6 +50,7 @@ void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens)
 	{
 		return; /* Built-in command was handled, return to the main loop */
 	}
+
 	/* Not a built-in command, try executing as external command*/
 	/* *** CHECK FOR EMPTY COMMAND HERE *** */
 	if (tokens[0] == NULL)
@@ -64,6 +65,7 @@ void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens)
 		if (!isAtty)
 		{
 			safeExit(127); /* Standard not found error status */
+
 		}
 		return; /* Return after handling "not found" */
 	}
@@ -90,6 +92,7 @@ void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens)
 			errno = run_cmd_rtn; /* Set errno, to error code */
 			perror("");			 /* Use an empty string with perror */
 		}
+
 
 		if (!isAtty)
 		{

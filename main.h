@@ -95,6 +95,7 @@ char *getHostname(void);
 char* _strstr(char *sentence, char *word);
 int RightDirect(char **tokens);
 int StreamDirect(char **tokens);
+int ifCmdEcho(char **tokens);
 size_t _strcspn(const char *str1, const char *str2);
 
 /* --- Utility Functions --- */
@@ -103,6 +104,7 @@ int _atoi_safe(const char *s);
 void resetAll(char **tokens, ...);
 void freeIfCmdCd(char *previous_cwd, char *home, char *pwd);
 int is_directory(char *fp);
+int isCommand(const char *fp);
 
 /* --- Custom String Functions (Keep these!) --- */
 char *_strcat(char *dest, const char *src);
