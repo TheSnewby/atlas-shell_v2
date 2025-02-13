@@ -94,6 +94,7 @@ char *getUser(void);
 char *getHostname(void);
 char* _strstr(char *sentence, char *word);
 int RightDirect(char *line);
+int DoubleRightDirect(char *line);
 int StreamDirect(char **tokens);
 size_t _strcspn(const char *str1, const char *str2);
 
