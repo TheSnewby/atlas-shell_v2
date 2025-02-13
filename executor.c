@@ -148,8 +148,8 @@ int execute_command(const char *commandPath, char **arguments)
 	pid_t pid;
 	int status;
 
-	if (!isCommand(commandPath))
-		return (1000);
+	// if (!isCommand(commandPath))
+	// 	return (1000);
 
 	pid = fork();
 	if (pid == -1)

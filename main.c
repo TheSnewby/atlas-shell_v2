@@ -1,4 +1,5 @@
 #include "main.h"
+#include <signal.h>
 
 /**
  * main - starts the program and the loop
@@ -42,14 +43,14 @@ int main(int argc, char *argv[])
 void executeIfValid(int isAtty, char *const *argv, char **tokens, char *input)
 {
 	int custom_cmd_rtn;
-
-	/* Not a built-in command, try executing as external command */
+  
+  /* Check for empty command *before* doing anything else. */
 	if (tokens[0] == NULL)
 	{
-		return; /* Empty command - just return. */
+		return;
 	}
 
-/* Handle built-in commands */
+	/* --- Built-in Command Handling --- */
 	custom_cmd_rtn = customCmd(tokens, isAtty, input);
 	if (custom_cmd_rtn)  /* user input is customCmd */
 	{
@@ -63,32 +64,37 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char *input)
 				resetAll(tokens, input, NULL);
 				safeExit(EXIT_SUCCESS);
 			}
+    return;
 	}
-	else{
-		char *full_path = findPath(tokens[0]);
-		if (full_path == NULL)
-		{
-			fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
-			if (!isAtty)
-			{
-				safeExit(127); /* Standard not found error status */
-			}
-			return; // Return after handling "not found"
-		}
-		int run_cmd_rtn = execute_command(full_path, tokens); // Correct call!
-		free(full_path);									  // Free AFTER using the path
 
-		if (run_cmd_rtn != 0)
+	/* --- External Command Handling --- */
+	/* *Now* we find the path, since it's not a built-in. */
+	char *full_path = findPath(tokens[0]);
+	if (full_path == NULL)
+	{
+		fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
+		if (!isAtty)
 		{
-			/* Handle errors from execute_command (other than not found) */
-			if (run_cmd_rtn == -1)
-			{
-				perror("fork failed"); // More specific message
-			}
-			else if(run_cmd_rtn == 2)
+			safeExit(127);
+		}
+		return; /* Return here after handling "not found" */
+	}
+
+	/* Execute the command (using the FULL PATH and ALL arguments) */
+	int run_cmd_rtn = execute_command(full_path, tokens);
+	free(full_path); /* Free *after* execute_command */
+
+	/* Handle errors from execute_command */
+	if (run_cmd_rtn != 0)
+	{
+		if (run_cmd_rtn == -1)
+		{
+			perror("fork"); /* Most likely cause if execute_command fails */
+		}
+    else if(run_cmd_rtn == 2)
 				;
-			else if(run_cmd_rtn == 1000)
-				fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
+			// else if(run_cmd_rtn == 1000)
+			// 	fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
 			else
 			{
 				/* Other execve errors: use perror to print a descriptive message */
@@ -97,11 +103,9 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char *input)
 				perror("");			 // Use an empty string with perror
 			}
 
-			if (!isAtty)
-			{
-			resetAll(tokens, input, NULL);
-			safeExit(run_cmd_rtn);
-			}
+		if (!isAtty)
+		{
+			safeExit(run_cmd_rtn); /* Exit with the error code */
 		}
 	}
 }
@@ -149,5 +153,13 @@ void safeExit(int exit_code)
 		free(environ);
 		environ = NULL;
 	}
+	// if (input != NULL)
+	// {
+	// 	free(input);
+	// }
+	// if (tokens != NULL)
+	// {
+	// 	free(tokens);
+	// }
 	exit(exit_code);
 }

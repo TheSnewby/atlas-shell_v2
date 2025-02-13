@@ -48,7 +48,9 @@ typedef enum
 } SeparatorType;
 
 extern char **environ;		 /* The environment variables */
-extern char **saved_environ; /* To store the original environ pointer */
+extern char **saved_environ;
+extern char *input;
+extern char **tokens;
 
 /* ↓ FUNCTION PROTOTYPES ↓ */
 
@@ -91,6 +93,8 @@ void destroyListPath(path_t *h);
 char *getUser(void);
 char *getHostname(void);
 char* _strstr(char *sentence, char *word);
+int RightDirect(char **tokens);
+int StreamDirect(char **tokens);
 size_t _strcspn(const char *str1, const char *str2);
 
 /* --- Utility Functions --- */
