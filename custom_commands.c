@@ -312,7 +312,7 @@ int StreamDirect(char **tokens)
 	return (1);
 }
 
-char RightDirect(**tokens)
+char RightDirect(char **tokens)
 {
 	int fd;
 	char filename = tokens[1];
