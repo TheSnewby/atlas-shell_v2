@@ -312,18 +312,17 @@ int RightDirect(char *line) {
         exit(EXIT_FAILURE);
     }
 
-    // Tokenizing input line
     token = strtok(line, " \t\r\n\a");
     while (token != NULL) {
         char *marker = _strchr(token, '>');
         if (marker) {
-            *marker = '\0';  // Split token at '>'
+            *marker = '\0';
             if (*token != '\0') {
-                tokens[position++] = token;  // Store left part if exists
+                tokens[position++] = token;
             }
             tokens[position++] = ">";
             if (*(marker + 1) != '\0') {
-                tokens[position++] = marker + 1;  // Store right part if exists
+                tokens[position++] = marker + 1;
             }
         } else {
             tokens[position++] = token;
@@ -342,7 +341,6 @@ int RightDirect(char *line) {
     }
     tokens[position] = NULL;
 
-    // Extract command and arguments
     while (tokens[i] != NULL) {
         if (_strcmp(tokens[i], ">") == 0) break;
         args[j++] = tokens[i];
@@ -350,7 +348,6 @@ int RightDirect(char *line) {
     }
     args[j] = NULL;
 
-    // Handle syntax errors
     if (tokens[i] == NULL || tokens[i + 1] == NULL) {
         fprintf(stderr, "Syntax error: Missing filename after '>'\n");
         free(tokens);
@@ -359,7 +356,6 @@ int RightDirect(char *line) {
 
     filename = tokens[i + 1];
 
-    // Open file for redirection
     fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (fd == -1) {
         perror("open");
@@ -367,7 +363,6 @@ int RightDirect(char *line) {
         return -1;
     }
 
-    // Create child process
     pid_t pid = fork();
     if (pid == -1) {
         perror("fork");
@@ -383,6 +378,11 @@ int RightDirect(char *line) {
         }
         close(fd);
 
+		if (execvp(args[0], args) == -1)
+		{
+			fprintf(stderr, "./hsh: %d: %s: not found\n", __LINE__, args[0]);
+			exit(127);
+		}
         execvp(args[0], args);
         perror("execvp");
         exit(1);
