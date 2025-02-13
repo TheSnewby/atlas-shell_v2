@@ -200,7 +200,7 @@ int isCommand(const char *fp)
 	path_t *head = NULL;
 	char *temp_path = NULL;
 
-	if (_strchr(fp, '/') && !access(fp, F_OK)) /* checks if path already */
+	if (_strchr(fp, "/") && !access(fp, F_OK)) /* checks if path already */
 		return (1);
         // return (access(fp, F_OK | X_OK) == 0 ? 1 : 0);
 
