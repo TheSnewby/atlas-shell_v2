@@ -20,7 +20,7 @@ int customCmd(char **tokens, int interactive, char *input)
 	/* ----------------- custom command "exit" ----------------- */
 
 	if (ifCmdExit(tokens, interactive, input)) /* exits with or without exit code*/
-		return (1); /* now it returns 1, if it exits */
+		return (1);							   /* now it returns 1, if it exits */
 
 	/* ----------------- custom command "setenv" ----------------- */
 	if (ifCmdSetEnv(tokens))
@@ -96,14 +96,14 @@ int ifCmdExit(char **tokens, int interactive, char *input)
 				// Handle non-numeric argument (error)
 				if (interactive)
 				{
-					resetAll(tokens, input, NULL);
+					// resetAll(tokens, input, NULL);
 					selfDestruct(5); /* or another **appropriate** action */
 				}
 				else
 				{ /* not interactive, print to standard error. */
 					fprintf(stderr, "exit: Illegal number: %s\n", tokens[1]);
 				}
-				resetAll(tokens, input, NULL);
+				// resetAll(tokens, input, NULL);
 				safeExit(2); /* exit with error if not number */
 			}
 		}
@@ -113,7 +113,8 @@ int ifCmdExit(char **tokens, int interactive, char *input)
 			printf("%s\nThe %sGates Of Shell%s have closed. Goodbye.\n%s",
 				   CLR_YELLOW_BOLD, CLR_RED_BOLD, CLR_YELLOW_BOLD, CLR_DEFAULT);
 		}
-		resetAll(tokens, input, NULL);
+		free(input);
+		free(tokens);
 		safeExit(exit_code); /* Exit with the determined code */
 		return 1;			 /* Should never reach here, but good practice */
 	}
@@ -203,7 +204,7 @@ int ifCmdCd(char **tokens)
 			error_msg = 3;
 		else if (tokens[1] != NULL)
 		{
-			if (_strcmp(tokens[1], "~") == 0)  /* home */
+			if (_strcmp(tokens[1], "~") == 0) /* home */
 			{
 				if (home)
 				{
@@ -230,17 +231,17 @@ int ifCmdCd(char **tokens)
 				else
 					printf("%s\n", cwd_buf);
 			// else if ((_strncmp(tokens[1], "/root", 5) == 0) && (access(tokens[1], X_OK) != 0))
-			else if (access(tokens[1], X_OK) != 0)  /* not permission */
+			else if (access(tokens[1], X_OK) != 0) /* not permission */
 			{
 				// printf("\nNOT PERMISSION\n\n");
 				error_msg = 2;
 			}
-			else if (is_directory(tokens[1]) == 0)  /* is not a directory */
+			else if (is_directory(tokens[1]) == 0) /* is not a directory */
 			{
 				// printf("\nNOT DIRECTORY\n\n");
 				error_msg = 4;
 			}
-			else if (tokens[1][0] == '/')  /* absolute path */
+			else if (tokens[1][0] == '/') /* absolute path */
 			{
 				chdir_rtn = chdir(tokens[1]);
 				if (chdir_rtn == -1)
@@ -278,8 +279,8 @@ int ifCmdCd(char **tokens)
 			if (error_msg == 2)
 				return (2);
 			if (error_msg == 3)
-				return(3);  /* custom error */
-			return (0); /* consider return errno */
+				return (3); /* custom error */
+			return (0);		/* consider return errno */
 		}
 		else /* on success set OLD PWD and PWD */
 		{
