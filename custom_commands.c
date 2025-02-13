@@ -253,7 +253,6 @@ int ifCmdCd(char **tokens)
 			}
 			else if (tokens[1][0] == '/') /* is absolute path */
 			{
-				printf("\nHOME\n");
 				chdir_rtn = chdir(tokens[1]);
 				if (chdir_rtn == -1)
 					error_msg = 1;
