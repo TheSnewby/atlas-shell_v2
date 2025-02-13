@@ -299,109 +299,98 @@ int ifCmdCd(char **tokens)
 	return (1); /* success */
 }
 
-int RightDirect(char *line)
-{
-	int fd, i = 0, j = 0, k = 0, position = 0;
-    	char *filename;
-    	char *args[100];
-	int bufsize = 64;
-	char **tokens = malloc(bufsize * sizeof(char *));
-	char *token;
+int RightDirect(char *line) {
+    int fd, i = 0, j = 0, position = 0;
+    char *filename;
+    char *args[100];
+    int bufsize = 64;
+    char **tokens = malloc(bufsize * sizeof(char *));
+    char *token;
 
-	for (k = 0; k < bufsize; k++)
-		tokens[i] = NULL;
-	if (!tokens)
-	{
-		fprintf(stderr, "hsh: allocation error\n");
-		exit(EXIT_FAILURE);
-	}
+    if (!tokens) {
+        fprintf(stderr, "hsh: allocation error\n");
+        exit(EXIT_FAILURE);
+    }
 
-	token = strtok(line, " \t\r\n\a");
-	while (token != NULL)
-	{
-		char *marker = _strchr(token, '>');
-		if (marker)
-		{
-			*marker = '\0'; // Split the token at '>'
-			tokens[position++] = token;
-			if (*(marker + 1) != '\0')
-			{
-				tokens[position++] = marker + 1;
-			}
-			else
-			{
-				tokens[position++] = ">";
-			}
-		}
-		else
-		{
-			tokens[position++] = token;
-		}
-		if (position >= bufsize)
-		{
-			bufsize += 64;
-			tokens = realloc(tokens, bufsize * sizeof(char *));
-			if (!tokens)
-			{
-				fprintf(stderr, "hsh: allocation error\n");
-				exit(EXIT_FAILURE);
-			}
-		}
+    // Tokenizing input line
+    token = strtok(line, " \t\r\n\a");
+    while (token != NULL) {
+        char *marker = _strchr(token, '>');
+        if (marker) {
+            *marker = '\0';  // Split token at '>'
+            if (*token != '\0') {
+                tokens[position++] = token;  // Store left part if exists
+            }
+            tokens[position++] = ">";
+            if (*(marker + 1) != '\0') {
+                tokens[position++] = marker + 1;  // Store right part if exists
+            }
+        } else {
+            tokens[position++] = token;
+        }
 
-		token = strtok(NULL, " \t\r\n\a");
-	}
-	tokens[position] = NULL;
-	while (tokens[i] != NULL)
-	{
-	if (_strcmp(tokens[i], ">") == 0)
-	    break;
-	args[j++] = tokens[i];
-	i++;
-	}
-	args[j] = NULL;
-	
-	if (tokens[i] == NULL || tokens[i + 1] == NULL)
-	{
-	fprintf(stderr, "Syntax error: Missing filename after '>'\n");
-	return -1;
-	}
-	
-	filename = tokens[i + 1];
-	
-	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (fd == -1)
-	{
-	perror("open");
-	return -1;
-	}
-	
-	pid_t pid = fork();
-	if (pid == -1)
-	{
-	perror("fork");
-	return -1;
-	}
-	if (pid == 0)
-	{
-	if (dup2(fd, STDOUT_FILENO) == -1)
-	{
-	    perror("dup2");
-	    close(fd);
-	    exit(1);
-	}
-	close(fd);
-	
-	execvp(args[0], args);
-	perror("execvp");
-	exit(1);
-	}
-	else
-	{
-	close(fd);
-	wait(NULL);
-	}
-	free(tokens);
-	return 1;
-	}
+        if (position >= bufsize) {
+            bufsize += 64;
+            tokens = realloc(tokens, bufsize * sizeof(char *));
+            if (!tokens) {
+                fprintf(stderr, "hsh: allocation error\n");
+                exit(EXIT_FAILURE);
+            }
+        }
 
+        token = strtok(NULL, " \t\r\n\a");
+    }
+    tokens[position] = NULL;
 
+    // Extract command and arguments
+    while (tokens[i] != NULL) {
+        if (_strcmp(tokens[i], ">") == 0) break;
+        args[j++] = tokens[i];
+        i++;
+    }
+    args[j] = NULL;
+
+    // Handle syntax errors
+    if (tokens[i] == NULL || tokens[i + 1] == NULL) {
+        fprintf(stderr, "Syntax error: Missing filename after '>'\n");
+        free(tokens);
+        return -1;
+    }
+
+    filename = tokens[i + 1];
+
+    // Open file for redirection
+    fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd == -1) {
+        perror("open");
+        free(tokens);
+        return -1;
+    }
+
+    // Create child process
+    pid_t pid = fork();
+    if (pid == -1) {
+        perror("fork");
+        close(fd);
+        free(tokens);
+        return -1;
+    }
+    if (pid == 0) {
+        if (dup2(fd, STDOUT_FILENO) == -1) {
+            perror("dup2");
+            close(fd);
+            exit(1);
+        }
+        close(fd);
+
+        execvp(args[0], args);
+        perror("execvp");
+        exit(1);
+    } else {
+        close(fd);
+        wait(NULL);
+    }
+
+    free(tokens);
+    return 1;
+}
