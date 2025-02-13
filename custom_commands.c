@@ -40,7 +40,7 @@ int customCmd(char **tokens, int interactive, char *input)
 		return (ifRtn);
 
 	/* ----------------- custom command "echo" ----------------- */
-	if (ifCmdEcho(tokens))
+	if (ifCmdEcho(tokens) == 1)
 	{
 		for (int i = 0; tokens[i] != NULL; i++)
 		{
