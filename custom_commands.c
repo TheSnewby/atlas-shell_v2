@@ -374,6 +374,7 @@ int RightDirect(char *line) {
         if (dup2(fd, STDOUT_FILENO) == -1) {
             perror("dup2");
             close(fd);
+			free(tokens);
             exit(1);
         }
         close(fd);
@@ -381,6 +382,7 @@ int RightDirect(char *line) {
 		if (execvp(args[0], args) == -1)
 		{
 			fprintf(stderr, "./hsh: %d: %s: not found\n", 1, args[0]);
+			free(tokens);
 			exit(127);
 		}
         execvp(args[0], args);
@@ -390,7 +392,6 @@ int RightDirect(char *line) {
         close(fd);
         wait(NULL);
     }
-
     free(tokens);
     return 1;
 }
