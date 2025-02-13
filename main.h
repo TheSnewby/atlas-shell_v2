@@ -10,10 +10,11 @@
 #include <stdarg.h>	   /* For va_list, va_start, va_arg, va_end */
 #include <stdio.h>	   /* For printf, fprintf, perror, getline etc */
 #include <stdlib.h>	   /* For malloc, free, realloc, exit, getenv */
-#include <string.h>	   /* kinda useless */
+#include <string.h>	   /* kinda useless  -  BIG TRUE */
 #include <sys/types.h> /* For pid_t, size_t */
 #include <sys/wait.h>  /* For waitpid, WIFEXITED, WEXITSTATUS */
-#include <unistd.h>/* For isatty, fork, execve, chdir, getcwd, etc.. */
+#include <unistd.h>    /* For isatty, fork, execve, chdir, getcwd, etc.. */
+#include <sys/stat.h>  /* For stat and S_ISDIR */
 #include "colors.h"
 
 /* ↓ STRUCTS AND MISC ↓ */
@@ -59,12 +60,12 @@ void printPrompt(int isAtty, char *user, char *hostname, char *path);
 
 /* --- Command Parsing --- */
 char **parse_command(char *command);
-int split_command_line_on_pipe(char *line, char **command1, char **command2);
+int split_command_line_on_pipe(char *input, char ***commands, int *num_commands);
 char *trim_whitespace(char *str);
 
 /* --- Command Execution --- */
 int execute_command(const char *commandPath, char **arguments);
-int execute_pipe_command(char **command1, char **command2);
+void execute_pipe_command(char **commands, int num_commands);
 void execute_logical_commands(char *line);
 void execute_commands_separated_by_semicolon(char *line);
 
@@ -78,6 +79,7 @@ int ifCmdSetEnv(char **tokens);
 int ifCmdUnsetEnv(char **tokens);
 void selfDestruct(int countdown);
 void freeIfCmdCd(char *previous_cwd, char *home, char *pwd);
+
 /* --- Environment Variable Handling --- */
 char *_getenv(const char *name);
 int _setenv(const char *name, const char *value, int overwrite);
@@ -91,13 +93,14 @@ char *getHostname(void);
 char* _strstr(char *sentence, char *word);
 char RightDirect(**tokens);
 int StreamDirect(char **tokens);
-
 size_t _strcspn(const char *str1, const char *str2);
+
 /* --- Utility Functions --- */
 int isNumber(char *str);
 int _atoi_safe(const char *s);
 void resetAll(char **tokens, ...);
 void freeIfCmdCd(char *previous_cwd, char *home, char *pwd);
+int is_directory(char *fp);
 
 /* --- Custom String Functions (Keep these!) --- */
 char *_strcat(char *dest, const char *src);

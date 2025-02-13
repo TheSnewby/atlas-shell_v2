@@ -9,31 +9,62 @@
  *
  * Return: 0 if a pipe symbol is found and the line is split, -1 otherwise.
  */
-int split_command_line_on_pipe(char *line, char **command1, char **command2)
+int split_command_line_on_pipe(char *input, char ***commands, int *num_commands)
 {
-	char *pipe_pos = NULL;
-	int i = 0;
+	char *token;
+	int count = 0;
+	char *input_copy;
 
-	/* Find the pipe symbol manually */
-	while (line[i] != '\0')
+	/* Count the number of pipes */
+	for (int i = 0; input[i] != '\0'; i++)
 	{
-		if (line[i] == '|')
+		if (input[i] == '|')
 		{
-			pipe_pos = &line[i];
-			break;
+			count++;
+		}
+	}
+
+	/* Allocate memory for commands array + NULL terminator */
+	*commands = malloc(sizeof(char *) * (count + 2));
+	if (*commands == NULL)
+	{
+		perror("malloc");
+		return -1;
+	}
+
+	input_copy = _strdup(input); /* Duplicate the input string */
+	if (input_copy == NULL)
+	{
+		perror("_strdup");
+		free(*commands);
+		return -1;
+	}
+	token = strtok(input_copy, "|"); /* Tokenize based on pipe*/
+
+	int i = 0;
+	while (token != NULL)
+	{
+		(*commands)[i] = _strdup(token); /* Duplicate and store each token */
+		if ((*commands)[i] == NULL)
+		{
+			perror("_strdup");
+			/* Free previously allocated memory before returning */
+			for (int j = 0; j < i; j++)
+			{
+				free((*commands)[j]);
+			}
+			free(*commands);
+			free(input_copy);
+			return -1;
 		}
 		i++;
-	}
-	if (pipe_pos == NULL)
-	{
-		return -1; /* No pipe found */
+		token = strtok(NULL, "|"); /* get next command */
 	}
 
-	*pipe_pos = '\0'; /* Split the string at the pipe symbol */
-	*command1 = line;
-	*command2 = pipe_pos + 1;
-
-	return 0;
+	(*commands)[i] = NULL; /* Null-terminate array */
+	*num_commands = i;	   /* sets number of commands */
+	free(input_copy);
+	return 0; /* success */
 }
 
 /**

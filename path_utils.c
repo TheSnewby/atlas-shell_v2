@@ -79,3 +79,17 @@ int _build_path(const char *cwd, const char *rel_path, char *abs_path)
 	free(path_copy);
 	return 0;
 }
+
+/**
+ * is_directory - tells whether filepath is a directory or not
+ * @fp: filepath
+ *
+ * return: 0 if not, non zero if it is
+ */
+int is_directory(char *fp)
+{
+	struct stat fp_stat;
+	if (stat(fp, &fp_stat) != 0)
+		return (0);
+	return (S_ISDIR(fp_stat.st_mode));
+}

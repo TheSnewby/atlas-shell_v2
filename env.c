@@ -129,10 +129,7 @@ int _unsetenv(const char *name)
 	char **new_environ;
 	int location = -1, i, new_environ_index = 0;
 
-	if ((name == NULL) || (_strlen(name) == 0))
-		return (-1);
-
-	if (!environ)
+	if ((name == NULL) || (_strlen(name) == 0) || !environ)
 		return (0);
 
 	/* find size of array and location of possible match */
@@ -172,14 +169,15 @@ int _unsetenv(const char *name)
  */
 int ifCmdUnsetEnv(char **tokens)
 {
-	if (tokens[0] != NULL && (_strcmp(tokens[0], "unsetenv") == 0))
+	if (tokens[0] && (_strcmp(tokens[0], "unsetenv") == 0))
 	{
+		if (!tokens[1])
+			return (1);
 		if (_unsetenv(tokens[1]) == 0)
 			return (1);
 	}
 	return (0);
 }
-
 
 /**
  * initialize_environ - makes environ a dynamically allocated variable
