@@ -51,7 +51,9 @@ int isNumber(char *number)
 
 	for (i = 0; i < _strlen(number); i++)
 	{
-		if (number[i] > '9' || number[i] < '0')
+		if ((i == 0) && number[i] == '-')
+			continue;
+		else if (number[i] > '9' || number[i] < '0')
 			return (0);
 	}
 
