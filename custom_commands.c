@@ -329,7 +329,7 @@ int StreamDirect(char **tokens)
 int RightDirect(char **tokens)
 {
 	int fd;
-	char *filename = tokens[1];
+	char *filename = tokens[2];
 
 	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (fd == -1)
