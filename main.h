@@ -56,7 +56,7 @@ extern char **tokens;
 
 /* --- Main Shell Loop and Control --- */
 void shellLoop(int isAtty, char *argv[]);
-void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens)
+void executeIfValid(int isAtty, char *const *argv, char **tokens, char *input);
 void safeExit(int exit_code);
 void printPrompt(int isAtty, char *user, char *hostname, char *path);
 
