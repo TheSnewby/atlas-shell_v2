@@ -214,7 +214,7 @@ int ifCmdCd(char **tokens)
 			error_msg = 3;
 		else if (tokens[1] != NULL)
 		{
-			if (_strcmp(tokens[1], "~") == 0) /* home */
+			if (_strcmp(tokens[1], "~") == 0) /* is home */
 			{
 				if (home)
 				{
@@ -227,7 +227,7 @@ int ifCmdCd(char **tokens)
 				else
 					error_msg = 0;
 			}
-			else if (_strcmp(tokens[1], "-") == 0) /* previous path */
+			else if (_strcmp(tokens[1], "-") == 0) /* is previous path */
 				if (previous_cwd)
 				{
 					chdir_rtn = chdir(previous_cwd);
@@ -251,8 +251,9 @@ int ifCmdCd(char **tokens)
 				// printf("\nNOT DIRECTORY\n\n");
 				error_msg = 4;
 			}
-			else if (tokens[1][0] == '/') /* absolute path */
+			else if (tokens[1][0] == '/') /* is absolute path */
 			{
+				printf("\nHOME\n");
 				chdir_rtn = chdir(tokens[1]);
 				if (chdir_rtn == -1)
 					error_msg = 1;
