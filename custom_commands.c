@@ -311,7 +311,7 @@ int ifCmdCd(char **tokens)
 
 int StreamDirect(char **tokens)
 {
-	if _strstr(tokens, ">")
+	if _strstr(*tokens, ">")
 	{
 		RightDirect(tokens);
 	}
@@ -333,7 +333,7 @@ int StreamDirect(char **tokens)
 int RightDirect(char **tokens)
 {
 	int fd;
-	char filename = tokens[1];
+	char *filename = tokens[1];
 
 	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (fd == -1)
