@@ -109,6 +109,7 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char *input)
 		if (!isAtty)
 		{
 			/* use run_cmd_rtn exit status. */
+			resetAll(tokens, input, NULL);
 			safeExit(run_cmd_rtn);
 		}
 	}
