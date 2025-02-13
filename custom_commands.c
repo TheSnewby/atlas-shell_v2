@@ -39,6 +39,15 @@ int customCmd(char **tokens, int interactive, char *input)
 	if (ifRtn)
 		return (ifRtn);
 
+	/* ----------------- custom command "echo" ----------------- */
+	if (ifCmdEcho(tokens) == 1)
+	{
+		for (int i = 0; tokens[i] != NULL; i++)
+		{
+			if (_strcmp(tokens[i], ">") == 0)
+				return RightDirect(tokens);
+		}
+	}
 	return (0); /* indicate that the input is not a custom command */
 }
 
@@ -306,39 +315,70 @@ int ifCmdCd(char **tokens)
 	return (1); /* success */
 }
 
-int StreamDirect(char **tokens)
-{
-	if (_strcmp(tokens[0], "echo") == 0)
-	{
-		if (_strstr(*tokens, ">"))
-		{
-			RightDirect(tokens);
-		}
-	}
-	return (1);
-}
-
 int RightDirect(char **tokens)
 {
-	int fd;
-	char *filename = tokens[2];
+    int fd, i = 0, j = 0;
+    char *filename;
+    char *args[100];
 
-	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (fd == -1)
-	{
-		perror("open");
-		return (-1);
-	}
-	char *command = tokens[0];
-	char *args[] = {command, NULL};
-	if (dup2(fd, STDOUT_FILENO) == -1)
-	{
-		perror("dup2");
-		close(fd);
-		return (-1);
-	}
-	close(fd);
-	execvp(command, args);
-	perror("execvp");
-	return (-1);
+    while (tokens[i] != NULL)
+    {
+        if (strcmp(tokens[i], ">") == 0)
+            break;
+        args[j++] = tokens[i];
+        i++;
+    }
+    args[j] = NULL;
+
+    if (tokens[i] == NULL || tokens[i + 1] == NULL)
+    {
+        fprintf(stderr, "Syntax error: Missing filename after '>'\n");
+        return -1;
+    }
+
+    filename = tokens[i + 1];
+
+    fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd == -1)
+    {
+        perror("open");
+        return -1;
+    }
+
+    pid_t pid = fork();
+    if (pid == -1)
+    {
+        perror("fork");
+        return -1;
+    }
+    if (pid == 0)
+    {
+        if (dup2(fd, STDOUT_FILENO) == -1)
+        {
+            perror("dup2");
+            close(fd);
+            exit(1);
+        }
+        close(fd);
+
+        execvp(args[0], args);
+        perror("execvp");
+        exit(1);
+    }
+    else
+    {
+        close(fd);
+        wait(NULL);
+    }
+    return 1;
 }
+
+int ifCmdEcho(char **tokens)
+{
+	if (tokens[0] != NULL && (_strcmp(tokens[0], "echo") == 0))
+	{
+		return (1);
+	}
+	return (0);
+}
+

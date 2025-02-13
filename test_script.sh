@@ -21,7 +21,8 @@ cd /root
  
     
        
-" # add fakeCmd at some point
+fakeCommand
+/bin/ls"
 
 echo "===== Running in Non-Interactive Mode ====="
 echo "$COMMANDS" | $VALGRIND_CMD

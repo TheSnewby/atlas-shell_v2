@@ -54,7 +54,13 @@ char *findPath(char *name)
 {
 	path_t *temp = NULL;
 	path_t *head = NULL;
-	char *temp_path = NULL;
+	char *temp_path = NULL, *mallocd_name = NULL;
+
+	if (_strchr(name, '/') && !access(name, F_OK)) /* checks if path already */
+	{
+		mallocd_name = _strdup(name);
+		return (mallocd_name);
+	}
 
 	head = buildListPath(); /* populates list and points at head */
 	if (head == NULL)
