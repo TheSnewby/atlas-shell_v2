@@ -385,6 +385,7 @@ int RightDirect(char *line)
 	close(fd);
 	wait(NULL);
 	}
+	free(tokens);
 	return 1;
 	}
 
