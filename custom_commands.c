@@ -39,6 +39,15 @@ int customCmd(char **tokens, int interactive, char *input)
 	if (ifRtn)
 		return (ifRtn);
 
+	/* ----------------- custom command "echo" ----------------- */
+	if (ifCmdEcho(tokens))
+	{
+		if (_strstr(tokens, ">"))
+		{
+			RightDirect(tokens);
+		}
+	}
+
 	return (0); /* indicate that the input is not a custom command */
 }
 
@@ -305,18 +314,6 @@ int ifCmdCd(char **tokens)
 	return (1); /* success */
 }
 
-int StreamDirect(char **tokens)
-{
-	if (_strcmp(tokens[0], "echo") == 0)
-	{
-		if (_strstr(*tokens, ">"))
-		{
-			RightDirect(tokens);
-		}
-	}
-	return (1);
-}
-
 int RightDirect(char **tokens)
 {
 	int fd;
@@ -340,4 +337,13 @@ int RightDirect(char **tokens)
 	execvp(command, args);
 	perror("execvp");
 	return (-1);
+}
+
+int ifCmdEcho(**tokens)
+{
+	if (tokens[0] != NULL && (_strcmp(tokens[0], "echo") == 0))
+	{
+		return (1);
+	}
+	return (0);
 }
