@@ -138,13 +138,13 @@ void safeExit(int exit_code)
 		free(environ);
 		environ = NULL;
 	}
-	if (input != NULL)
-	{
-		free(input);
-	}
-	if (tokens != NULL)
-	{
-		free(tokens);
-	}
+	// if (input != NULL)
+	// {
+	// 	free(input);
+	// }
+	// if (tokens != NULL)
+	// {
+	// 	free(tokens);
+	// }
 	exit(exit_code);
 }
