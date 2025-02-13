@@ -75,6 +75,7 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char *input)
 		fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
 		if (!isAtty)
 		{
+			resetAll(tokens, input, NULL);
 			safeExit(127);
 		}
 		return; /* Return here after handling "not found" */

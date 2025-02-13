@@ -148,8 +148,10 @@ int execute_command(const char *commandPath, char **arguments)
 	pid_t pid;
 	int status;
 
-	// if (!isCommand(commandPath))
-	// 	return (1000);
+	// int isCommandRtn = isCommand(commandPath);
+	// printf("\nisCommand: %d\n\n", isCommandRtn);
+	// // if (isCommandRtn)
+	// // 	printf("\nisCommand: %d\n\n", isCommandRtn);
 
 	pid = fork();
 	if (pid == -1)
@@ -198,7 +200,7 @@ int isCommand(const char *fp)
 	path_t *head = NULL;
 	char *temp_path = NULL;
 
-	if (_strchr(fp, '/') && access(fp, F_OK | X_OK)) /* checks if path already */
+	if (_strchr(fp, '/') && !access(fp, F_OK)) /* checks if path already */
 		return (1);
         // return (access(fp, F_OK | X_OK) == 0 ? 1 : 0);
 
