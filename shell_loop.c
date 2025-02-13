@@ -76,7 +76,8 @@ void shellLoop(int isAtty, char *argv[])
 			free(input);
 			continue;
 		}
-		for (i = 0, i < _strlen(tokens), i++)
+		int i = 0;
+		while (tokens != NULL)
 		{
 			if (tokens[i] == '>')
 			{
