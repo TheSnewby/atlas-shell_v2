@@ -13,7 +13,7 @@ char *_getenv(const char *name)
 	char *temp_line;
 	char *value = NULL;
 
-	if (!environ|| !name)
+	if (!environ || !name)
 		return (NULL);
 
 	for (current = environ; *current; current++)
@@ -27,8 +27,8 @@ char *_getenv(const char *name)
 		{
 			value = strtok(NULL, "=");
 			if (value)
-				value = _strdup(value);  /* ensures value isn't dependent on 
-										temp_line ptr */
+				value = _strdup(value); /* ensures value isn't dependent on
+									   temp_line ptr */
 			free(temp_line);
 			return (value);
 		}
@@ -108,8 +108,8 @@ int _setenv(const char *name, const char *value, int overwrite)
 			return (-1);
 		}
 
-		new_environ[size_environ] = new_line;  /* sets new env variable */
-		new_environ[size_environ + 1] = NULL;  /* makes final as NULL */
+		new_environ[size_environ] = new_line; /* sets new env variable */
+		new_environ[size_environ + 1] = NULL; /* makes final as NULL */
 		environ = new_environ;
 	}
 
@@ -137,7 +137,7 @@ int _unsetenv(const char *name)
 	{
 		size_environ++;
 		if ((_strncmp(environ[i], name, _strlen(name)) == 0) &&
-		(environ[i][_strlen(name)] == '='))
+			(environ[i][_strlen(name)] == '='))
 			location = i;
 	}
 	/* if match found rebuild environ without the found element */
@@ -146,7 +146,7 @@ int _unsetenv(const char *name)
 		new_environ = malloc(sizeof(char *) * size_environ);
 		for (i = 0; i < size_environ; i++)
 		{
-			if (i != location)  /* copy all except target variable */
+			if (i != location) /* copy all except target variable */
 			{
 				new_environ[new_environ_index] = _strdup(environ[i]);
 				new_environ_index++;
@@ -182,15 +182,23 @@ int ifCmdUnsetEnv(char **tokens)
 /**
  * initialize_environ - makes environ a dynamically allocated variable
  */
+/**
+ * initialize_environ - makes environ a dynamically allocated variable
+ */
 void initialize_environ(void)
 {
 	int i = 0, size_environ = 0;
 	char **new_environ;
+	path_t *path_list; // to free path
 
+	/* First, get the size of the ORIGINAL environ */
 	while (environ[i] != NULL)
+	{
 		i++;
+	}
 	size_environ = i;
 
+	/* Allocate memory for the NEW environment array */
 	new_environ = malloc(sizeof(char *) * (size_environ + 1));
 	if (new_environ == NULL)
 	{
@@ -198,20 +206,25 @@ void initialize_environ(void)
 		return;
 	}
 
-	for (i = 0; i < size_environ; i++)  /* populates new_environ */
+	/* Copy the strings from the ORIGINAL environ to the NEW environ */
+	for (i = 0; i < size_environ; i++)
 	{
 		new_environ[i] = _strdup(environ[i]);
-		if (new_environ[i] == NULL)  /* if malloc in _strdup fails, undo all */
+		if (new_environ[i] == NULL)
 		{
-			for (i = i - 1; i >= 0; i--)
-				free(new_environ[i]);
+			/* Handle _strdup failure: free previously allocated strings */
+			for (int j = 0; j < i; j++)
+			{
+				free(new_environ[j]);
+			}
 			free(new_environ);
-			new_environ = NULL;
 			fprintf(stderr, "malloc fail in initialize_environ\n");
-			return;  /* consider changing to safeExit(errno) */
+			return;
 		}
 	}
-	new_environ[size_environ] = NULL;
-
+	new_environ[size_environ] = NULL; /* Null-terminate the new array */
+	/* Now it's safe to reassign 'environ' */
 	environ = new_environ;
+	path_list = buildListPath(); /* build the list path, save to var */
+	destroyListPath(path_list);
 }
