@@ -77,7 +77,7 @@ void shellLoop(int isAtty, char *argv[])
 			free(input);
 			continue;
 		}
-		if (_strchr(*tokens, ">"))
+		if (_strchr(tokens, ">"))
 		{
 			RightDirect(tokens);
 		}
