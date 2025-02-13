@@ -87,6 +87,8 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char *input)
 			}
 			else if(run_cmd_rtn == 2)
 				;
+			else if(run_cmd_rtn == 1000)
+				fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
 			else
 			{
 				/* Other execve errors: use perror to print a descriptive message */

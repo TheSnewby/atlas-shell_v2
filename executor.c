@@ -148,6 +148,9 @@ int execute_command(const char *commandPath, char **arguments)
 	pid_t pid;
 	int status;
 
+	if (!isCommand(commandPath))
+		return (1000);
+
 	pid = fork();
 	if (pid == -1)
 	{
@@ -181,4 +184,51 @@ int execute_command(const char *commandPath, char **arguments)
 		}
 	}
 	return 0; /* Success */
+}
+
+/**
+ * isCommand - Figures out whether the user filepath is an actual command
+ * @fp: user enetered command
+ *
+ * Return: 1 if a valid command, 0 if not, otherwise for specific error
+ */
+int isCommand(const char *fp)
+{
+	path_t *temp = NULL;
+	path_t *head = NULL;
+	char *temp_path = NULL;
+
+	if (_strchr(fp, '/') && access(fp, F_OK | X_OK)) /* checks if path already */
+		return (1);
+        // return (access(fp, F_OK | X_OK) == 0 ? 1 : 0);
+
+	head = buildListPath(); /* populates list and points at head */
+	if (!head)
+	{
+		return (-2); /*Return copy of fp*/
+	}
+	temp = head; /* iterator initialization */
+
+	while (temp != NULL) /* run until list is empty */
+	{					 /* malloc space for path/fp\0 */
+		temp_path = malloc(_strlen(temp->directory) + _strlen(fp) + 2);
+		if (temp_path == NULL)
+		{
+			destroyListPath(head);
+			return (-1);
+		}
+		_strcpy(temp_path, temp->directory);
+		_strcat(temp_path, "/");
+		_strcat(temp_path, fp);
+		if (access(temp_path, F_OK) == 0) /* checks if cmd at path exists */
+		{
+			destroyListPath(head); /* frees list of paths */
+			free(temp_path);
+			return (1);	   /* returns found path + fp */
+		}
+		free(temp_path);   /* frees temp_path */
+		temp = temp->next; /* go to next location */
+	}
+	destroyListPath(head);
+	return (0);		   /* not a valid filepath. consider returning errno? */
 }
