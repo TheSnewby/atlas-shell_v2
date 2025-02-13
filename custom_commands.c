@@ -307,22 +307,13 @@ int ifCmdCd(char **tokens)
 
 int StreamDirect(char **tokens)
 {
-	if (_strstr(*tokens, ">"))
+	if (_strcmp(tokens[0], "echo") == 0)
 	{
-		RightDirect(tokens);
+		if (_strstr(*tokens, ">"))
+		{
+			RightDirect(tokens);
+		}
 	}
-	/* else if _strstr(tokens, "<")
-	{
-		LeftDirect(tokens);
-	}
-	else if _strstr(tokens, ">>")
-	{
-		DoubleRightDirect(tokens);
-	}
-	else if _strstr(tokens, "<<")
-	{
-		DoubleLeftDirect(tokens);
-	} */
 	return (1);
 }
 
