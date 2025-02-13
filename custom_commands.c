@@ -319,9 +319,24 @@ int RightDirect(char *line)
 	token = strtok(line, " \t\r\n\a");
 	while (token != NULL)
 	{
-		tokens[position] = token;
-		position++;
-
+		char *marker = _strchr(token, '>');
+		if (marker)
+		{
+			*marker = '\0'; // Split the token at '>'
+			tokens[position++] = token;
+			if (*(marker + 1) != '\0')
+			{
+				tokens[position++] = marker + 1;
+			}
+			else
+			{
+				tokens[position++] = '>';
+			}
+		}
+		else
+		{
+			tokens[position++] = token;
+		}
 		if (position >= bufsize)
 		{
 			bufsize += 64;
