@@ -39,6 +39,10 @@ int customCmd(char **tokens, int interactive, char *input)
 	if (ifRtn)
 		return (ifRtn);
 
+	/* ----------------- custom command "echo" ----------------- */
+	if (ifCmdEcho(tokens))
+		return (1);
+
 	return (0); /* indicate that the input is not a custom command */
 }
 
@@ -285,4 +289,50 @@ int ifCmdCd(char **tokens)
 
 	freeIfCmdCd(previous_cwd, home, pwd);
 	return (1); /* success */
+}
+
+int StreamDirect(char **tokens)
+{
+	if _strstr(tokens, ">")
+	{
+		RightDirect(tokens);
+	}
+	/* else if _strstr(tokens, "<")
+	{
+		LeftDirect(tokens);
+	}
+	else if _strstr(tokens, ">>")
+	{
+		DoubleRightDirect(tokens);
+	}
+	else if _strstr(tokens, "<<")
+	{
+		DoubleLeftDirect(tokens);
+	} */
+	return (1);
+}
+
+char RightDirect(**tokens)
+{
+	int fd;
+	char filename = tokens[1];
+
+	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (fd == -1)
+	{
+		perror("open");
+		return (-1);
+	}
+	char *command = tokens[0];
+	char *args[] = {command, NULL};
+	if (dup2(fd, STDOUT_FILENO) == -1)
+	{
+		perror("dup2");
+		close(fd);
+		return (-1);
+	}
+	close(fd);
+	execvp(command, args);
+	perror("execvp");
+	return (-1);
 }
