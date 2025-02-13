@@ -380,7 +380,7 @@ int RightDirect(char *line) {
 
 		if (execvp(args[0], args) == -1)
 		{
-			fprintf(stderr, "./hsh: %d: %s: not found\n", __LINE__, args[0]);
+			fprintf(stderr, "./hsh: %d: %s: not found\n", 1, args[0]);
 			exit(127);
 		}
         execvp(args[0], args);
