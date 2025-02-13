@@ -40,12 +40,12 @@ int main(int argc, char *argv[])
  * @argv: carrier of filename in [0]
  * @tokens: array of strings of user inputs delimited by spaces
  */
-void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens)
+void executeIfValid(int isAtty, char *const *argv, char **tokens, char *input)
 {
 	int custom_cmd_rtn;
 
 	/* Handle built-in commands */
-	custom_cmd_rtn = customCmd(tokens, isAtty, input); // Pass 'input'
+	custom_cmd_rtn = customCmd(tokens, isAtty, input);
 	if (custom_cmd_rtn == 1)
 	{
 		return; /* Built-in command was handled, return to the main loop */
