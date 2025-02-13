@@ -369,7 +369,7 @@ int RightDirect(char **tokens)
     return 1;
 }
 
-int ifCmdEcho(**tokens)
+int ifCmdEcho(char **tokens)
 {
 	if (tokens[0] != NULL && (_strcmp(tokens[0], "echo") == 0))
 	{
