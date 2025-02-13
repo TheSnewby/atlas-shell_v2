@@ -352,12 +352,6 @@ int RightDirect(char *line)
 	}
 	
 	filename = tokens[i + 1];
-	if (filename == NULL)
-	{
-		fprintf(stderr, "Syntax error: Missing filename after '>'\n");
-		free(tokens);
-		return -1;
-	}
 	
 	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (fd == -1)
