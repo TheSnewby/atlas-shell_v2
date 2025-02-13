@@ -36,8 +36,7 @@ void shellLoop(int isAtty, char *argv[])
 				printf("The %sGates Of Shell%s have closed. Goodbye.\n%s",
 					   CLR_RED_BOLD, CLR_YELLOW_BOLD, CLR_DEFAULT);
 			}
-			if (input)
-				free(input);
+			free(input);
 			safeExit(EXIT_SUCCESS);
 		}
 
