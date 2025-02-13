@@ -1,7 +1,6 @@
 #include "main.h"
 #include <signal.h>
 
-
 /**
  * main - starts the program and the loop
  * @argc: number of arguments
@@ -138,6 +137,14 @@ void safeExit(int exit_code)
 			free(environ[i]);
 		free(environ);
 		environ = NULL;
+	}
+	if (input != NULL)
+	{
+		free(input);
+	}
+	if (tokens != NULL)
+	{
+		free(tokens);
 	}
 	exit(exit_code);
 }
