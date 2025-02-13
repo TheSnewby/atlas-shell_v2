@@ -75,6 +75,7 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char *input)
 		fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
 		if (!isAtty)
 		{
+			resetAll(tokens, input, NULL);
 			safeExit(127);
 		}
 		return; /* Return here after handling "not found" */
@@ -93,13 +94,15 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char *input)
 		}
     else if(run_cmd_rtn == 2)
 				;
-		else
-		{
-      /* Other execve errors: use perror to print a descriptive message */
-			fprintf(stderr, "%s: 1: %s: ", argv[0], tokens[0]);
-			errno = run_cmd_rtn;
-			perror("Command failed"); /* Generic error, use perror */
-		}
+			// else if(run_cmd_rtn == 1000)
+			// 	fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
+			else
+			{
+				/* Other execve errors: use perror to print a descriptive message */
+				fprintf(stderr, "%s: 1: %s: ", argv[0], tokens[0]);
+				errno = run_cmd_rtn; // Set errno, to error code
+				perror("");			 // Use an empty string with perror
+			}
 
 		if (!isAtty)
 		{
