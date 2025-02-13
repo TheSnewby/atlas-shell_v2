@@ -362,7 +362,7 @@ int RightDirect(char **tokens)
         }
         close(fd);
 
-        execvp(args[0], args[2]);
+        execvp(args[0], tokens[2]);
         perror("execvp");
         exit(1);
     }
