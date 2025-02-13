@@ -141,7 +141,7 @@ char *_strtok_r(char *str, const char *delim, char **saveptr)
 	if (!str) /*No more tokens.*/
 		return (NULL);
 	/* Find beginning of token (skip delimiters)*/
-	str += _strspn(str, delim);
+	str += _strcspn(str, delim);
 	if (*str == '\0') /* If we hit the end, return NULL */
 	{
 		*saveptr = NULL;
