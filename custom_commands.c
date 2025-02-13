@@ -381,19 +381,15 @@ int RightDirect(char *line) {
 		{
 			fprintf(stderr, "./hsh: %d: %s: not found\n", 1, args[0]);
 			free(tokens);
-			free(args);
 			exit(1);
 		}
-        execvp(args[0], args);
         perror("execvp");
 		free(tokens);
-		free(args);
         exit(1);
     } else {
         close(fd);
         wait(NULL);
     }
     free(tokens);
-	free(args);
     return 1;
 }
