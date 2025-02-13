@@ -316,7 +316,7 @@ int RightDirect(char *line)
 		exit(EXIT_FAILURE);
 	}
 
-	token = strtok(command, " \t\r\n\a");
+	token = strtok(line, " \t\r\n\a");
 	while (token != NULL)
 	{
 		tokens[position] = token;
