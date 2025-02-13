@@ -40,73 +40,64 @@ int main(int argc, char *argv[])
  * @argv: carrier of filename in [0]
  * @tokens: array of strings of user inputs delimited by spaces
  */
-void executeIfValid(int isAtty, char *const *argv, char **tokens, char *input)
+void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens)
 {
 	int custom_cmd_rtn;
-  
-  /* Check for empty command *before* doing anything else. */
+
+	/* Handle built-in commands */
+	custom_cmd_rtn = customCmd(tokens, isAtty, input); // Pass 'input'
+	if (custom_cmd_rtn == 1)
+	{
+		return; /* Built-in command was handled, return to the main loop */
+	}
+
+	/* Not a built-in command, try executing as external command*/
+	/* *** CHECK FOR EMPTY COMMAND HERE *** */
 	if (tokens[0] == NULL)
 	{
-		return;
+		return; /*  Empty command - just return to the prompt */
 	}
 
-	/* --- Built-in Command Handling --- */
-	custom_cmd_rtn = customCmd(tokens, isAtty, input);
-	if (custom_cmd_rtn)  /* user input is customCmd */
-	{
-		if (custom_cmd_rtn == 2) /* false directory */
-			fprintf(stderr, "%s: 1: cd: can't cd to %s\n", argv[0], tokens[1]);
-		else if (custom_cmd_rtn == 3)  /* too many arguments */
-			fprintf(stderr, "%s: 1: cd: too many arguments\n", argv[0]);
-
-		if ((custom_cmd_rtn == -1) && !isAtty)
-			{
-				resetAll(tokens, input, NULL);
-				safeExit(EXIT_SUCCESS);
-			}
-    return;
-	}
-
-	/* --- External Command Handling --- */
-	/* *Now* we find the path, since it's not a built-in. */
 	char *full_path = findPath(tokens[0]);
 	if (full_path == NULL)
 	{
 		fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
 		if (!isAtty)
 		{
-			resetAll(tokens, input, NULL);
-			safeExit(127);
+			safeExit(127); /* Standard not found error status */
+
 		}
-		return; /* Return here after handling "not found" */
+		return; /* Return after handling "not found" */
 	}
 
-	/* Execute the command (using the FULL PATH and ALL arguments) */
-	int run_cmd_rtn = execute_command(full_path, tokens);
-	free(full_path); /* Free *after* execute_command */
+	int run_cmd_rtn = execute_command(full_path, tokens); /* pass tokens */
+	free(full_path);
 
-	/* Handle errors from execute_command */
 	if (run_cmd_rtn != 0)
 	{
-		if (run_cmd_rtn == -1)
+		/* Handle errors from execute_command */
+		if (run_cmd_rtn == 127)
 		{
-			perror("fork"); /* Most likely cause if execute_command fails */
+			/* here for clarity and in case execute_command changes */
+			fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
 		}
-    else if(run_cmd_rtn == 2)
-				;
-			// else if(run_cmd_rtn == 1000)
-			// 	fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
-			else
-			{
-				/* Other execve errors: use perror to print a descriptive message */
-				fprintf(stderr, "%s: 1: %s: ", argv[0], tokens[0]);
-				errno = run_cmd_rtn; // Set errno, to error code
-				perror("");			 // Use an empty string with perror
-			}
+		else if (run_cmd_rtn == -1)
+		{
+			perror("fork failed");
+		}
+		else
+		{
+			/* Other execve errors: use perror to print a descriptive message */
+			fprintf(stderr, "%s: 1: %s: ", argv[0], tokens[0]);
+			errno = run_cmd_rtn; /* Set errno, to error code */
+			perror("");			 /* Use an empty string with perror */
+		}
+
 
 		if (!isAtty)
 		{
-			safeExit(run_cmd_rtn); /* Exit with the error code */
+			/* use run_cmd_rtn exit status. */
+			safeExit(run_cmd_rtn);
 		}
 	}
 }
