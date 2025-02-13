@@ -95,6 +95,8 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char *input)
 		{
 			perror("fork failed");
 		}
+		else if(run_cmd_rtn == 2)
+				;
 		else
 		{
 			/* Other execve errors: use perror to print a descriptive message */
