@@ -79,7 +79,7 @@ void shellLoop(int isAtty, char *argv[])
 		int i = 0;
 		while (tokens != NULL)
 		{
-			if (tokens[i] == '>')
+			if (tokens[i] == ">")
 			{
 				RightDirect(tokens);
 			}
