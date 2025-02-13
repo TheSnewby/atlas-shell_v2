@@ -299,62 +299,95 @@ int ifCmdCd(char **tokens)
 	return (1); /* success */
 }
 
-int RightDirect(char **tokens)
+int RightDirect(char *line)
 {
-    int fd, i = 0, j = 0;
-    char *filename;
-    char *args[100];
+	int fd, i = 0, j = 0, k = 0, position = 0;
+	char **tokens = malloc(bufsize * sizeof(* char);
+	char *token;
+    	char *filename;
+    	char *args[100];
+	int bufsize = 64
+	char **tokens = malloc(bufsize * sizeof(char *));
+	char *token;
 
-    while (tokens[i] != NULL)
-    {
-        if (strcmp(tokens[i], ">") == 0)
-            break;
-        args[j++] = tokens[i];
-        i++;
-    }
-    args[j] = NULL;
+	for (k = 0; k < bufsize; k++)
+		tokens[i] = NULL;
+	if (!tokens)
+	{
+		fprintf(stderr, "hsh: allocation error\n");
+		exit(EXIT_FAILURE);
+	}
 
-    if (tokens[i] == NULL || tokens[i + 1] == NULL)
-    {
-        fprintf(stderr, "Syntax error: Missing filename after '>'\n");
-        return -1;
-    }
+	token = strtok(command, " \t\r\n\a");
+	while (token != NULL)
+	{
+		tokens[position] = token;
+		position++;
 
-    filename = tokens[i + 1];
+		if (position >= bufsize)
+		{
+			bufsize += 64;
+			tokens = realloc(tokens, bufsize * sizeof(char *));
+			if (!tokens)
+			{
+				fprintf(stderr, "hsh: allocation error\n");
+				exit(EXIT_FAILURE);
+			}
+		}
 
-    fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    if (fd == -1)
-    {
-        perror("open");
-        return -1;
-    }
-
-    pid_t pid = fork();
-    if (pid == -1)
-    {
-        perror("fork");
-        return -1;
-    }
-    if (pid == 0)
-    {
-        if (dup2(fd, STDOUT_FILENO) == -1)
-        {
-            perror("dup2");
-            close(fd);
-            exit(1);
-        }
-        close(fd);
-
-        execvp(args[0], args);
-        perror("execvp");
-        exit(1);
-    }
-    else
-    {
-        close(fd);
-        wait(NULL);
-    }
-    return 1;
-}
+		token = strtok(NULL, " \t\r\n\a");
+	}
+	tokens[position] = NULL;
+	while (tokens[i] != NULL)
+	{
+	if (strcmp(tokens[i], ">") == 0)
+	    break;
+	args[j++] = tokens[i];
+	i++;
+	}
+	args[j] = NULL;
+	
+	if (tokens[i] == NULL || tokens[i + 1] == NULL)
+	{
+	fprintf(stderr, "Syntax error: Missing filename after '>'\n");
+	return -1;
+	}
+	
+	filename = tokens[i + 1];
+	
+	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (fd == -1)
+	{
+	perror("open");
+	return -1;
+	}
+	
+	pid_t pid = fork();
+	if (pid == -1)
+	{
+	perror("fork");
+	return -1;
+	}
+	if (pid == 0)
+	{
+	if (dup2(fd, STDOUT_FILENO) == -1)
+	{
+	    perror("dup2");
+	    close(fd);
+	    exit(1);
+	}
+	close(fd);
+	
+	execvp(args[0], args);
+	perror("execvp");
+	exit(1);
+	}
+	else
+	{
+	close(fd);
+	wait(NULL);
+	}
+	return 1;
+	}
 
 
