@@ -43,22 +43,30 @@ int main(int argc, char *argv[])
 void executeIfValid(int isAtty, char *const *argv, char **tokens, char *input)
 {
 	int custom_cmd_rtn;
-
-	/* --- Built-in Command Handling --- */
-	custom_cmd_rtn = customCmd(tokens, isAtty, input);
-	if (custom_cmd_rtn == 1)
-	{
-		return; /* Built-in was handled. */
-	}
-
-	/* --- External Command Handling --- */
-
-	/* Check for empty command *before* doing anything else. */
+  
+  /* Check for empty command *before* doing anything else. */
 	if (tokens[0] == NULL)
 	{
 		return;
 	}
 
+	/* --- Built-in Command Handling --- */
+	if (custom_cmd_rtn)  /* user input is customCmd */
+	{
+		if (custom_cmd_rtn == 2) /* false directory */
+			fprintf(stderr, "%s: 1: cd: can't cd to %s\n", argv[0], tokens[1]);
+		else if (custom_cmd_rtn == 3)  /* too many arguments */
+			fprintf(stderr, "%s: 1: cd: too many arguments\n", argv[0]);
+
+		if ((custom_cmd_rtn == -1) && !isAtty)
+			{
+				resetAll(tokens, input, NULL);
+				safeExit(EXIT_SUCCESS);
+			}
+    return;
+	}
+
+	/* --- External Command Handling --- */
 	/* *Now* we find the path, since it's not a built-in. */
 	char *full_path = findPath(tokens[0]);
 	if (full_path == NULL)
@@ -82,8 +90,12 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char *input)
 		{
 			perror("fork"); /* Most likely cause if execute_command fails */
 		}
+    else if(run_cmd_rtn == 2)
+				;
 		else
 		{
+      /* Other execve errors: use perror to print a descriptive message */
+			fprintf(stderr, "%s: 1: %s: ", argv[0], tokens[0]);
 			errno = run_cmd_rtn;
 			perror("Command failed"); /* Generic error, use perror */
 		}
