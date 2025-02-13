@@ -449,7 +449,7 @@ int DoubleRightDirect(char *line) {
 
     filename = tokens[i + 1];
 
-    fd = open(filename, O_WRONLY | O_CREAT | O_APPEND, 0644);
+    fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC | O_APPEND, 0644);
     if (fd == -1) {
         perror("open");
         free(tokens);
