@@ -338,7 +338,7 @@ int RightDirect(char *line)
 	tokens[position] = NULL;
 	while (tokens[i] != NULL)
 	{
-	if (strcmp(tokens[i], ">") == 0)
+	if (_strcmp(tokens[i], ">") == 0)
 	    break;
 	args[j++] = tokens[i];
 	i++;
