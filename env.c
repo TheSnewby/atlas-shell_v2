@@ -22,10 +22,10 @@ char *_getenv(const char *name)
 		if (!temp_line)
 			return (NULL);
 
-		token = strtok(temp_line, "=");
+		token = _strtok_r(temp_line, "=");
 		if (_strcmp(token, name) == 0)
 		{
-			value = strtok(NULL, "=");
+			value = _strtok_r(NULL, "=");
 			if (value)
 				value = _strdup(value); /* ensures value isn't dependent on
 									   temp_line ptr */
