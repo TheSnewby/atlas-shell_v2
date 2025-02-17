@@ -10,7 +10,7 @@ void execute_command_group(char *command_group)
 	char *saveptr2;
 	char *token;
 	SeparatorType sep_type = SEP_NONE;
-	char *delim = "&|";
+	char *delim = ";";
 
 	for (token = _strtok_r(command_group, delim, &saveptr2);
 		 token != NULL;
