@@ -10,11 +10,11 @@ void execute_command_group(char *command_group)
 	char *saveptr2;
 	char *token;
 	SeparatorType sep_type = SEP_NONE;
-	char *delim = ";";
+	int group_status = 0;
 
-	for (token = _strtok_r(command_group, delim, &saveptr2);
+	for (token = _strtok_r(command_group, "&|", &saveptr2);
 		 token != NULL;
-		 token = _strtok_r(NULL, delim, &saveptr2))
+		 token = _strtok_r(NULL, "&|", &saveptr2))
 	{
 		char **args = parse_command(token);
 
@@ -65,6 +65,7 @@ void execute_command_group(char *command_group)
 		{
 			break;
 		}
+		group_status = cmd_status; /*update status */
 	}
 }
 /**
