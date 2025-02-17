@@ -10,15 +10,16 @@ void execute_command_group(char *command_group)
 	char *saveptr2;
 	char *token;
 	SeparatorType sep_type = SEP_NONE;
+	char *delim = "&|";
 
-	token = strtok_custom(command_group, &saveptr2);
-	while (token != NULL)
+	for (token = _strtok_r(command_group, delim, &saveptr2);
+		 token != NULL;
+		 token = _strtok_r(NULL, delim, &saveptr2))
 	{
 		char **args = parse_command(token);
 
 		if (args == NULL)
 		{
-			token = strtok_custom(NULL, &saveptr2);
 			continue; /* Skip to the next token on parse error */
 		}
 		int cmd_status = 0;
@@ -46,12 +47,10 @@ void execute_command_group(char *command_group)
 			if (_strncmp(next_sep, "&&", 2) == 0)
 			{
 				sep_type = SEP_AND;
-				saveptr2 += 2;
 			}
 			else if (_strncmp(next_sep, "||", 2) == 0)
 			{
 				sep_type = SEP_OR;
-				saveptr2 += 2;
 			}
 			else
 			{
@@ -66,35 +65,7 @@ void execute_command_group(char *command_group)
 		{
 			break;
 		}
-		token = strtok_custom(NULL, &saveptr2);
 	}
-}
-
-char *strtok_custom(char *str, char **saveptr)
-{
-	if (str != NULL)
-	{
-		*saveptr = str;
-	}
-
-	if (*saveptr == NULL || **saveptr == '\0')
-	{
-		return NULL;
-	}
-
-	char *start = *saveptr;
-	while (**saveptr != '\0' && strncmp(*saveptr, "&&", 2) != 0 && strncmp(*saveptr, "||", 2) != 0)
-	{
-		(*saveptr)++;
-	}
-
-	if (**saveptr != '\0')
-	{
-		**saveptr = '\0';
-		*saveptr += 2; // Move past the && or ||
-	}
-
-	return start;
 }
 /**
  * execute_logical_commands - Executes commands separated by logical operators

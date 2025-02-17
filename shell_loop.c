@@ -43,6 +43,7 @@ void shellLoop(int isAtty, char *argv[])
 		input[_strcspn(input, "\n")] = 0; /* Remove trailing newline */
 
 		/* Piping Logic */
+		if (_strchr(input, '|'))
 		{ /* Check if there's a pipe in the command */
 			if (split_command_line_on_pipe(input, &commands, &num_commands) == 0)
 			{

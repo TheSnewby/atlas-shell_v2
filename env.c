@@ -224,7 +224,6 @@ void initialize_environ(void)
 		}
 	}
 	new_environ[size_environ] = NULL; /* Null-terminate the new array */
-	/* Now it's safe to reassign 'environ' */
 	environ = new_environ;
 	path_list = buildListPath(); /* build the list path, save to var */
 	destroyListPath(path_list);

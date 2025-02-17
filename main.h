@@ -107,7 +107,6 @@ int is_directory(char *fp);
 int isCommand(const char *fp);
 
 /* --- Custom String Functions (Keep these!) --- */
-char *strtok_custom(char *str, char **saveptr);
 char *_strtok_r(char *str, const char *delim, char **saveptr);
 char *_strcat(char *dest, const char *src);
 char *_strchr(const char *s, char c);
