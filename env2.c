@@ -13,7 +13,7 @@ path_t *buildListPath(void)
 	char *temp_path = NULL;
 	char *token = NULL;
 
-	printf("Inside buildListPath\n");
+	// printf("Inside buildListPath\n");
 	if (path == NULL)
 	{
 		// printf("PATH is NULL\n"); /*DEBUG*/
