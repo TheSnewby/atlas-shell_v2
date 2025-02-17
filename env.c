@@ -206,7 +206,7 @@ void initialize_environ(void)
 		perror("malloc failed");
 		return;
 	}
-
+	path_list = buildListPath();
 	/* Copy the strings from the ORIGINAL environ to the NEW environ */
 	for (i = 0; i < size_environ; i++)
 	{

@@ -43,7 +43,6 @@ void shellLoop(int isAtty, char *argv[])
 		input[_strcspn(input, "\n")] = 0; /* Remove trailing newline */
 
 		/* Piping Logic */
-		if (_strchr(input, '|'))
 		{ /* Check if there's a pipe in the command */
 			if (split_command_line_on_pipe(input, &commands, &num_commands) == 0)
 			{
@@ -69,18 +68,18 @@ void shellLoop(int isAtty, char *argv[])
 			free(input);
 			continue;
 		}
-		if (_strstr(input, ">"))
-		{
-			RightDirect(input);
-			free(input);
-			continue;
-		}
-		if (_strstr(input, ">>"))
-		{
-			DoubleRightDirect(input);
-			free(input);
-			continue;
-		}
+		// if (_strstr(input, ">"))
+		// {
+		// 	RightDirect(input);
+		// 	free(input);
+		// 	continue;
+		// }
+		// if (_strstr(input, ">>"))
+		// {
+		// 	DoubleRightDirect(input);
+		// 	free(input);
+		// 	continue;
+		// }
 		/* Parse and Execute Single Command */
 		tokens = parse_command(input);
 		if (tokens == NULL)
