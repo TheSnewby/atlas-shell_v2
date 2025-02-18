@@ -307,61 +307,61 @@ int RightDirect(char *line) {
     char **tokens = malloc(bufsize * sizeof(char *));
     char *token;
 
-    if (!tokens) {
+    if (!tokens) { /* Stanard Malloc Error Handling */
         fprintf(stderr, "hsh: allocation error\n");
         exit(EXIT_FAILURE);
     }
 
-    token = strtok(line, " \t\r\n\a");
+    token = strtok(line, " \t\r\n\a"); /* Tokenize the input */
     while (token != NULL) {
-        char *marker = _strchr(token, '>');
-        if (marker) {
-            *marker = '\0';
-            if (*token != '\0') {
-                tokens[position++] = token;
+        char *marker = _strchr(token, '>'); /* Find the first occurrence of > and set it to variable marker */
+        if (marker) { /* If > is found in the input */
+            *marker = '\0'; /* Split the token at > */
+            if (*token != '\0') { /* If there is something before > */
+                tokens[position++] = token; /* Add the token before > */
             }
-            tokens[position++] = ">";
-            if (*(marker + 1) != '\0') {
-                tokens[position++] = marker + 1;
+            tokens[position++] = ">"; /* Add > to the tokens */
+            if (*(marker + 1) != '\0') { /* If there is something after > */
+                tokens[position++] = marker + 1; /* Get rid of the space */
             }
         } else {
-            tokens[position++] = token;
+            tokens[position++] = token; /* Add the token to the tokens */
         }
-        if (position >= bufsize) {
-            bufsize += 64;
-            tokens = realloc(tokens, bufsize * sizeof(char *));
+        if (position >= bufsize) { /* If the buffer is full */
+            bufsize += 64; /* Increase the buffer size */
+            tokens = realloc(tokens, bufsize * sizeof(char *)); /* Reallocate the buffer */
             if (!tokens) {
                 fprintf(stderr, "hsh: allocation error\n");
                 exit(EXIT_FAILURE);
             }
         }
-        token = strtok(NULL, " \t\r\n\a");
+        token = strtok(NULL, " \t\r\n\a"); /* Get the next token */
     }
-    tokens[position] = NULL;
+    tokens[position] = NULL; /* Add NULL to the end of the tokens */
 
-    while (tokens[i] != NULL) {
-        if (_strcmp(tokens[i], ">") == 0) break;
-        args[j++] = tokens[i];
+    while (tokens[i] != NULL) { 
+        if (_strcmp(tokens[i], ">") == 0) break; /* If > is found in the tokens */
+        args[j++] = tokens[i]; /* Add the token to the args */
         i++;
     }
-    args[j] = NULL;
+    args[j] = NULL; /* Add NULL to the end of the args */
 
-    if (tokens[i] == NULL || tokens[i + 1] == NULL) {
+    if (tokens[i] == NULL || tokens[i + 1] == NULL) { /* If there is no filename after > */
         fprintf(stderr, "Syntax error: Missing filename after '>'\n");
         free(tokens);
         return -1;
     }
 
-    filename = tokens[i + 1];
+    filename = tokens[i + 1]; /* Get the filename */
 
-    fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644); /* Open the file for writing */
     if (fd == -1) {
         perror("open");
         free(tokens);
         return -1;
     }
 
-    pid_t pid = fork();
+    pid_t pid = fork(); /* Fork a new process */
     if (pid == -1) {
         perror("fork");
         close(fd);
@@ -369,7 +369,7 @@ int RightDirect(char *line) {
         return -1;
     }
     if (pid == 0) {
-        if (dup2(fd, STDOUT_FILENO) == -1) {
+        if (dup2(fd, STDOUT_FILENO) == -1) { /* Redirect stdout to the file */
             perror("dup2");
             close(fd);
 			free(tokens);
@@ -377,7 +377,7 @@ int RightDirect(char *line) {
         }
         close(fd);
 
-		if (execvp(args[0], args) == -1)
+		if (execvp(args[0], args) == -1) /* Execute the command */
 		{
 			fprintf(stderr, "./hsh: %d: %s: not found\n", 1, args[0]);
 			free(tokens);
