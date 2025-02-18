@@ -68,19 +68,18 @@ void shellLoop(int isAtty, char *argv[])
 			free(input);
 			continue;
 		}
-		// if (_strstr(input, ">"))
-		// {
-		// 	RightDirect(input);
-		// 	free(input);
-		// 	continue;
-		// }
-		// if (_strstr(input, ">>"))
-		// {
-		// 	DoubleRightDirect(input);
-		// 	free(input);
-		// 	continue;
-		// }
-		/* Parse and Execute Single Command */
+		if (_strstr(input, ">"))
+		{
+			RightDirect(input);
+			free(input);
+			continue;
+		}
+		/* if (_strstr(input, ">>"))
+		{
+			DoubleRightDirect(input);
+			free(input);
+			continue;
+		} */
 		tokens = parse_command(input);
 		if (tokens == NULL)
 		{
