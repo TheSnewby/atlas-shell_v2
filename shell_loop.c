@@ -68,7 +68,7 @@ void shellLoop(int isAtty, char *argv[])
 			free(input);
 			continue;
 		}
-		if (_strstr(input, ">"))
+		if (_strstr(input, ">")) /* If string has right direct */
 		{
 			RightDirect(input);
 			free(input);
