@@ -377,7 +377,6 @@ int RightDirect(char *line) {
         }
         close(fd);
 
-		setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", 1);
 		execvp(args[0], args);
         perror("execvp");
 		free(tokens);
