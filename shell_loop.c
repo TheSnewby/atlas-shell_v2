@@ -74,12 +74,12 @@ void shellLoop(int isAtty, char *argv[])
 			free(input);
 			continue;
 		}
-		/* if (_strstr(input, ">>"))
+		if (_strstr(input, ">>"))
 		{
 			DoubleRightDirect(input);
 			free(input);
 			continue;
-		} */
+		}
 		tokens = parse_command(input);
 		if (tokens == NULL)
 		{
