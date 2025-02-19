@@ -352,7 +352,11 @@ int RightDirect(char **tokens)
         }
         close(fd);
 
-		setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", 1);
+		while (tokens[i] != NULL)
+		{
+			printf("%s ", tokens[i]);
+			i++;
+		}
         execvp(args[0], args);
         perror("execvp");
         exit(1);
