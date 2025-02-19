@@ -377,12 +377,7 @@ int RightDirect(char *line) {
         }
         close(fd);
 
-		if (execvp(args[0], args) == -1) /* Execute the command */
-		{
-			fprintf(stderr, "./hsh: %d: %s: not found\n", 1, args[0]);
-			free(tokens);
-			exit(1);
-		}
+		execvp(args[0], args)
         perror("execvp");
 		free(tokens);
         exit(1);
