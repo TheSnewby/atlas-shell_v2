@@ -377,7 +377,7 @@ int RightDirect(char *line) {
         }
         close(fd);
 
-		execvp(args[0], args)
+		execvp(args[0], args);
         perror("execvp");
 		free(tokens);
         exit(1);
