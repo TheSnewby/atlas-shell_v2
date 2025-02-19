@@ -40,14 +40,14 @@ int customCmd(char **tokens, int interactive, char *input)
 		return (ifRtn);
 
 	/* ----------------- custom command "echo" ----------------- */
-	if (ifCmdEcho(tokens) == 1)
+	/* if (ifCmdEcho(tokens) == 1)
 	{
 		for (int i = 0; tokens[i] != NULL; i++)
 		{
 			if (_strcmp(tokens[i], ">") == 0)
 				return RightDirect(tokens);
 		}
-	}
+	} */
 	return (0); /* indicate that the input is not a custom command */
 }
 
@@ -373,12 +373,12 @@ int RightDirect(char **tokens)
     return 1;
 }
 
-int ifCmdEcho(char **tokens)
+/* int ifCmdEcho(char **tokens)
 {
 	if (tokens[0] != NULL && (_strcmp(tokens[0], "echo") == 0))
 	{
 		return (1);
 	}
 	return (0);
-}
+} */
 
