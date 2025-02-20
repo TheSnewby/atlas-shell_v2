@@ -75,12 +75,12 @@ void shellLoop(int isAtty, char *argv[])
 			free(input);
 			continue;
 		}
-		if (_strstr(input, ">>"))
+		/* if (_strstr(input, ">>"))
 		{
-			DOubleRightDirect(input);
+			DoubleRightDirect(input);
 			free(input);
 			continue;
-		}
+		} */
 
 		/* Parse and Execute Single Command */
 		tokens = parse_command(input);
