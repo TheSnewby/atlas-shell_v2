@@ -412,8 +412,8 @@ int DoubleRightDirect(char *line)
                 tokens[position++] = token; /* Add the token before > */
             }
             tokens[position++] = ">>"; /* Add > to the tokens */
-            if (*(marker + 1) != '\0') { /* If there is something after > */
-                tokens[position++] = marker + 1; /* Get rid of the space */
+            if (*(marker + 2) != '\0') { /* If there is something after > */
+                tokens[position++] = marker + 2; /* Get rid of the space */
             }
         } else {
             tokens[position++] = token; /* Add the token to the tokens */
