@@ -466,8 +466,9 @@ int DoubleRightDirect(char *line)
 		if (execvp(args[0], args) == -1)
 		{
 			fprintf(stderr, "./hsh: %d: %s: not found\n", 1, args[0]);
-			free(tokens);
-			exit(1);
+        	for (int k = 0; k < position; k++) free(tokens[k]);
+        	free(tokens);
+        	exit(127);
 		}
         perror("execvp");
 		free(tokens);
