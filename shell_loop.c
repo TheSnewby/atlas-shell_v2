@@ -10,7 +10,7 @@ void shellLoop(int isAtty, char *argv[])
 {
 	size_t size;
 	char *user, *hostname, path[PATH_MAX], *input, **tokens = NULL;
-	int custom_cmd_rtn;
+	/*int custom_cmd_rtn;*/
 	int num_commands;
 	char **commands = NULL;
 
