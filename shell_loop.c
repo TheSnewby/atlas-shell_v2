@@ -77,15 +77,6 @@ void shellLoop(int isAtty, char *argv[])
 			free(input);
 			continue;
 		}
-		// --- Built-in Command Handling ---
-		custom_cmd_rtn = customCmd(tokens, isAtty, input);
-		if (custom_cmd_rtn == 1)
-		{
-			// Built-in was handled.  Free resources and continue.
-			free(tokens);
-			free(input);
-			continue;
-		}
 
 		executeIfValid(isAtty, argv, tokens, input);
 		/* --- Cleanup (ALWAYS done after each command) --- */
