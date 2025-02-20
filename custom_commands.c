@@ -392,7 +392,7 @@ int RightDirect(char *line)
 
 int DoubleRightDirect(char *line) 
 {
-    int fd, i = 0, j = 0, position = 0;
+    int fd, i = 0, j = 0, k, position = 0;
     char *filename;
     char *args[100];
     int bufsize = 64;
@@ -476,6 +476,7 @@ int DoubleRightDirect(char *line)
         close(fd);
         wait(NULL);
     }
+	for (int k = 0; k < position; k++) free(tokens[k]);
     free(tokens);
     return 1;
 }
