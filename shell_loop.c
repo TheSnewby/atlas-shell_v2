@@ -87,6 +87,12 @@ void shellLoop(int isAtty, char *argv[])
 			free(input);
 			continue;
 		}
+		if (_strstr(input, "<<"))
+		{
+			DoubleLeftDirect(input);
+			free(input);
+			continue;
+		}
 
 		/* Parse and Execute Single Command */
 		tokens = parse_command(input);
