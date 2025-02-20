@@ -442,7 +442,7 @@ int DoubleRightDirect(char *line)
     }
 
     filename = tokens[i + 1]; /* Get the filename */
-    fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC | O_APPEND, 0644); /* Open the file for writing */
+    fd = open(filename, O_WRONLY | O_CREAT | O_APPEND, 0644); /* Open the file for writing */
     if (fd == -1) {
         perror("open");
         free(tokens);
