@@ -5,7 +5,7 @@
 #include <ctype.h>	   /* For isspace() in trim_whitespace() */
 #include <errno.h>	   /* For errno */
 #include <fcntl.h>	   /* For open(), fcntl() - if you use them */
-#include <limits.h>	   /* For PATH_MAX */
+#include <linux/limits.h>	   /* For PATH_MAX */
 #include <stdbool.h>   /* For bool type */
 #include <stdarg.h>	   /* For va_list, va_start, va_arg, va_end */
 #include <stdio.h>	   /* For printf, fprintf, perror, getline etc */
@@ -94,7 +94,7 @@ char *getUser(void);
 char *getHostname(void);
 char* _strstr(char *sentence, char *word);
 int RightDirect(char *line);
-/* int DoubleRightDirect(char *line); */
+int DoubleRightDirect(char *line);
 int StreamDirect(char **tokens);
 int ifCmdEcho(char **tokens);
 size_t _strcspn(const char *str1, const char *str2);
