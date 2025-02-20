@@ -405,13 +405,13 @@ int DoubleRightDirect(char *line)
     }
     token = strtok(line, " \t\r\n\a"); /* Tokenize the input */
     while (token != NULL) {
-        char *marker = _strchr(token, '>'); /* Find the first occurrence of > and set it to variable marker */
+        char *marker = _strchr(token, '>>'); /* Find the first occurrence of > and set it to variable marker */
         if (marker) { /* If > is found in the input */
             *marker = '\0'; /* Split the token at > */
             if (*token != '\0') { /* If there is something before > */
                 tokens[position++] = token; /* Add the token before > */
             }
-            tokens[position++] = ">"; /* Add > to the tokens */
+            tokens[position++] = ">>"; /* Add > to the tokens */
             if (*(marker + 1) != '\0') { /* If there is something after > */
                 tokens[position++] = marker + 1; /* Get rid of the space */
             }
@@ -430,13 +430,13 @@ int DoubleRightDirect(char *line)
     }
     tokens[position] = NULL; /* Add NULL to the end of the tokens */
     while (tokens[i] != NULL) { 
-        if (_strcmp(tokens[i], ">") == 0) break; /* If > is found in the tokens */
+        if (_strcmp(tokens[i], ">>") == 0) break; /* If > is found in the tokens */
         args[j++] = tokens[i]; /* Add the token to the args */
         i++;
     }
     args[j] = NULL; /* Add NULL to the end of the args */
     if (tokens[i] == NULL || tokens[i + 1] == NULL) { /* If there is no filename after > */
-        fprintf(stderr, "Syntax error: Missing filename after '>'\n");
+        fprintf(stderr, "Syntax error: Missing filename after '>>'\n");
         free(tokens);
         return -1;
     }
@@ -469,7 +469,6 @@ int DoubleRightDirect(char *line)
 			free(tokens);
 			exit(1);
 		}
-		execvp(args[0], args);
         perror("execvp");
 		free(tokens);
         exit(1);
