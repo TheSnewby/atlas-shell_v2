@@ -405,7 +405,7 @@ int DoubleRightDirect(char *line)
     }
     token = strtok(line, " \t\r\n\a"); /* Tokenize the input */
     while (token != NULL) {
-        char *marker = _strchr(token, ">>"); /* Find the first occurrence of > and set it to variable marker */
+        char *marker = _strstr(token, ">>"); /* Find the first occurrence of > and set it to variable marker */
         if (marker) { /* If > is found in the input */
             *marker = '\0'; /* Split the token at > */
             if (*token != '\0') { /* If there is something before > */
