@@ -46,14 +46,8 @@ To run the shell, simply execute the `hsh` executable:
 
 ```bash
 ./hsh
-2.0 Pro Experimental. Lacks access to real-time info and some Gemini features.
-Okay, let's create a comprehensive and well-structured README.md for your shell project. A good README is crucial for any software project, as it's the first thing people see. It should clearly explain what the project is, how to build it, how to use it, and acknowledge any limitations.
 
-Here's a template and example content, incorporating best practices for README files. I'll include sections for all the features we've implemented, and placeholders for things you might want to add later:
-
-Markdown
-
-# Atlas Shell (hsh)
+# Atlas shell (hsh)
 
 ## Authors
 
