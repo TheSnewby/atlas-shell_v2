@@ -476,10 +476,6 @@ int DoubleRightDirect(char *line)
         close(fd);
         wait(NULL);
     }
-	for (int k = 0; k < position; k++)
-	{
-		free(tokens[k]);
-	}
     free(tokens);
     return 1;
 }
