@@ -5,7 +5,7 @@
 #include <ctype.h>	   /* For isspace() in trim_whitespace() */
 #include <errno.h>	   /* For errno */
 #include <fcntl.h>	   /* For open(), fcntl() - if you use them */
-#include <linux/limits.h>	   /* For PATH_MAX */
+#include <limits.h>	   /* For PATH_MAX */
 #include <stdbool.h>   /* For bool type */
 #include <stdarg.h>	   /* For va_list, va_start, va_arg, va_end */
 #include <stdio.h>	   /* For printf, fprintf, perror, getline etc */

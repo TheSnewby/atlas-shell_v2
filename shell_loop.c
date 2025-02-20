@@ -66,7 +66,7 @@ void shellLoop(int isAtty, char *argv[])
 		if (_strstr(input, "&&") || _strstr(input, "||") || _strstr(input, ";"))
 		{
 			execute_logical_commands(input);
-			free(input);
+			//free(input);
 			continue;
 		}
 		if (_strstr(input, ">>"))
