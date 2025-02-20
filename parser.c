@@ -15,8 +15,6 @@ int split_command_line_on_pipe(char *input, char ***commands, int *num_commands)
 	int count = 0;
 	char *input_copy;
 
-	printf("DEBUG: split_command_line_on_pipe: input = '%s'\n", input); // DEBUG
-
 	/* Count the number of pipes */
 	for (int i = 0; input[i] != '\0'; i++)
 	{
@@ -41,13 +39,11 @@ int split_command_line_on_pipe(char *input, char ***commands, int *num_commands)
 		free(*commands);
 		return -1;
 	}
-	printf("DEBUG: input_copy = '%s'\n", input_copy); // DEBUG
 	token = strtok(input_copy, "|"); /* Tokenize based on pipe*/
 
 	int i = 0;
 	while (token != NULL)
 	{
-		printf("DEBUG: Token %d = '%s'\n", i, token); // DEBUG
 		(*commands)[i] = _strdup(token); /* Duplicate and store each token */
 		if ((*commands)[i] == NULL)
 		{

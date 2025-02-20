@@ -93,9 +93,9 @@ void destroyListPath(path_t *h);
 char *getUser(void);
 char *getHostname(void);
 char* _strstr(char *sentence, char *word);
-int RightDirect(char *line);
-int DoubleRightDirect(char *line);
+int RightDirect(char **tokens);
 int StreamDirect(char **tokens);
+int ifCmdEcho(char **tokens);
 size_t _strcspn(const char *str1, const char *str2);
 
 /* --- Utility Functions --- */

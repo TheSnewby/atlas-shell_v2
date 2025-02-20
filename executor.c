@@ -53,10 +53,8 @@ void execute_pipe_command(char **commands, int num_commands)
 	pid_t pids[num_commands];		/* Array to store child PIDs */
 
 	/* Create all necessary pipes */
-	// printf("DEBUG: execute_pipe_command: num_commands = %d\n", num_commands);
 	for (int i = 0; i < num_commands - 1; i++)
 	{
-		// printf("DEBUG:   commands[%d] = '%s'\n", i, commands[i]);
 		if (pipe(pipes[i]) < 0)
 		{
 			perror("pipe");

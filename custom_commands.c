@@ -39,6 +39,15 @@ int customCmd(char **tokens, int interactive, char *input)
 	if (ifRtn)
 		return (ifRtn);
 
+	/* ----------------- custom command "echo" ----------------- */
+	if (ifCmdEcho(tokens) == 1)
+	{
+		for (int i = 0; tokens[i] != NULL; i++)
+		{
+			if (_strcmp(tokens[i], ">") == 0)
+				return RightDirect(tokens);
+		}
+	}
 	return (0); /* indicate that the input is not a custom command */
 }
 
@@ -299,193 +308,70 @@ int ifCmdCd(char **tokens)
 	return (1); /* success */
 }
 
-int RightDirect(char *line) {
-    int fd, i = 0, j = 0, position = 0;
+int RightDirect(char **tokens)
+{
+    int fd, i = 0, j = 0;
     char *filename;
     char *args[100];
-    int bufsize = 64;
-    char **tokens = malloc(bufsize * sizeof(char *));
-    char *token;
 
-    if (!tokens) { /* Stanard Malloc Error Handling */
-        fprintf(stderr, "hsh: allocation error\n");
-        exit(EXIT_FAILURE);
-    }
-
-    token = strtok(line, " \t\r\n\a"); /* Tokenize the input */
-    while (token != NULL) {
-        char *marker = _strchr(token, '>'); /* Find the first occurrence of > and set it to variable marker */
-        if (marker) { /* If > is found in the input */
-            *marker = '\0'; /* Split the token at > */
-            if (*token != '\0') { /* If there is something before > */
-                tokens[position++] = token; /* Add the token before > */
-            }
-            tokens[position++] = ">"; /* Add > to the tokens */
-            if (*(marker + 1) != '\0') { /* If there is something after > */
-                tokens[position++] = marker + 1; /* Get rid of the space */
-            }
-        } else {
-            tokens[position++] = token; /* Add the token to the tokens */
-        }
-        if (position >= bufsize) { /* If the buffer is full */
-            bufsize += 64; /* Increase the buffer size */
-            tokens = realloc(tokens, bufsize * sizeof(char *)); /* Reallocate the buffer */
-            if (!tokens) {
-                fprintf(stderr, "hsh: allocation error\n");
-                exit(EXIT_FAILURE);
-            }
-        }
-        token = strtok(NULL, " \t\r\n\a"); /* Get the next token */
-    }
-    tokens[position] = NULL; /* Add NULL to the end of the tokens */
-
-    while (tokens[i] != NULL) { 
-        if (_strcmp(tokens[i], ">") == 0) break; /* If > is found in the tokens */
-        args[j++] = tokens[i]; /* Add the token to the args */
-        i++;
-    }
-    args[j] = NULL; /* Add NULL to the end of the args */
-
-    if (tokens[i] == NULL || tokens[i + 1] == NULL) { /* If there is no filename after > */
-        fprintf(stderr, "Syntax error: Missing filename after '>'\n");
-        free(tokens);
-        return -1;
-    }
-
-    filename = tokens[i + 1]; /* Get the filename */
-
-    fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644); /* Open the file for writing */
-    if (fd == -1) {
-        perror("open");
-        free(tokens);
-        return -1;
-    }
-
-    pid_t pid = fork(); /* Fork a new process */
-    if (pid == -1) {
-        perror("fork");
-        close(fd);
-        free(tokens);
-        return -1;
-    }
-    if (pid == 0) {
-        if (dup2(fd, STDOUT_FILENO) == -1) { /* Redirect stdout to the file */
-            perror("dup2");
-            close(fd);
-			free(tokens);
-            exit(1);
-        }
-        close(fd);
-
-		if (execvp(args[0], args) == -1)
-		{
-			fprintf(stderr, "./hsh: %d: %s: not found\n", 1, args[0]);
-			free(tokens);
-			exit(1);
-		}
-		execvp(args[0], args);
-        perror("execvp");
-		free(tokens);
-        exit(1);
-    } else {
-        close(fd);
-        wait(NULL);
-    }
-    free(tokens);
-    return 1;
-}
-
-int DoubleRightDirect(char *line) {
-    int fd, i = 0, j = 0, position = 0;
-    char *filename;
-    char *args[100];
-    int bufsize = 64;
-    char **tokens = malloc(bufsize * sizeof(char *));
-    char *token;
-
-    if (!tokens) {
-        fprintf(stderr, "hsh: allocation error\n");
-        exit(EXIT_FAILURE);
-    }
-
-    token = strtok(line, " \t\r\n\a");
-    while (token != NULL) {
-        char *marker = _strstr(token, ">>");
-        if (marker) {
-            *marker = '\0';
-            if (*token != '\0') {
-                tokens[position++] = token;
-            }
-            tokens[position++] = ">>";
-            if (*(marker + 1) != '\0') {
-                tokens[position++] = marker + 1;
-            }
-        } else {
-            tokens[position++] = token;
-        }
-        if (position >= bufsize) {
-            bufsize += 64;
-            tokens = realloc(tokens, bufsize * sizeof(char *));
-            if (!tokens) {
-                fprintf(stderr, "hsh: allocation error\n");
-                exit(EXIT_FAILURE);
-            }
-        }
-        token = strtok(NULL, " \t\r\n\a");
-    }
-    tokens[position] = NULL;
-
-    while (tokens[i] != NULL) {
-        if (_strcmp(tokens[i], ">>") == 0) break;
+    while (tokens[i] != NULL)
+    {
+        if (strcmp(tokens[i], ">") == 0)
+            break;
         args[j++] = tokens[i];
         i++;
     }
     args[j] = NULL;
 
-    if (tokens[i] == NULL || tokens[i + 1] == NULL) {
-        fprintf(stderr, "Syntax error: Missing filename after '>>'\n");
-        free(tokens);
+    if (tokens[i] == NULL || tokens[i + 1] == NULL)
+    {
+        fprintf(stderr, "Syntax error: Missing filename after '>'\n");
         return -1;
     }
 
     filename = tokens[i + 1];
 
-    fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC | O_APPEND, 0644);
-    if (fd == -1) {
+    fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd == -1)
+    {
         perror("open");
-        free(tokens);
         return -1;
     }
 
     pid_t pid = fork();
-    if (pid == -1) {
+    if (pid == -1)
+    {
         perror("fork");
-        close(fd);
-        free(tokens);
         return -1;
     }
-    if (pid == 0) {
-        if (dup2(fd, STDOUT_FILENO) == -1) {
+    if (pid == 0)
+    {
+        if (dup2(fd, STDOUT_FILENO) == -1)
+        {
             perror("dup2");
             close(fd);
-			free(tokens);
             exit(1);
         }
         close(fd);
 
-		if (execvp(args[0], args) == -1)
-		{
-			fprintf(stderr, "./hsh: %d: %s: not found\n", 1, args[0]);
-			free(tokens);
-			exit(1);
-		}
+        execvp(args[0], args);
         perror("execvp");
-		free(tokens);
         exit(1);
-    } else {
+    }
+    else
+    {
         close(fd);
         wait(NULL);
     }
-    free(tokens);
     return 1;
 }
+
+int ifCmdEcho(char **tokens)
+{
+	if (tokens[0] != NULL && (_strcmp(tokens[0], "echo") == 0))
+	{
+		return (1);
+	}
+	return (0);
+}
+

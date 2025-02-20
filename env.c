@@ -12,7 +12,6 @@ char *_getenv(const char *name)
 	char *token;
 	char *temp_line;
 	char *value = NULL;
-	char *saveptr;
 
 	if (!environ || !name)
 		return (NULL);
@@ -23,10 +22,10 @@ char *_getenv(const char *name)
 		if (!temp_line)
 			return (NULL);
 
-		token = _strtok_r(temp_line, "=", &saveptr);
+		token = strtok(temp_line, "=");
 		if (_strcmp(token, name) == 0)
 		{
-			value = _strtok_r(NULL, "=", &saveptr);
+			value = strtok(NULL, "=");
 			if (value)
 				value = _strdup(value); /* ensures value isn't dependent on
 									   temp_line ptr */
@@ -206,7 +205,7 @@ void initialize_environ(void)
 		perror("malloc failed");
 		return;
 	}
-	path_list = buildListPath();
+
 	/* Copy the strings from the ORIGINAL environ to the NEW environ */
 	for (i = 0; i < size_environ; i++)
 	{
@@ -224,6 +223,7 @@ void initialize_environ(void)
 		}
 	}
 	new_environ[size_environ] = NULL; /* Null-terminate the new array */
+	/* Now it's safe to reassign 'environ' */
 	environ = new_environ;
 	path_list = buildListPath(); /* build the list path, save to var */
 	destroyListPath(path_list);

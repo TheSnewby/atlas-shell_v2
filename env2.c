@@ -13,19 +13,14 @@ path_t *buildListPath(void)
 	char *temp_path = NULL;
 	char *token = NULL;
 
-	// printf("Inside buildListPath\n");
 	if (path == NULL)
-	{
-		// printf("PATH is NULL\n"); /*DEBUG*/
 		return (NULL);
-	}
 	temp_path = _strdup(path);
 	token = strtok(temp_path, ":");
 
 	free(path); /* Free the duplicated path from _getenv */
 	while (token != NULL)
 	{
-		// printf("Adding directory to path: %s\n", token); /*DEBUG*/
 		new_node = (path_t *)malloc(sizeof(path_t));
 		if (new_node == NULL)
 		{
@@ -61,7 +56,6 @@ char *findPath(char *name)
 	path_t *head = NULL;
 	char *temp_path = NULL, *mallocd_name = NULL;
 
-	// printf("Inside findPath, looking for: %s\n", name); /*DEBUG*/
 	if (_strchr(name, '/') && !access(name, F_OK)) /* checks if path already */
 	{
 		mallocd_name = _strdup(name);
@@ -71,7 +65,6 @@ char *findPath(char *name)
 	head = buildListPath(); /* populates list and points at head */
 	if (head == NULL)
 	{
-		// printf("buildListPath returned NULL\n"); /*DEBUG*/
 		return (NULL); /*Return copy of name*/
 	}
 	temp = head; /* iterator initialization */
@@ -87,10 +80,8 @@ char *findPath(char *name)
 		_strcpy(temp_path, temp->directory);
 		_strcat(temp_path, "/");
 		_strcat(temp_path, name);
-		// printf("Checking path: %s\n", temp_path);/*DEBUG*/
 		if (access(temp_path, F_OK) == 0) /* checks if cmd at path exists */
 		{
-			// printf("Executable found at: %s\n", temp_path); /*DEBUG*/
 			destroyListPath(head); /* frees list of paths */
 			return (temp_path);	   /* returns found path + name */
 		}
@@ -98,7 +89,6 @@ char *findPath(char *name)
 		temp = temp->next; /* go to next location */
 	}
 	destroyListPath(head);
-	// printf("Command not found in PATH\n"); /*DEBUG*/
 	return (NULL);		   /* returns malloced command name without a path */
 }
 
