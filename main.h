@@ -116,5 +116,7 @@ char *_strdup(const char *str);
 int _strncmp(const char *s1, const char *s2, int n);
 void *_realloc_array(char **ptr, unsigned int new_size);
 int _build_path(const char *cwd, const char *rel_path, char *abs_path);
+char *_strtok_r(char *str, const char *delim, char **saveptr);
+
 
 #endif /* MAIN_H */

@@ -1,0 +1,821 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <stdarg.h>
+#include <signal.h>
+#include <limits.h>
+#include <fcntl.h>
+
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
+
+// --- Colors (for the prompt) ---
+#define CLR_DEFAULT "\x1b[0m"
+#define CLR_RED_BOLD "\x1b[1;31m"
+#define CLR_GREEN_BOLD "\x1b[1;32m"
+#define CLR_YELLOW_BOLD "\x1b[1;33m"
+#define CLR_BLUE_BOLD "\x1b[1;34m"
+#define CLR_DEFAULT_BOLD "\x1b[1m" // Bold, but default color
+
+// --- Constants for logical operator handling ---
+typedef enum
+{
+	SEP_NONE,
+	SEP_AND,
+	SEP_OR,
+	SEP_SEMICOLON
+} SeparatorType;
+
+// --- Function Prototypes ---
+char **parse_command(char *command);
+int execute_command(char *commandPath, char **arguments);
+int execute_logical(char *line);
+char *findPath(char *command);
+void printPrompt(int isAtty, char *user, char *hostname, char *path);
+void safeExit(int exit_code);
+void shellLoop(int isAtty, char *argv[]);
+int customCmd(char **tokens, int isAtty, char *input);
+char *_strtok_r(char *str, const char *delim, char **saveptr); // Your custom strtok_r
+extern char **environ;
+void initialize_environ(void);
+char **split_line(char *line, const char *delimiters); // Kept to reuse in logical
+
+// --- Global Exit Status Variable ---
+int g_exit_status = 0;
+
+// --- Helper Functions ---
+
+void initialize_environ(void)
+{
+	char **new_environ;
+	int i = 0, size = 0;
+
+	/* Calculate initial size of environ */
+	while (environ[size] != NULL)
+		size++;
+	new_environ = malloc((size + 1) * sizeof(char *));
+	if (!new_environ)
+	{
+		perror("malloc failed");
+		exit(1); /*  Exit early on allocation failure. */
+	}
+	for (i = 0; environ[i] != NULL; i++)
+	{
+		new_environ[i] = strdup(environ[i]); /* make copy */
+		if (!new_environ[i])
+		{
+			perror("strdup failed");
+			while (--i >= 0) /* Frees any copies made */
+				free(new_environ[i]);
+			free(new_environ);
+			exit(1); /* Exit on failure */
+		}
+	}
+	new_environ[size] = NULL; /* array has to be NULL terminated */
+	environ = new_environ;	  /* makes copy global */
+}
+
+char *_strdup(const char *s)
+{
+	if (s == NULL)
+		return NULL;
+	size_t len = strlen(s) + 1;
+	char *new_str = malloc(len);
+	if (new_str == NULL)
+		return NULL;
+	return memcpy(new_str, s, len);
+}
+int _strcmp(const char *s1, const char *s2)
+{
+	while (*s1 && (*s1 == *s2))
+	{
+		s1++;
+		s2++;
+	}
+	return *(unsigned char *)s1 - *(unsigned char *)s2;
+}
+size_t _strcspn(const char *s, const char *reject)
+{
+	size_t count = 0;
+	while (*s)
+	{
+		if (strchr(reject, *s))
+		{
+			return count;
+		}
+		else
+		{
+			s++;
+			count++;
+		}
+	}
+	return count;
+}
+char *_strchr(const char *s, int c)
+{
+	while (*s != '\0')
+	{
+		if (*s == (char)c)
+		{
+			return (char *)s; // Cast away const for the return
+		}
+		s++;
+	}
+	if (c == '\0')
+	{
+		return (char *)s; // Special case: check for null terminator
+	}
+	return NULL;
+}
+
+char *_strcpy(char *dest, const char *src)
+{
+	char *start = dest;
+
+	while (*src)
+	{
+		*dest = *src;
+		dest++;
+		src++;
+	}
+	*dest = '\0';
+	return (start);
+}
+
+char *_strcat(char *dest, const char *src)
+{
+	char *start = dest;
+
+	while (*dest)
+		dest++;
+
+	while (*src)
+	{
+		*dest = *src;
+		dest++;
+		src++;
+	}
+
+	*dest = '\0';
+	return (start);
+}
+
+char *_strstr(const char *haystack, const char *needle)
+{
+	if (!*needle) /*  Empty needle */
+		return ((char *)haystack);
+
+	while (*haystack)
+	{
+		const char *h = haystack;
+		const char *n = needle;
+
+		while (*h && *n && (*h == *n))
+		{
+			h++;
+			n++;
+		}
+
+		if (!*n) /*  Needle found */
+			return ((char *)haystack);
+
+		haystack++;
+	}
+
+	return (NULL); /*  Needle not found */
+}
+
+int _strncmp(const char *s1, const char *s2, size_t n)
+{
+	if (n == 0)
+	{
+		return (0);
+	}
+	while (--n && *s1 && *s1 == *s2)
+	{
+		s1++;
+		s2++;
+	}
+	return (*(unsigned char *)s1 - *(unsigned char *)s2);
+}
+/**
+ * _strtok_r - A reentrant version of strtok.
+ * @str: The string to be tokenized.  If NULL, continues from last token.
+ * @delim: The delimiter characters.
+ * @saveptr: A pointer to a char*, used internally to store the next token.
+ *
+ * Return: A pointer to the next token, or NULL if no more tokens are found.
+ */
+char *_strtok_r(char *str, const char *delim, char **saveptr)
+{
+	char *token_start;
+	char *token_end;
+
+	if (str != NULL)
+	{
+		// New string to tokenize
+		token_start = str;
+	}
+	else
+	{
+		// Continue from last saved position
+		if (*saveptr == NULL)
+		{
+			return NULL; // No previous state, no more tokens
+		}
+		token_start = *saveptr;
+	}
+
+	// Skip leading delimiters
+	while (*token_start && strchr(delim, *token_start))
+	{
+		token_start++;
+	}
+
+	if (*token_start == '\0')
+	{
+		*saveptr = NULL; // No more tokens
+		return NULL;
+	}
+
+	// Find the end of the token
+	token_end = token_start;
+	while (*token_end && !strchr(delim, *token_end))
+	{
+		token_end++;
+	}
+
+	if (*token_end != '\0')
+	{
+		*token_end = '\0';		  // Null-terminate the token
+		*saveptr = token_end + 1; // Save the next position
+	}
+	else
+	{
+		*saveptr = NULL; // No more tokens after this one
+	}
+
+	return token_start;
+}
+
+/**
+ * free_tokens - Frees a NULL-terminated array of strings.
+ * @tokens: The array of strings to free.
+ */
+void free_tokens(char **tokens)
+{
+	if (tokens == NULL)
+		return;
+	for (int i = 0; tokens[i] != NULL; i++)
+	{
+		free(tokens[i]);
+		tokens[i] = NULL; // Prevent dangling pointers
+	}
+	free(tokens);
+}
+
+//-----------------END STRING FUNCS----------------------
+//-----------------START BUILTINS------------------------
+
+/**
+ * execute_builtin - checks for built-in commands, runs if exists
+ *
+ * @tokens: tokenized user input
+ *
+ * Return: 1 if custom, 0 if not
+ */
+int customCmd(char **tokens, int isAtty, char *input)
+{
+	if (!tokens || !tokens[0])
+		return (0); /* handles NULL */
+
+	if (!_strcmp(tokens[0], "exit"))
+	{					   /* built-in #1 "exit" */
+		int exit_code = 0; /* handles no arg exit */
+
+		if (tokens[1])					 /* checks if user entered 2nd arg */
+			exit_code = atoi(tokens[1]); /* makes 2nd arg the code */
+
+		if (!isAtty)
+			free(input);	 /* getline alloc'd so must be freed */
+		free_tokens(tokens); /* frees tokens array */
+		safeExit(exit_code); /* exits with appropriate code */
+		return (1);
+	}
+	else if (!_strcmp(tokens[0], "env"))
+	{ /* built-in #2 "env" */
+		char **env = environ;
+
+		while (*env != NULL)
+		{
+			printf("%s\n", *env);
+			env++;
+		}
+		g_exit_status = 0;
+		return (1);
+	}
+	else if (!_strcmp(tokens[0], "cd"))
+	{
+		char *dir = tokens[1];
+		char *home_dir = getenv("HOME");
+
+		if (dir == NULL || _strcmp(dir, "") == 0)
+		{
+			if (home_dir == NULL)
+			{
+				fprintf(stderr, "hsh: cd: HOME not set\n");
+				g_exit_status = 1;
+				return (1);
+			}
+			dir = home_dir;
+		}
+		else if (_strcmp(dir, "-") == 0)
+		{
+			char *prev_dir = getenv("OLDPWD");
+			if (prev_dir == NULL)
+			{
+				fprintf(stderr, "hsh: cd: OLDPWD not set\n");
+				g_exit_status = 1;
+				return (1);
+			}
+			dir = prev_dir;
+			printf("%s\n", dir); // Print the directory we're changing to
+		}
+
+		char cwd[1024]; // Buffer for current working directory
+		if (getcwd(cwd, sizeof(cwd)) == NULL)
+		{
+			perror("hsh: getcwd failed");
+			g_exit_status = 1;
+			return (1);
+		}
+
+		if (chdir(dir) != 0)
+		{
+			perror("hsh: cd failed");
+			g_exit_status = 1;
+			return 1;
+		}
+
+		if (setenv("OLDPWD", cwd, 1) != 0) // Update OLDPWD *before* PWD
+		{
+			perror("hsh: setenv OLDPWD failed");
+			g_exit_status = 1;
+			return (1);
+		}
+
+		if (getcwd(cwd, sizeof(cwd)) == NULL)
+		{
+			perror("hsh: getcwd failed");
+			g_exit_status = 1;
+			return (1);
+		}
+		if (setenv("PWD", cwd, 1) != 0) // Update PWD
+		{
+			perror("hsh: setenv PWD failed");
+			g_exit_status = 1;
+			return (1);
+		}
+
+		g_exit_status = 0;
+		return (1);
+	}
+	else if (_strcmp(tokens[0], "setenv") == 0)
+	{
+		if (tokens[1] == NULL || tokens[2] == NULL || tokens[3] != NULL)
+		{
+			fprintf(stderr, "hsh: setenv: Usage: setenv VARIABLE VALUE\n");
+			g_exit_status = 1;
+			return (1);
+		}
+		if (setenv(tokens[1], tokens[2], 1) != 0)
+		{
+			perror("hsh: setenv failed");
+			g_exit_status = 1;
+			return (1);
+		}
+		g_exit_status = 0;
+		return (1);
+	}
+	else if (_strcmp(tokens[0], "unsetenv") == 0)
+	{
+		if (tokens[1] == NULL || tokens[2] != NULL)
+		{
+			fprintf(stderr, "hsh: unsetenv: Usage: unsetenv VARIABLE\n");
+			g_exit_status = 1;
+			return (1);
+		}
+		if (unsetenv(tokens[1]) != 0)
+		{
+			perror("hsh: unsetenv failed");
+			g_exit_status = 1;
+			return (1);
+		}
+		g_exit_status = 0;
+		return (1);
+	}
+	return (0);
+}
+
+//-------------------END BUILTINS-----------------------
+//-------------------FIND PATH--------------------------
+/**
+ * findPath - Locates the full path of a command.
+ * @command: The command name.
+ *
+ * Return: Full path to the command if found and executable,
+ *         otherwise returns a copy of the command.  The caller
+ *         is responsible for freeing the returned string.
+ */
+char *findPath(char *command)
+{
+	char *path = getenv("PATH");
+	char *path_copy;
+	char *dir;
+	char full_path[PATH_MAX];
+
+	// If command contains a '/', it's an absolute or relative path
+	if (_strchr(command, '/'))
+	{
+		if (access(command, X_OK) == 0)
+		{
+			return _strdup(command); // Return a copy, caller must free
+		}
+		else
+		{
+			return NULL; // Not found or not executable
+		}
+	}
+
+	if (!path)
+	{
+		return NULL; // No PATH variable
+	}
+
+	path_copy = _strdup(path); // Duplicate PATH
+	if (!path_copy)
+	{
+		perror("strdup");
+		return NULL;
+	}
+
+	char *saveptr; // To be used by strtok
+
+	dir = _strtok_r(path_copy, ":", &saveptr);
+	while (dir != NULL)
+	{
+		snprintf(full_path, sizeof(full_path), "%s/%s", dir, command);
+		if (access(full_path, X_OK) == 0)
+		{
+			free(path_copy);
+			return _strdup(full_path); // Return a copy!
+		}
+		dir = _strtok_r(NULL, ":", &saveptr);
+	}
+
+	free(path_copy);
+	return NULL; // Not found
+}
+//-------------------END FIND PATH------------------------
+//-------------------START EXECUTER-----------------------
+
+int execute_command(char *commandPath, char **arguments)
+{
+	pid_t pid;
+	int status;
+
+	pid = fork();
+	if (pid == -1)
+	{
+		perror("fork");
+		return -1; // Indicate fork failure
+	}
+	else if (pid == 0)
+	{
+		// Child process
+
+		// Attempt execvp first (search PATH)
+		execve(commandPath, arguments, environ);
+
+		// If execve returns, there was an error
+		fprintf(stderr, "hsh: %s: command not found\n", arguments[0]);
+		exit(127); // Command not found exit status
+	}
+	else
+	{
+		// Parent process
+		waitpid(pid, &status, 0);
+		if (WIFEXITED(status))
+		{
+			return WEXITSTATUS(status);
+		}
+		else if (WIFSIGNALED(status))
+		{
+			fprintf(stderr, "hsh: Child process terminated by signal %d\n", WTERMSIG(status));
+			return 128 + WTERMSIG(status); // Consistent with bash signal handling
+		}
+		else
+		{
+			// Should not normally get here
+			return -1; // Indicate an unexpected error
+		}
+	}
+}
+//-------------------END EXECUTER-----------------------
+//-------------------START PARSER-----------------------
+char **split_line(char *line, const char *delimiters)
+{
+	char **tokens = NULL;
+	char *token;
+	int bufsize = 64, position = 0;
+	char *saveptr;
+
+	tokens = malloc(
+		bufsize * sizeof(char *));
+	if (!tokens)
+	{
+		perror("hsh: allocation error");
+		return NULL;
+	}
+
+	token = _strtok_r(line, delimiters, &saveptr);
+	while (token != NULL)
+	{
+		tokens[position] = _strdup(token); // Duplicate the token!
+		if (!tokens[position])
+		{
+			perror("hsh: allocation error");
+			// Clean up previously allocated tokens
+			while (--position >= 0)
+			{
+				free(tokens[position]);
+			}
+			free(tokens);
+			return NULL;
+		}
+		position++;
+
+		if (position >= bufsize)
+		{
+			bufsize += 64;
+			tokens = realloc(tokens, bufsize * sizeof(char *));
+			if (!tokens)
+			{
+				perror("hsh: allocation error");
+				// Clean up previously allocated tokens (including the newly strdup'd one)
+				while (--position >= 0)
+				{
+					free(tokens[position]);
+				}
+				free(tokens);
+				return NULL;
+			}
+		}
+
+		token = _strtok_r(NULL, delimiters, &saveptr);
+	}
+	tokens[position] = NULL;
+	return tokens;
+}
+/**
+ * parse_command - Parses a command string into an array of arguments.
+ * @command: The command string.
+ *
+ * Return: A NULL-terminated array of strings (arguments) or NULL on error.
+ */
+char **parse_command(char *command)
+{
+	return split_line(command, " \t\r\n\a");
+}
+
+//-------------------END PARSER-----------------------
+//-------------------START LOGICAL OPS----------------
+/**
+ * execute_logical - Executes a sequence of commands with logical operators.
+ * @line: The command line.
+ *
+ * Return: The exit status of the last executed command.
+ */
+int execute_logical(char *line)
+{
+	char **commands;
+	char **args;
+	int i = 0;
+	char *saveptr1;
+	char *command_group;
+
+	// First, split by semicolon (;) for sequential execution.
+	commands = split_line(line, ";");
+	if (!commands)
+	{
+		return 1; // Allocation failure
+	}
+
+	while (commands[i] != NULL)
+	{
+
+		char *current_command = _strdup(commands[i]);
+		if (!current_command)
+		{
+			perror("hsh: strdup failed");
+			free_tokens(commands);
+			return 1;
+		}
+		// Now handle && and ||
+		char **sub_commands = split_line(current_command, "&&||"); // Split on both operators
+		if (!sub_commands)
+		{
+			free(current_command);
+			free_tokens(commands);
+			return 1;
+		}
+		int j = 0;
+		while (sub_commands[j] != NULL)
+		{
+			args = parse_command(sub_commands[j]);
+			if (!args)
+			{
+				free(current_command);
+				free_tokens(commands);
+				free_tokens(sub_commands);
+				return 1;
+			}
+			char *full_path = findPath(args[0]);
+			if (full_path == NULL)
+			{
+				fprintf(stderr, "hsh: %s: command not found\n", args[0]);
+				g_exit_status = 127;
+			}
+			else
+			{
+				g_exit_status = execute_command(full_path, args);
+				free(full_path);
+			}
+			free_tokens(args);
+
+			// Check for operator and if we should continue
+			char *op_ptr = strstr(commands[i], "&&");
+			if (op_ptr != NULL && (op_ptr < strstr(commands[i], "||") || strstr(commands[i], "||") == NULL)) //"&&" and its valid
+			{
+				if (g_exit_status != 0)
+					break;
+			}
+			else if (strstr(commands[i], "||") != NULL) // "||"
+			{
+				if (g_exit_status == 0)
+					break;
+			}
+			j++;
+		}
+
+		free_tokens(sub_commands);
+		free(current_command);
+		i++;
+	}
+
+	free_tokens(commands);
+	return g_exit_status;
+}
+//---------------------END LOGICAL OPS-----------------
+//-------------------START SHELL LOOP------------------
+
+void shellLoop(int isAtty, char *argv[])
+{
+	size_t size;
+	char *user, *hostname, path[PATH_MAX], *input;
+
+	while (1)
+	{
+		// Initialize variables
+		getcwd(path, sizeof(path));
+		user = getenv("USER"); // Use getenv for USER
+		hostname = getenv("HOSTNAME");
+		if (!user)
+			user = "user"; // Default val
+		if (!hostname)
+			hostname = "hostname";
+		size = 0;
+		input = NULL;
+
+		printPrompt(isAtty, user, hostname, path);
+
+		if (getline(&input, &size, stdin) == -1)
+		{
+			if (isAtty)
+			{
+				printf("\n"); // Newline on Ctrl+D in interactive mode
+			}
+			free(input);			 // Free before safe exit
+			safeExit(g_exit_status); // Exit with the last command's status
+		}
+
+		// Remove trailing newline
+		input[_strcspn(input, "\n")] = 0;
+
+		// Check for logical operators *before* parsing into tokens
+		if (_strstr(input, "&&") || _strstr(input, "||") || _strstr(input, ";"))
+		{
+			g_exit_status = execute_logical(input); // Updates g_exit_status
+			free(input);
+			continue; // Go to the next iteration of the loop
+		}
+
+		//--- Parse and Execute (if no logical operators) ---
+		char **tokens = parse_command(input);
+
+		if (tokens == NULL) // Check for parse error
+		{
+			free(input);
+			continue;
+		}
+
+		if (tokens[0] != NULL)
+		{ // Check for empty command
+			// Handle built-in commands
+			if (customCmd(tokens, isAtty, input) == 1)
+			{
+				free_tokens(tokens); // Free tokens
+				free(input);		 // Free input
+				continue;			 // Skip to next iteration if it's a built-in
+			}
+
+			// --- External command handling ---
+			char *full_path = findPath(tokens[0]); // Find the full path
+			if (full_path == NULL)
+			{
+				fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
+				g_exit_status = 127; // Command not found exit status
+			}
+			else
+			{
+				g_exit_status = execute_command(full_path, tokens); // Updates g_exit_status
+				free(full_path);									// Free the allocated path
+			}
+		}
+		// Free allocated memory
+		free_tokens(tokens);
+		free(input);
+	}
+}
+
+/**
+ * printPrompt - prints prompt in color ("[Go$H] | user@hostname:path$ ")
+ *
+ * @isAtty: is interactive mode
+ * @user: environment variable for user's username
+ * @hostname: environment variable for user's hostname or device name.
+ * @path: current working directory
+ */
+void printPrompt(int isAtty, char *user, char *hostname, char *path)
+{
+	if (isAtty)
+	{
+		printf("%s[%sGo$H%s]%s | ", CLR_YELLOW_BOLD, CLR_RED_BOLD,
+			   CLR_YELLOW_BOLD, CLR_DEFAULT);
+		printf("%s%s@%s", CLR_GREEN_BOLD, user, hostname);
+		printf("%s:%s%s", CLR_DEFAULT_BOLD, CLR_BLUE_BOLD, path);
+		printf("%s$ ", CLR_DEFAULT);
+		fflush(stdout); // Force print
+	}
+}
+
+//---------------------END SHELL LOOP-----------------
+
+/**
+ * safeExit - exits after freeing environ
+ * @exit_code: exit code for exit()
+ *
+ * Return: void
+ */
+void safeExit(int exit_code)
+{
+	int i;
+
+	if (environ)
+	{
+		for (i = 0; environ[i] != NULL; i++)
+			free(environ[i]);
+		free(environ);
+		environ = NULL;
+	}
+
+	exit(exit_code);
+}
+
+int main(int argc, char *argv[])
+{
+	int isInteractive = isatty(STDIN_FILENO);
+
+	initialize_environ();
+	(void)argc;
+
+	shellLoop(isInteractive, argv);
+
+	return (EXIT_SUCCESS); // Should never reach here in normal operation
+}

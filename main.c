@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
  * @argv: carrier of filename in [0]
  * @tokens: array of strings of user inputs delimited by spaces
  */
-void executeIfValid(int isAtty, char *const *argv, char *input, char **tokens)
+void executeIfValid(int isAtty, char *const *argv, char **tokens, char *input)
 {
 	int custom_cmd_rtn;
 
