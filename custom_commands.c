@@ -299,7 +299,7 @@ int ifCmdCd(char **tokens)
 	return (1); /* success */
 }
 
-int RightDirect(char **tokens)
+int RightDirect(char *line)
 {
     int fd, i = 0, j = 0;
     char *filename;
