@@ -54,14 +54,14 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char *input)
 	{
 		if (custom_cmd_rtn == 2) /* false directory */
 			fprintf(stderr, "%s: 1: cd: can't cd to %s\n", argv[0], tokens[1]);
-		else if (custom_cmd_rtn == 3)  /* too many arguments */
+		else if (custom_cmd_rtn == 3) /* too many arguments */
 			fprintf(stderr, "%s: 1: cd: too many arguments\n", argv[0]);
 
 		if ((custom_cmd_rtn == -1) && !isAtty)
-			{
-				resetAll(tokens, input, NULL);
-				safeExit(EXIT_SUCCESS);
-			}
+		{
+			resetAll(tokens, input, NULL);
+			safeExit(EXIT_SUCCESS);
+		}
 		return;
 	}
 
@@ -95,8 +95,8 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char *input)
 		{
 			perror("fork failed");
 		}
-		else if(run_cmd_rtn == 2)
-				;
+		else if (run_cmd_rtn == 2)
+			;
 		else
 		{
 			/* Other execve errors: use perror to print a descriptive message */
@@ -104,7 +104,6 @@ void executeIfValid(int isAtty, char *const *argv, char **tokens, char *input)
 			errno = run_cmd_rtn; /* Set errno, to error code */
 			perror("");			 /* Use an empty string with perror */
 		}
-
 
 		if (!isAtty)
 		{

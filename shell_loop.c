@@ -63,49 +63,61 @@ void shellLoop(int isAtty, char *argv[])
 		}
 
 		/* Logical Operators */
-		if (_strstr(input, "&&") || _strstr(input, "||") || _strstr(input, ";"))
+		else if (_strstr(input, "&&") || _strstr(input, "||") || _strstr(input, ";"))
 		{
 			execute_logical_commands(input);
-			//free(input);
+			free(input);
 			continue;
 		}
-		if (_strstr(input, ">>"))
+		else if (_strstr(input, ">>"))
 		{
 			DoubleRightDirect(input);
 			free(input);
 			continue;
 		}
-		if (_strstr(input, ">"))
+		else if (_strstr(input, ">"))
 		{
 			RightDirect(input);
 			free(input);
 			continue;
 		}
-		if (_strstr(input, "<"))
+		else if (_strstr(input, "<"))
 		{
 			LeftDirect(input);
 			free(input);
 			continue;
 		}
-		if (_strstr(input, "<<"))
+		else if (_strstr(input, "<<"))
 		{
 			DoubleLeftDirect(input);
 			free(input);
 			continue;
 		}
-
-		/* Parse and Execute Single Command */
-		tokens = parse_command(input);
-		if (tokens == NULL)
+		else if (!isAtty)
 		{
+			tokens = parse_command(input); // Parse here, so we don't parse twice
+			executeIfValid(isAtty, argv, tokens, input);
+			free(tokens);
 			free(input);
-			continue;
+			safeExit(0);
+		}
+		else // Single command.
+		{
+			/* Parse and Execute Single Command */
+			tokens = parse_command(input);
+			if (tokens == NULL)
+			{
+				free(input);
+				continue;
+			}
+			executeIfValid(isAtty, argv, tokens, input);
+			free(tokens);
+			free(input);
 		}
 
-		executeIfValid(isAtty, argv, tokens, input);
 		/* --- Cleanup (ALWAYS done after each command) --- */
-		free(tokens);
-		free(input);
+		//free(tokens);
+		//free(input);
 	}
 }
 /**

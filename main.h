@@ -44,7 +44,8 @@ typedef enum
 	SEP_NONE,
 	SEP_SEMICOLON,
 	SEP_AND,
-	SEP_OR
+	SEP_OR,
+	SEP_SEMI
 } SeparatorType;
 
 extern char **environ;		 /* The environment variables */
