@@ -42,7 +42,7 @@ void shellLoop(int isAtty, char *argv[])
 			safeExit(EXIT_SUCCESS);
 		}
 
-		size_t len = strlen(input);
+		size_t len = _strlen(input);
 		if (len > 0 && input[len - 1] == '\n')
 		{
 			input[len - 1] = '\0';
