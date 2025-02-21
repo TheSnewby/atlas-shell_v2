@@ -1,0 +1,129 @@
+./" hsh
+.TH hsh (1) USER MANUAL
+
+.SH NAME
+hsh - provides a simplified command line interpreter
+
+.SH SYNOPSIS
+.B make
+.B ./hsh
+[\fR%command\fR] [\fR%options\fR]...
+
+.SH DESCRIPTION
+.B hsh
+is a command line interpreter that provides a prompt to enter commands and uses
+Linux to attempt to execute them. It also has built-in funcitonality to perform
+a several extra commands. Functions in both interactive and noninteractive
+modes. Use ./hsh to launch it in interactive, or use ./hsh as
+the first argument in a commandline entry and follow up with commands to use in
+non interactive. Handles multiple special operators.
+
+.SH COMPILING & RECOMPILING
+.B make
+
+.SH COMPILE CLEANUP
+.B make clean
+
+.SS Built-In Commands
+.TP
+env - prints the local environment
+.TP
+exit - exits the program
+.TP
+self-destruct - exits the program stylistically
+.TP
+selfdestr - same as self-destruct
+.TP
+setenv - sets a variable in the environment to a value, or adds it
+.TP
+unsetenv - removes a variable in the environment if found
+.TP
+cd - changes directory to a relative or absolute directory
+.TP
+quit - same as exit
+
+.SS Special-Operators
+.TP
+> - right-stream redirection
+.TP
+>> - double right-stream redirection
+.TP
+< - single left-stream redirection
+.TP
+<< - double left-stream redirection
+.TP
+| - pipe stream redirection
+.TP
+; - command separator
+.TP
+&& the AND logical operator
+.TP
+|| the OR logical operator
+
+.SH BUILT-IN EXAMPLES
+.TP
+"./hsh ls -l -a"
+.TP
+"./hsh cat main.h"
+.TP
+"./hsh exit"
+.TP
+"./hsh setenv [name] [new value]"
+.TP
+"./hsh unsetenv [name]"
+.TP
+"./hsh selfdestr"
+.TP
+"./hsh cd /bin"
+.TP
+"./hsh cd ../folder"
+
+.SH BASH EXAMPLES
+.TP
+"./hsh ls -l -a"
+.TP
+"./hsh cat main.h"
+
+.SH SPECIAL OPERATORS
+.TP
+"./hsh echo Hello World > test"
+.TP
+"./hsh echo Hello World >> test"
+.TP
+"./hsh rev < hello.txt"
+.TP
+"./hsh cat -e << atlas"
+.TP
+"./hsh ls /var | rev"
+.TP
+"./hsh ls /var ; ls /var"
+.TP
+"./hsh ./var && ls /var"
+.TP
+"./hsh ls /var || ls .var"
+
+
+.SH FUTURE IMPROVEMENTS
+.TP
+Right stream redirection with file descriptor
+.TP
+Ctrl-C handling
+.TP
+Alias Handling
+.TP
+Variable Handling
+.TP
+Comment (#) Handling
+.TP
+help built-in command
+.TP
+history built-in for user-commands
+.TP
+running a file as command-line argument
+.TP
+hshrc execution upon load
+.TP
+increased prompt output
+
+.SH AUTHORS
+Deshon Stout, Nathan Wilson, Stephen Newby, & Daniel Stelljes
