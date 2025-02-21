@@ -632,12 +632,12 @@ int execute_pipe_command(char **commands, int num_commands)
 
 	if (num_commands == 1)
 	{
-		/* If there's only one command, we don't need pipes. */
+		/* If there's only one command, we don't need pipes */
 		char **args = parse_command(commands[0]);
 		if (args != NULL)
 		{
 			if (args[0] != NULL)
-			{ /* check for empty command */
+			{
 				char *full_path = findPath(args[0]);
 				if (full_path != NULL)
 				{
@@ -645,7 +645,7 @@ int execute_pipe_command(char **commands, int num_commands)
 					free(full_path);
 				}
 				else
-				{ /* command not found */
+				{
 					fprintf(stderr, "%s: command not found\n", args[0]);
 					g_exit_status = 127;
 				}
@@ -655,10 +655,10 @@ int execute_pipe_command(char **commands, int num_commands)
 		return g_exit_status;
 	}
 
-	/* --- Multiple commands, create pipes --- */
-
+	/* Create pipes and execute commands */
 	int pipes[num_commands - 1][2]; /* Array of pipes */
-	pid_t pids[num_commands];		/* Array to store child PIDs */
+	pid_t pids[num_commands];
+	char **args = NULL;		/* Array to store child PIDs */
 
 	/* Create all necessary pipes */
 	for (int i = 0; i < num_commands - 1; i++)
@@ -682,6 +682,10 @@ int execute_pipe_command(char **commands, int num_commands)
 		else if (pids[i] == 0)
 		{
 			/* Child process */
+			if (handle_redirection(args) == -1)
+			{
+				exit(1);
+			}
 
 			/* Redirect input (except for the first command) */
 			if (i > 0)
@@ -711,23 +715,26 @@ int execute_pipe_command(char **commands, int num_commands)
 			}
 
 			/* Parse the command */
-			char **args = parse_command(commands[i]);
+			args = parse_command(commands[i]);
 			if (args == NULL || args[0] == NULL)
 			{
-				fprintf(stderr, "Invalid command\n"); /* error message */
+				fprintf(stderr, "Invalid command\n");
 				exit(EXIT_FAILURE);
 			}
+
 			// Handle Redirection
 			if (handle_redirection(args) == -1)
 			{
 				exit(1); // Exit if redirection fails
 			}
-			char *full_path = findPath(args[0]); /* find full path */
+
+			char *full_path = findPath(args[0]);
 			if (full_path == NULL)
 			{
 				fprintf(stderr, "%s: command not found\n", args[0]);
 				exit(127);
 			}
+
 			/* Execute the command */
 			execve(full_path, args, environ);
 			perror("execve"); /* If execve returns, it failed */
@@ -747,6 +754,7 @@ int execute_pipe_command(char **commands, int num_commands)
 	{
 		waitpid(pids[i], NULL, 0);
 	}
+
 	return g_exit_status;
 }
 //-------------------END EXECUTER-----------------------
@@ -813,9 +821,31 @@ char **split_line(char *line, const char *delimiters)
  */
 char **parse_command(char *command)
 {
-	return split_line(command, " \t\r\n\a");
-}
+	char **args = split_line(command, " \t\r\n\a");
+	if (args == NULL || args[0] == NULL)
+		return args;
 
+	// Handle variable expansion
+	for (int i = 0; args[i] != NULL; i++)
+	{
+		if (args[i][0] == '$')
+		{
+			char *var_name = args[i] + 1;
+			char *var_value = getenv(var_name);
+			if (var_value != NULL)
+			{
+				free(args[i]);
+				args[i] = _strdup(var_value);
+				if (args[i] == NULL)
+				{
+					free_tokens(args);
+					return NULL;
+				}
+			}
+		}
+	}
+	return args;
+}
 int split_command_line_on_pipe(char *input, char ***commands, int *num_commands)
 {
 	char *token;
@@ -877,6 +907,122 @@ int split_command_line_on_pipe(char *input, char ***commands, int *num_commands)
 
 //-------------------END PARSER-----------------------
 //-------------------START LOGICAL OPS----------------
+
+/**
+ * execute_command_group - Executes a group of commands separated by && or ||
+ * @command_group: The group of commands to execute
+ *
+ * Return: The exit status of the last command executed.
+ */
+int execute_command_group(char *command_group)
+{
+	// Handle empty command
+	if (_strcmp(command_group, "") == 0)
+	{
+		return 0;
+	}
+
+	// First split on &&, then on || to maintain proper precedence
+	char *and_op = _strstr(command_group, "&&");
+	char *or_op = _strstr(command_group, "||");
+
+	if (and_op && or_op)
+	{
+		// Handle && before || when both are present
+		if (and_op < or_op)
+		{
+			*and_op = '\0';
+			char *next_group = and_op + 2;
+			int status = execute_command_group(command_group);
+			if (status == 0)
+			{
+				return execute_command_group(next_group);
+			}
+			return status;
+		}
+	}
+
+	// Base case: no && or || operators
+	if (and_op == NULL && or_op == NULL)
+	{
+		char **args = parse_command(command_group);
+		if (args == NULL)
+		{
+			return 1; // Parse error
+		}
+
+		if (args[0] == NULL)
+		{
+			free_tokens(args);
+			return 0;
+		}
+
+		// Handle $VAR expansion BEFORE finding the path
+		for (int i = 0; args[i] != NULL; i++)
+		{
+			if (args[i][0] == '$')
+			{
+				char *var_name = args[i] + 1;
+				char *var_value = getenv(var_name);
+				if (var_value != NULL)
+				{
+					free(args[i]);
+					args[i] = _strdup(var_value);
+					if (args[i] == NULL)
+					{
+						free_tokens(args);
+						return 1; // Allocation error
+					}
+				}
+			}
+		}
+
+		char *full_path = findPath(args[0]);
+		if (full_path == NULL)
+		{
+			fprintf(stderr, "hsh: %s: command not found\n", args[0]);
+			free_tokens(args);
+			return 127;
+		}
+
+		g_exit_status = execute_command(full_path, args);
+		free(full_path);
+		free_tokens(args);
+		return g_exit_status;
+	}
+
+	// Recursive case: Handle && and || operators
+	if (and_op != NULL)
+	{
+		*and_op = '\0';
+		char *next_command_group = and_op + 2;
+		int first_command_status = execute_command_group(command_group);
+		if (first_command_status == 0)
+		{
+			return execute_command_group(next_command_group);
+		}
+		else
+		{
+			return first_command_status;
+		}
+	}
+	else if (or_op != NULL)
+	{
+		*or_op = '\0';
+		char *next_command_group = or_op + 2;
+		int first_command_status = execute_command_group(command_group);
+		if (first_command_status != 0)
+		{
+			return execute_command_group(next_command_group);
+		}
+		else
+		{
+			return first_command_status;
+		}
+	}
+
+	return 0; // Should never reach here
+}
 /**
  * execute_logical - Executes a sequence of commands with logical operators.
  * @line: The command line.
@@ -885,109 +1031,7 @@ int split_command_line_on_pipe(char *input, char ***commands, int *num_commands)
  */
 int execute_logical(char *line)
 {
-	char **commands;
-	char **args;
-	int i = 0;
-	char *saveptr1;
-	char *command_group;
-
-	// First, split by semicolon (;) for sequential execution.
-	commands = split_line(line, ";");
-	if (!commands)
-	{
-		return 1; // Allocation failure
-	}
-
-	while (commands[i] != NULL)
-	{
-
-		char *current_command = _strdup(commands[i]);
-		if (!current_command)
-		{
-			perror("hsh: strdup failed");
-			free_tokens(commands);
-			return 1;
-		}
-		// Now handle && and ||
-		char **sub_commands = split_line(current_command, "&&||"); // Split on both operators
-		if (!sub_commands)
-		{
-			free(current_command);
-			free_tokens(commands);
-			return 1;
-		}
-		int j = 0;
-
-		// Get the first operator
-		char *op_ptr = strstr(current_command, "&&");
-		if (op_ptr == NULL || (strstr(current_command, "||") != NULL && op_ptr > strstr(current_command, "||")))
-		{
-			op_ptr = strstr(current_command, "||");
-		}
-
-		while (sub_commands[j] != NULL)
-		{
-			args = parse_command(sub_commands[j]);
-			if (!args)
-			{
-				free(current_command);
-				free_tokens(commands);
-				free_tokens(sub_commands);
-				return 1;
-			}
-			char *full_path = findPath(args[0]);
-			if (full_path == NULL)
-			{
-				fprintf(stderr, "hsh: %s: command not found\n", args[0]);
-				g_exit_status = 127;
-			}
-			else
-			{
-				g_exit_status = execute_command(full_path, args);
-				free(full_path);
-			}
-			free_tokens(args);
-
-			// Check for operator and if we should continue
-
-			if (op_ptr != NULL && _strncmp(op_ptr, "&&", 2) == 0) //"&&" and its valid
-			{
-				if (g_exit_status != 0)
-					break;
-			}
-			else if (op_ptr != NULL && _strncmp(op_ptr, "||", 2) == 0) // "||"
-			{
-				if (g_exit_status == 0)
-					break;
-			}
-			j++;
-
-			// Find next operator
-			if (op_ptr != NULL && _strncmp(op_ptr, "&&", 2) == 0)
-			{
-				op_ptr = strstr(op_ptr + 2, "&&");
-				if (op_ptr == NULL || (strstr(current_command, "||") != NULL && op_ptr > strstr(current_command, "||")))
-				{
-					op_ptr = strstr(current_command, "||"); // Could be null
-				}
-			}
-			else if (op_ptr != NULL)
-			{
-				op_ptr = strstr(op_ptr + 2, "||");
-				if (op_ptr == NULL || (strstr(current_command, "&&") != NULL && op_ptr > strstr(current_command, "&&")))
-				{
-					op_ptr = strstr(current_command, "&&"); // Could be null
-				}
-			}
-		}
-
-		free_tokens(sub_commands);
-		free(current_command);
-		i++;
-	}
-
-	free_tokens(commands);
-	return g_exit_status;
+	return execute_command_group(line);
 }
 //---------------------END LOGICAL OPS-----------------
 //-------------------START SHELL LOOP------------------
@@ -995,63 +1039,87 @@ void handle_input(char *input, int isAtty, char *argv[])
 {
 	int num_commands;
 	char **commands = NULL;
-	// Check for pipes *before* logical operators
-	if (_strchr(input, '|') != NULL)
+
+	// Handle NULL input
+	if (input == NULL)
 	{
-		if (split_command_line_on_pipe(input, &commands, &num_commands) == 0)
-		{
-			g_exit_status = execute_pipe_command(commands, num_commands);
-			for (int i = 0; i < num_commands; i++)
-			{
-				free(commands[i]);
-			}
-			free(commands);
-		}
-		else
-		{
-			fprintf(stderr, "Failed to split commands for piping\n");
-			g_exit_status = 1; // Indicate an error
-		}
+		fprintf(stderr, "hsh: input error\n");
+		return;
 	}
-	// Check for logical operators
-	else if (_strstr(input, "&&") || _strstr(input, "||") || _strstr(input, ";"))
+
+	// Remove trailing newline but preserve internal newlines
+	size_t len = strlen(input);
+	if (len > 0 && input[len - 1] == '\n')
 	{
-		g_exit_status = execute_logical(input); // Updates g_exit_status
+		input[len - 1] = '\0';
 	}
-	else // Single command
+
+	// First, split by semicolons
+	char **semicolon_separated = split_line(input, ";");
+	if (semicolon_separated == NULL)
 	{
-		char **tokens = parse_command(input);
+		return; // Allocation error
+	}
 
-		if (tokens == NULL) // Check for parse error
+	for (int i = 0; semicolon_separated[i] != NULL; i++)
+	{
+		// Now, check for pipes WITHIN each semicolon-separated part
+		if (_strchr(semicolon_separated[i], '|') != NULL)
 		{
-			return;
-		}
-
-		if (tokens[0] != NULL)
-		{ // Check for empty command
-			// Handle built-in commands
-			if (customCmd(tokens, isAtty, input) == 1)
+			if (split_command_line_on_pipe(semicolon_separated[i], &commands, &num_commands) == 0)
 			{
-				free_tokens(tokens); // Free tokens
-				return;				 // Skip to next iteration if it's a built-in
-			}
-
-			// --- External command handling ---
-			char *full_path = findPath(tokens[0]); // Find the full path
-			if (full_path == NULL)
-			{
-				fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
-				g_exit_status = 127; // Command not found exit status
+				g_exit_status = execute_pipe_command(commands, num_commands);
+				for (int j = 0; j < num_commands; j++)
+				{
+					free(commands[j]);
+				}
+				free(commands);
 			}
 			else
 			{
-				g_exit_status = execute_command(full_path, tokens); // Updates g_exit_status
-				free(full_path);									// Free the allocated path
+				fprintf(stderr, "Failed to split commands for piping\n");
+				g_exit_status = 1; // Indicate an error
 			}
 		}
-		// Free allocated memory
-		free_tokens(tokens);
+		else if (_strstr(semicolon_separated[i], "&&") || _strstr(semicolon_separated[i], "||"))
+		{
+			// Handle logical operators WITHIN the pipe stage (or if no pipes)
+			g_exit_status = execute_logical(semicolon_separated[i]);
+		}
+		else
+		{
+			// Single command (no pipes, no logical operators)
+			char **tokens = parse_command(semicolon_separated[i]);
+			if (tokens == NULL)
+			{
+				free_tokens(semicolon_separated);
+				return;
+			}
+
+			if (tokens[0] != NULL)
+			{
+				if (customCmd(tokens, isAtty, semicolon_separated[i]) == 1)
+				{
+					free_tokens(tokens);
+					continue;
+				}
+
+				char *full_path = findPath(tokens[0]);
+				if (full_path == NULL)
+				{
+					fprintf(stderr, "%s: 1: %s: not found\n", argv[0], tokens[0]);
+					g_exit_status = 127;
+				}
+				else
+				{
+					g_exit_status = execute_command(full_path, tokens);
+					free(full_path);
+				}
+			}
+			free_tokens(tokens);
+		}
 	}
+	free_tokens(semicolon_separated); // Free the semicolon-separated array
 }
 
 void shellLoop(int isAtty, char *argv[])
@@ -1085,7 +1153,11 @@ void shellLoop(int isAtty, char *argv[])
 		}
 
 		// Remove trailing newline
-		input[_strcspn(input, "\n")] = 0;
+		size_t len = strlen(input);
+		if (len > 0 && input[len - 1] == '\n')
+		{
+			input[len - 1] = '\0';
+		}
 
 		handle_input(input, isAtty, argv);
 
