@@ -23,8 +23,10 @@ void shellLoop(int isAtty, char *argv[])
 		size = 0;
 		input = NULL;
 		tokens = NULL;
-
-		printPrompt(isAtty, user, hostname, path);
+		if (isAtty)
+		{
+			printPrompt(isAtty, user, hostname, path);
+		}
 		free(user);
 		free(hostname);
 
@@ -116,8 +118,8 @@ void shellLoop(int isAtty, char *argv[])
 		}
 
 		/* --- Cleanup (ALWAYS done after each command) --- */
-		//free(tokens);
-		//free(input);
+		// free(tokens);
+		// free(input);
 	}
 }
 /**
