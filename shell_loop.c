@@ -116,6 +116,7 @@ void shellLoop(int isAtty, char *argv[])
 				free(input);
 				continue;
 			}
+			if (tokens[0] != NULL)
 			executeIfValid(isAtty, argv, tokens, input);
 			free(tokens);
 			free(input);
