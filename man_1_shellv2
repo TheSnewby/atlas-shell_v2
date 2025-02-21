@@ -107,8 +107,6 @@ quit - same as exit
 .TP
 Right stream redirection with file descriptor
 .TP
-Ctrl-C handling
-.TP
 Alias Handling
 .TP
 Variable Handling
@@ -126,4 +124,4 @@ hshrc execution upon load
 increased prompt output
 
 .SH AUTHORS
-Deshon Stout, Nathan Wilson, Stephen Newby, & Daniel Stelljes
+Deshon Stout, Nathan Wilson, Stephen Newby, & Daniel Stelljes (v1)
