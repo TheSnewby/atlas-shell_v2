@@ -42,7 +42,11 @@ void shellLoop(int isAtty, char *argv[])
 			safeExit(EXIT_SUCCESS);
 		}
 
-		input[_strcspn(input, "\n")] = 0; /* Remove trailing newline */
+		size_t len = strlen(input);
+		if (len > 0 && input[len - 1] == '\n')
+		{
+			input[len - 1] = '\0';
+		}
 
 		/* Piping Logic */
 		if (_strchr(input, '|'))
