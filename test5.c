@@ -725,7 +725,7 @@ int execute_pipe_command(char **commands, int num_commands)
 			// Handle Redirection
 			if (handle_redirection(args) == -1)
 			{
-				exit(1); // Exit if redirection fails
+				exit(1);
 			}
 
 			char *full_path = findPath(args[0]);
