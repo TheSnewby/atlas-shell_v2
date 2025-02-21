@@ -99,14 +99,6 @@ void shellLoop(int isAtty, char *argv[])
 			free(input);
 			continue;
 		}
-		else if (!isAtty)
-		{
-			tokens = parse_command(input); // Parse here, so we don't parse twice
-			executeIfValid(isAtty, argv, tokens, input);
-			free(tokens);
-			free(input);
-			safeExit(0);
-		}
 		else // Single command.
 		{
 			/* Parse and Execute Single Command */
@@ -117,7 +109,7 @@ void shellLoop(int isAtty, char *argv[])
 				continue;
 			}
 			if (tokens[0] != NULL)
-			executeIfValid(isAtty, argv, tokens, input);
+				executeIfValid(isAtty, argv, tokens, input);
 			free(tokens);
 			free(input);
 		}
