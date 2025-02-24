@@ -13,7 +13,12 @@
       "intelliSenseMode": "macos-clang-arm64",
       "compilerPath": "/usr/bin/clang",
       "cStandard": "${default}",
-      "cppStandard": "${default}"
+      "cppStandard": "${default}",
+	  "compilerArgs": [
+                "-g",        // *** ESSENTIAL FOR DEBUGGING ***
+                "-Wall",     // Enable all warnings (highly recommended)
+                "-Wextra",   // 
+	  ]
     }
   ],
   "version": 4

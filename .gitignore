@@ -1,5 +1,4 @@
 test
 *.o
 *.d
-hsh
 minimal_shell.c
