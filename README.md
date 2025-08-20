@@ -2,8 +2,8 @@
 
 ## Authors
 
-*   Nathan Wilson
 *   Stephen Newby
+*   Nathan Wilson
 *   Deshon Stout
 *	Daniel Stelljes (v1)
 
