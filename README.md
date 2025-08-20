@@ -1,3 +1,5 @@
+<img width="1467" height="369" alt="image" src="https://github.com/user-attachments/assets/08a541b4-0d80-4b32-8cbb-03103686f523" />
+
 # Atlas Shell (hsh)
 
 "The Shell Project" was my favorite project at Atlas School where we had the chance to build a CLI with significant functionality and personality. There were multiple challenges including merge resolve conflicts, the order of operations for parsing and executing the commands, and a lack of being able to meet in person. But in the end it's one of my favorite projects for it's technical accomplishments and memorable quirks.
