@@ -1,5 +1,7 @@
 # Atlas Shell (hsh)
 
+"The Shell Project" was my favorite project at Atlas School where we had the chance to build a CLI with significant functionality and personality. There were multiple challenges including merge resolve conflicts, the order of operations for parsing and executing the commands, and a lack of being able to meet in person. But in the end it's one of my favorite projects for it's technical accomplishments and memorable quirks.
+
 ## Authors
 
 *   Stephen Newby
